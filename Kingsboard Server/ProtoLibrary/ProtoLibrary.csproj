@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Kingsboard's shared gRPC contract.
+
+    Protos/     The .proto files. This is the only place protos should be added or edited.
+    Generated/  C# generated from Protos/ on every build (client + server code). Don't edit by hand.
+                This folder is also a Unity package (package.json + asmdef), referenced by the
+                Unity client's Packages/manifest.json, so server and client always share the same code.
+
+    The server and TestConsole consume this with a ProjectReference.
+    Targets netstandard2.1 so the generated code is built against the same API surface Unity uses.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Kingsboard.Protos</RootNamespace>
+    <!-- Generated code triggers doc-comment warnings; they aren't actionable here -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.34.1" />
+    <PackageReference Include="Grpc.Core.Api" Version="2.80.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.80.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Every .proto under Protos/ is compiled automatically. Generated files are written to Generated/
+      (mirroring any subfolders) and compiled by Grpc.Tools.
+      Pawns.proto is excluded until it's finished: it uses an undefined message type and doesn't import empty.proto.
+    -->
+    <Protobuf Include="Protos\**\*.proto" Exclude="Protos\Pawns.proto" ProtoRoot="Protos" GrpcServices="Both" OutputDir="Generated" />
+
+    <!-- Grpc.Tools already compiles its output; stop the SDK's *.cs glob from compiling Generated/ a second time -->
+    <Compile Remove="Generated\**" />
+    <None Remove="Generated\**" />
+  </ItemGroup>
+
+</Project>

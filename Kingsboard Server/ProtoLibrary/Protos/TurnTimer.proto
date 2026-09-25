@@ -1,0 +1,38 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcTurnTimer";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// Global turn timer. The server starts a new turn on a fixed interval
+// (TurnSettings:TurnDurationSeconds) and broadcasts turn start/end to every client.
+service TurnTimerService {
+  // Server stream of turn events. The first message is a SYNC describing the turn
+  // currently in progress, followed by STARTED / ENDED events as turns roll over.
+  rpc JoinTurnStream(google.protobuf.Empty) returns (stream TurnEvent);
+
+  // One-off query for the turn currently in progress (turn_id = 0 if none has started).
+  rpc GetCurrentTurn(google.protobuf.Empty) returns (TurnState);
+}
+
+enum TurnEventType {
+  TURN_EVENT_TYPE_UNSPECIFIED = 0;
+  TURN_EVENT_TYPE_STARTED = 1; // A new turn has begun
+  TURN_EVENT_TYPE_ENDED = 2;   // The turn has ended (resolution complete)
+  TURN_EVENT_TYPE_SYNC = 3;    // Sent on join with the turn already in progress
+}
+
+message TurnState {
+  int32 turn_id = 1;
+  google.protobuf.Timestamp started_at = 2; // Server clock (UTC)
+  google.protobuf.Timestamp ends_at = 3;    // Server clock (UTC)
+  int32 turn_duration_ms = 4;
+  // Time left in the turn when the server sent this message. Prefer this over
+  // ends_at for countdowns so client/server clock differences don't matter.
+  int32 time_remaining_ms = 5;
+}
+
+message TurnEvent {
+  TurnEventType type = 1;
+  TurnState turn = 2;
+}

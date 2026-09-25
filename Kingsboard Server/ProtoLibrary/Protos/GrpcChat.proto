@@ -1,0 +1,57 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcChat";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// Global chat. Clients join to receive a stream of chat events, then send messages
+// using the session id they were given when they joined.
+service ChatService {
+  // Joins the chat. The first event is always `joined` (your session id and final username),
+  // followed by recent history (is_history = true) and then live messages.
+  // Leaving is automatic when the stream is closed.
+  rpc JoinChat(JoinChatRequest) returns (stream ChatEvent);
+
+  // Sends a message to everyone in the chat. Errors:
+  //   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+  //   INVALID_ARGUMENT    - message is empty or too long
+  //   RESOURCE_EXHAUSTED  - sending too quickly
+  rpc SendChatMessage(SendChatMessageRequest) returns (google.protobuf.Empty);
+}
+
+message JoinChatRequest {
+  // Requested display name. The server may trim it or add a suffix to keep it unique.
+  string username = 1;
+}
+
+message SendChatMessageRequest {
+  string session_id = 1;
+  string text = 2;
+}
+
+message ChatEvent {
+  oneof payload {
+    ChatJoined joined = 1;   // Sent once, only to the client that joined
+    ChatMessage message = 2;
+  }
+}
+
+message ChatJoined {
+  string session_id = 1; // Pass this to SendChatMessage
+  string username = 2;   // The name you were given
+}
+
+enum ChatMessageType {
+  CHAT_MESSAGE_TYPE_UNSPECIFIED = 0;
+  CHAT_MESSAGE_TYPE_PLAYER = 1; // Sent by a player
+  CHAT_MESSAGE_TYPE_SYSTEM = 2; // Server announcement (joins, leaves, etc.)
+}
+
+message ChatMessage {
+  int64 id = 1;
+  ChatMessageType type = 2;
+  string username = 3;
+  string text = 4;
+  google.protobuf.Timestamp sent_at = 5;
+  bool is_history = 6; // Sent before you joined (replayed on join)
+}
