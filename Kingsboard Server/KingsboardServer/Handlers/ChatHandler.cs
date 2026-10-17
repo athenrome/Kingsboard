@@ -4,18 +4,18 @@ using GrpcChat;
 using KingsboardServer.Models.Chat;
 using KingsboardServer.Services.Interfaces;
 
-namespace KingsboardServer.Services.Grpc
+namespace KingsboardServer.Handlers
 {
     /// <summary>
-    /// gRPC front end for the chat room. All chat logic lives in <see cref="IChatRoomService"/>.
+    /// Handles chat requests from clients (gRPC). All chat logic lives in <see cref="IChatRoomService"/>.
     /// </summary>
-    public class ChatMessagingService : ChatService.ChatServiceBase
+    public class ChatHandler : ChatService.ChatServiceBase
     {
         private readonly IChatRoomService _chatRoom;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
-        public ChatMessagingService(IChatRoomService chatRoom, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        public ChatHandler(IChatRoomService chatRoom, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _chatRoom = chatRoom;
             _lifetime = lifetime;

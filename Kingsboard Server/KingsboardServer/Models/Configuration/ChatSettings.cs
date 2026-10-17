@@ -16,6 +16,9 @@ namespace KingsboardServer.Models.Configuration
         /// <summary>How many recent messages are replayed to players when they join</summary>
         public int HistorySize { get; set; } = 50;
 
+        /// <summary>How many messages the server keeps stored (oldest are dropped first)</summary>
+        public int MaxStoredMessages { get; set; } = 1000;
+
         /// <summary>Minimum time between messages from the same player, in seconds (0 = no limit)</summary>
         public double MinSecondsBetweenMessages { get; set; } = 0.25;
     }

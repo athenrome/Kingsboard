@@ -5,12 +5,12 @@ using GrpcTurnTimer;
 using KingsboardServer.Models;
 using KingsboardServer.Services.Interfaces;
 
-namespace KingsboardServer.Services.Grpc
+namespace KingsboardServer.Handlers
 {
     /// <summary>
-    /// Broadcasts the global turn timer (turn started / turn ended) to every connected client.
+    /// Handles turn timer requests from clients (gRPC). Broadcasts the global turn timer (turn started / turn ended) to every connected client.
     /// </summary>
-    public class TurnTimerGrpcService : TurnTimerService.TurnTimerServiceBase
+    public class TurnTimerHandler : TurnTimerService.TurnTimerServiceBase
     {
         // Per-client buffer. If a client falls this far behind, its oldest events are dropped
         // rather than blocking the turn loop or other clients.
@@ -21,7 +21,7 @@ namespace KingsboardServer.Services.Grpc
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
-        public TurnTimerGrpcService(ITurnService turnService, TimeProvider timeProvider, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        public TurnTimerHandler(ITurnService turnService, TimeProvider timeProvider, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _turnService = turnService;
             _timeProvider = timeProvider;

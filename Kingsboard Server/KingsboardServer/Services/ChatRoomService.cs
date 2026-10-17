@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.Channels;
 using KingsboardServer.Models.Chat;
 using KingsboardServer.Models.Configuration;
+using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
@@ -20,19 +21,19 @@ namespace KingsboardServer.Services
         private readonly Serilog.ILogger _logger;
         private readonly IOptionsMonitor<ChatSettings> _settings;
         private readonly TimeProvider _timeProvider;
+        private readonly IChatRepository _repository;
 
-        // One lock keeps joins, leaves, history and broadcasts in a consistent order,
+        // One lock keeps joins, leaves, storing and broadcasts in a consistent order,
         // so a joining player never misses or duplicates a message. Everything inside it is non-blocking.
         private readonly object _lock = new();
         private readonly Dictionary<Guid, Participant> _participants = new();
-        private readonly Queue<ChatEntry> _history = new();
-        private long _nextMessageId = 1;
 
-        public ChatRoomService(Serilog.ILogger logger, IOptionsMonitor<ChatSettings> settings, TimeProvider timeProvider)
+        public ChatRoomService(Serilog.ILogger logger, IOptionsMonitor<ChatSettings> settings, TimeProvider timeProvider, IChatRepository repository)
         {
             _logger = logger;
             _settings = settings;
             _timeProvider = timeProvider;
+            _repository = repository;
         }
 
         public ChatSubscription Join(string requestedUsername)
@@ -53,7 +54,7 @@ namespace KingsboardServer.Services
                 string username = MakeUnique(baseName, settings.MaxUsernameLength);
                 participant = new Participant(Guid.NewGuid(), username, outbox);
 
-                foreach (ChatEntry entry in _history)
+                foreach (ChatEntry entry in _repository.GetRecent(settings.HistorySize))
                 {
                     outbox.Writer.TryWrite(entry with { IsHistory = true });
                 }
@@ -134,18 +135,11 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Records a message in history and queues it for every participant. Caller must hold <see cref="_lock"/>.
+        /// Stores a message and queues it for every participant. Caller must hold <see cref="_lock"/>.
         /// </summary>
         private void BroadcastLocked(ChatEntryType type, string username, string text)
         {
-            ChatEntry entry = new ChatEntry(_nextMessageId++, type, username, text, _timeProvider.GetUtcNow());
-
-            int historySize = Math.Max(0, _settings.CurrentValue.HistorySize);
-            _history.Enqueue(entry);
-            while (_history.Count > historySize)
-            {
-                _history.Dequeue();
-            }
+            ChatEntry entry = _repository.Add(type, username, text, _timeProvider.GetUtcNow());
 
             foreach (Participant participant in _participants.Values)
             {

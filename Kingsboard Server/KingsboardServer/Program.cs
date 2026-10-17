@@ -1,6 +1,8 @@
+using KingsboardServer.Handlers;
 using KingsboardServer.Models.Configuration;
+using KingsboardServer.Repositories;
+using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services;
-using KingsboardServer.Services.Grpc;
 using KingsboardServer.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Serilog;
@@ -55,6 +57,7 @@ namespace KingsboardServer
                     .Validate(s => s.MaxMessageLength > 0 && s.MaxUsernameLength > 0, "ChatSettings: MaxMessageLength and MaxUsernameLength must be greater than 0")
                     .ValidateOnStart();
 
+                builder.Services.AddSingleton<IChatRepository, ChatRepository>();
                 builder.Services.AddSingleton<IChatRoomService, ChatRoomService>();
 
                 builder.Services.AddSingleton<IGameService, GameService>();
@@ -67,8 +70,8 @@ namespace KingsboardServer
                 var app = builder.Build();
 
                 //Configure GRPC Services
-                app.MapGrpcService<ChatMessagingService>();
-                app.MapGrpcService<TurnTimerGrpcService>();
+                app.MapGrpcService<ChatHandler>();
+                app.MapGrpcService<TurnTimerHandler>();
                 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
                 IGameService game = app.Services.GetRequiredService<IGameService>();
