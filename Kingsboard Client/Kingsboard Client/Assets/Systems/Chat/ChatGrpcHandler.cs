@@ -13,7 +13,7 @@ namespace Kingsboard.Chat
     /// knows about gRPC: the rest of the game only sees <see cref="ChatLine"/> and the events below.
     /// Create and use it from the main thread; its events are raised on the main thread.
     /// </summary>
-    public class ChatHandler : IDisposable
+    public class ChatGrpcHandler : IDisposable
     {
         private const double ReconnectDelaySeconds = 2;
         private const double SendTimeoutSeconds = 10;
@@ -22,13 +22,19 @@ namespace Kingsboard.Chat
         private GrpcChat.ChatService.ChatServiceClient _client;
         private string _sessionId;
 
-        /// <summary>Raised when we've joined the chat, with the username the server gave us</summary>
+        /// <summary>
+        /// Raised when we've joined the chat, with the username the server gave us
+        /// </summary>
         public event Action<string> Joined;
 
-        /// <summary>Raised for every message from the server (recent history first, then live messages)</summary>
+        /// <summary>
+        /// Raised for every message from the server (recent history first, then live messages)
+        /// </summary>
         public event Action<ChatLine> MessageReceived;
 
-        /// <summary>Raised when the connection to the chat is lost. It reconnects by itself.</summary>
+        /// <summary>
+        /// Raised when the connection to the chat is lost. It reconnects by itself.
+        /// </summary>
         public event Action Disconnected;
 
         /// <summary>
@@ -122,7 +128,9 @@ namespace Kingsboard.Chat
             }
         }
 
-        /// <summary>Leaves the chat (closing the stream is what tells the server we've left)</summary>
+        /// <summary>
+        /// Leaves the chat (closing the stream is what tells the server we've left)
+        /// </summary>
         public void Dispose()
         {
             _shutdown.Cancel();

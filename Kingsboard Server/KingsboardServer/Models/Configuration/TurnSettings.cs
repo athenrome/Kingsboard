@@ -6,8 +6,14 @@ namespace KingsboardServer.Models.Configuration
     /// </summary>
     public class TurnSettings
     {
+        /// <summary>
+        /// The appsettings.json section these settings are read from
+        /// </summary>
         public const string SectionName = "TurnSettings";
 
+        /// <summary>
+        /// Turn length used when none is configured, or the configured one is invalid
+        /// </summary>
         public const double DefaultTurnDurationSeconds = 4;
 
         /// <summary>

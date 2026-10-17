@@ -8,8 +8,14 @@ using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
+    /// <summary>
+    /// The global chat room: tracks who is in the chat, enforces chat rules and broadcasts messages
+    /// </summary>
     public class ChatRoomService : IChatRoomService
     {
+        /// <summary>
+        /// The name shown on server announcements
+        /// </summary>
         public const string SystemUsername = "Server";
 
         private const string DefaultUsername = "Player";
@@ -28,6 +34,9 @@ namespace KingsboardServer.Services
         private readonly object _lock = new();
         private readonly Dictionary<Guid, Participant> _participants = new();
 
+        /// <summary>
+        /// Creates an empty chat room that stores its messages in <paramref name="repository"/>
+        /// </summary>
         public ChatRoomService(Serilog.ILogger logger, IOptionsMonitor<ChatSettings> settings, TimeProvider timeProvider, IChatRepository repository)
         {
             _logger = logger;
@@ -36,6 +45,9 @@ namespace KingsboardServer.Services
             _repository = repository;
         }
 
+        /// <summary>
+        /// Adds a player with a cleaned, unique name, queues recent history for them and announces that they joined
+        /// </summary>
         public ChatSubscription Join(string requestedUsername)
         {
             ChatSettings settings = _settings.CurrentValue;
@@ -67,6 +79,9 @@ namespace KingsboardServer.Services
             return new ChatSubscription(participant.SessionId, participant.Username, outbox.Reader);
         }
 
+        /// <summary>
+        /// Removes a player, completes their message stream and announces that they left. Safe to call more than once.
+        /// </summary>
         public void Leave(Guid sessionId)
         {
             Participant? participant;
@@ -84,6 +99,9 @@ namespace KingsboardServer.Services
             _logger.Information("{Username} left the chat", participant.Username);
         }
 
+        /// <summary>
+        /// Validates a player's message (length, membership, rate limit) and broadcasts it if it passes
+        /// </summary>
         public ChatSendResult SendMessage(Guid sessionId, string text)
         {
             ChatSettings settings = _settings.CurrentValue;
@@ -117,9 +135,12 @@ namespace KingsboardServer.Services
                 BroadcastLocked(ChatEntryType.Player, participant.Username, cleaned);
             }
 
-            return ChatSendResult.Success;
+            return new ChatSendResult(ChatSendStatus.Sent);
         }
 
+        /// <summary>
+        /// Broadcasts a server announcement to everyone. Blank announcements are ignored.
+        /// </summary>
         public void SendSystemMessage(string text)
         {
             string cleaned = CleanText(text);

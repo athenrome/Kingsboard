@@ -9,19 +9,25 @@ namespace KingsboardServer.Handlers
     /// <summary>
     /// Handles chat requests from clients (gRPC). All chat logic lives in <see cref="IChatRoomService"/>.
     /// </summary>
-    public class ChatHandler : ChatService.ChatServiceBase
+    public class ChatGrpcHandler : ChatService.ChatServiceBase
     {
         private readonly IChatRoomService _chatRoom;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
-        public ChatHandler(IChatRoomService chatRoom, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        /// <summary>
+        /// Created by gRPC for each call, with the chat room and server lifetime it uses
+        /// </summary>
+        public ChatGrpcHandler(IChatRoomService chatRoom, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _chatRoom = chatRoom;
             _lifetime = lifetime;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Joins the client to the chat and streams its events (joined, history, then live messages) until it disconnects, then leaves the chat
+        /// </summary>
         public override async Task JoinChat(JoinChatRequest request, IServerStreamWriter<ChatEvent> responseStream, ServerCallContext context)
         {
             ChatSubscription subscription = _chatRoom.Join(request.Username);
@@ -58,6 +64,9 @@ namespace KingsboardServer.Handlers
             }
         }
 
+        /// <summary>
+        /// Sends a player's message to the chat, turning any rejection into the matching gRPC status code
+        /// </summary>
         public override Task<Empty> SendChatMessage(SendChatMessageRequest request, ServerCallContext context)
         {
             if (!Guid.TryParse(request.SessionId, out Guid sessionId))

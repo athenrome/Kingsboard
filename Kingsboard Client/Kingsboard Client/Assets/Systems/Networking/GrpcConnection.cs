@@ -6,19 +6,27 @@ using UnityEngine.Networking;
 namespace Kingsboard.Networking
 {
     /// <summary>
-    /// The one gRPC connection to the Kingsboard server, shared by every Handler class.
+    /// The one gRPC connection to the Kingsboard server, shared by every GrpcHandler class.
     /// The server address defaults to <see cref="DefaultServerAddress"/> and can be changed
     /// with the command-line argument --server=https://host:port
     /// </summary>
     public static class GrpcConnection
     {
+        /// <summary>
+        /// Server used when no --server= command-line argument is given
+        /// </summary>
         public const string DefaultServerAddress = "https://localhost:7116";
 
         private static GrpcChannel _channel;
 
+        /// <summary>
+        /// The server address in use (set when the channel is first created)
+        /// </summary>
         public static string ServerAddress { get; private set; } = DefaultServerAddress;
 
-        /// <summary>The shared channel. Created the first time it's needed.</summary>
+        /// <summary>
+        /// The shared channel. Created the first time it's needed.
+        /// </summary>
         public static GrpcChannel Channel
         {
             get

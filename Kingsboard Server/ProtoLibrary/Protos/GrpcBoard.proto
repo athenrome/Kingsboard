@@ -1,0 +1,57 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcBoard";
+
+import "google/protobuf/empty.proto";
+
+// The game board: a grid of map tiles owned by the server. Clients only ever read it;
+// the server changes tiles as the game plays out and streams the changes to everyone.
+// Coordinates: x is the column (0 = left), y is the row (0 = bottom), both starting at 0.
+service BoardService {
+  // Server stream of board events. The first event is always a full `board` snapshot
+  // (once the game has created the board), followed by `tiles_changed` updates.
+  // A new `board` snapshot is sent whenever the board is recreated (e.g. a new game);
+  // it replaces everything the client had.
+  rpc JoinBoardStream(google.protobuf.Empty) returns (stream BoardEvent);
+
+  // One-off query for the whole board. Errors:
+  //   UNAVAILABLE - the game hasn't created a board yet
+  rpc GetBoard(google.protobuf.Empty) returns (BoardState);
+}
+
+enum TileType {
+  TILE_TYPE_UNSPECIFIED = 0;
+  TILE_TYPE_WATER = 1;    // Impassable
+  TILE_TYPE_PLAINS = 2;
+  TILE_TYPE_FOREST = 3;
+  TILE_TYPE_HILLS = 4;
+  TILE_TYPE_MOUNTAIN = 5; // Impassable
+}
+
+message Tile {
+  int32 x = 1;
+  int32 y = 2;
+  TileType type = 3;
+  bool passable = 4; // Whether pawns can move onto this tile
+}
+
+message BoardState {
+  string board_id = 1; // Changes when the board is recreated
+  int64 version = 2;   // Goes up by one with every change to the board
+  int32 width = 3;
+  int32 height = 4;
+  // Every tile, row by row: index = y * width + x
+  repeated Tile tiles = 5;
+}
+
+message TilesChanged {
+  string board_id = 1;
+  int64 version = 2; // The board version after this change
+  repeated Tile tiles = 3;
+}
+
+message BoardEvent {
+  oneof payload {
+    BoardState board = 1;           // Full snapshot: replace the whole board
+    TilesChanged tiles_changed = 2; // Some tiles changed: replace just these
+  }
+}

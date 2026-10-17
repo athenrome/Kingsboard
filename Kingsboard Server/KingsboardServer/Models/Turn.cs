@@ -2,10 +2,19 @@ using KingsboardServer.Models.Enumerations;
 
 namespace KingsboardServer.Models
 {
+    /// <summary>
+    /// One round of the game, run on the global turn timer
+    /// </summary>
     public class Turn
     {
+        /// <summary>
+        /// Turn number, starting at 1 and going up by one each turn
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// The phase the turn is currently in
+        /// </summary>
         public TurnPhase CurrentPhase { get; set; }
 
         /// <summary>
@@ -17,21 +26,5 @@ namespace KingsboardServer.Models
         /// When the turn is scheduled to end (UTC, server clock)
         /// </summary>
         public DateTimeOffset EndsAt { get; set; }
-
-        public TimeSpan Duration => EndsAt - StartedAt;
-
-        /// <summary>
-        /// Time left in the turn relative to <paramref name="now"/>, never negative
-        /// </summary>
-        public TimeSpan GetTimeRemaining(DateTimeOffset now)
-        {
-            TimeSpan remaining = EndsAt - now;
-            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
-        }
-
-        /// <summary>
-        /// Creates a copy so callers can't mutate the live turn
-        /// </summary>
-        public Turn Clone() => (Turn)MemberwiseClone();
     }
 }

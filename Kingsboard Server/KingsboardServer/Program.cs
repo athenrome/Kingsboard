@@ -4,13 +4,18 @@ using KingsboardServer.Repositories;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Serilog;
 
 namespace KingsboardServer
 {
+    /// <summary>
+    /// The server's entry point: configures services and gRPC endpoints, then runs the server and game loop
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Starts the Kingsboard server
+        /// </summary>
         public static void Main(string[] args)
         {
 
@@ -60,6 +65,15 @@ namespace KingsboardServer
                 builder.Services.AddSingleton<IChatRepository, ChatRepository>();
                 builder.Services.AddSingleton<IChatRoomService, ChatRoomService>();
 
+                //Board settings (appsettings.json -> "BoardSettings")
+                builder.Services.AddOptions<BoardSettings>()
+                    .Bind(builder.Configuration.GetSection(BoardSettings.SectionName))
+                    .Validate(s => s.Width > 0 && s.Height > 0, "BoardSettings: Width and Height must be greater than 0")
+                    .ValidateOnStart();
+
+                builder.Services.AddSingleton<IBoardRepository, BoardRepository>();
+                builder.Services.AddSingleton<IBoardService, BoardService>();
+
                 builder.Services.AddSingleton<IGameService, GameService>();
 
 
@@ -70,8 +84,9 @@ namespace KingsboardServer
                 var app = builder.Build();
 
                 //Configure GRPC Services
-                app.MapGrpcService<ChatHandler>();
-                app.MapGrpcService<TurnTimerHandler>();
+                app.MapGrpcService<ChatGrpcHandler>();
+                app.MapGrpcService<TurnTimerGrpcHandler>();
+                app.MapGrpcService<BoardGrpcHandler>();
                 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
                 IGameService game = app.Services.GetRequiredService<IGameService>();

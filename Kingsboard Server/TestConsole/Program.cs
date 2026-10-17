@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
+using GrpcBoard;
 using GrpcChat;
 using GrpcTurnTimer;
 
@@ -10,12 +11,43 @@ namespace TestConsole
     {
         static async Task Main(string[] args)
         {
-            // Pass "--turns" to also print the turn timer
+            // Pass "--turns" to also print the turn timer, "--board" to also print the board and its changes
             bool showTurns = args.Contains("--turns");
+            bool showBoard = args.Contains("--board");
 
-            // The port number must match the port of the gRPC server.
-            using var channel = GrpcChannel.ForAddress("https://localhost:7116");
+            // The port number must match the port of the gRPC server. Override with --server=https://host:port
+            string serverAddress = args.FirstOrDefault(a => a.StartsWith("--server="))?.Substring("--server=".Length) ?? "https://localhost:7116";
+            using var channel = GrpcChannel.ForAddress(serverAddress);
             using var shutdown = new CancellationTokenSource();
+
+            if (showBoard)
+            {
+                var boardClient = new BoardService.BoardServiceClient(channel);
+                var boardTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var boardCall = boardClient.JoinBoardStream(new Empty(), cancellationToken: shutdown.Token);
+                        await foreach (BoardEvent boardEvent in boardCall.ResponseStream.ReadAllAsync(shutdown.Token))
+                        {
+                            if (boardEvent.PayloadCase == BoardEvent.PayloadOneofCase.Board)
+                            {
+                                PrintBoard(boardEvent.Board);
+                            }
+                            else if (boardEvent.PayloadCase == BoardEvent.PayloadOneofCase.TilesChanged)
+                            {
+                                var changed = boardEvent.TilesChanged;
+                                Console.WriteLine($"[Board v{changed.Version}] {changed.Tiles.Count} tile(s) changed: {string.Join(", ", changed.Tiles.Select(t => $"({t.X}, {t.Y}) {t.Type}"))}");
+                            }
+                        }
+                    }
+                    catch (Exception) when (shutdown.IsCancellationRequested) { }
+                    catch (RpcException ex)
+                    {
+                        Console.WriteLine($"Board disconnected: {ex.Status.Detail}");
+                    }
+                });
+            }
 
             var chatClient = new ChatService.ChatServiceClient(channel);
 
@@ -103,6 +135,30 @@ namespace TestConsole
             // Closing the stream leaves the chat
             shutdown.Cancel();
             try { await readTask; } catch { }
+        }
+
+        static void PrintBoard(BoardState board)
+        {
+            Console.WriteLine($"[Board v{board.Version}] {board.Width} x {board.Height} (~ water, . plains, T forest, n hills, ^ mountain)");
+
+            // Top row first, so y = 0 is at the bottom like in the game
+            for (int y = board.Height - 1; y >= 0; y--)
+            {
+                var row = new System.Text.StringBuilder();
+                for (int x = 0; x < board.Width; x++)
+                {
+                    row.Append(board.Tiles[y * board.Width + x].Type switch
+                    {
+                        TileType.Water => '~',
+                        TileType.Plains => '.',
+                        TileType.Forest => 'T',
+                        TileType.Hills => 'n',
+                        TileType.Mountain => '^',
+                        _ => '?'
+                    });
+                }
+                Console.WriteLine(row);
+            }
         }
 
         static void PrintMessage(ChatMessage message)

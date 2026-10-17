@@ -15,11 +15,17 @@ namespace KingsboardServer.Repositories
         private readonly List<ChatEntry> _messages = new();
         private long _nextId = 1;
 
+        /// <summary>
+        /// Creates an empty message store, capped by ChatSettings:MaxStoredMessages
+        /// </summary>
         public ChatRepository(IOptionsMonitor<ChatSettings> settings)
         {
             _settings = settings;
         }
 
+        /// <summary>
+        /// Stores a new message with the next id, dropping the oldest messages once the store is full
+        /// </summary>
         public ChatEntry Add(ChatEntryType type, string username, string text, DateTimeOffset sentAt)
         {
             lock (_lock)
@@ -38,6 +44,9 @@ namespace KingsboardServer.Repositories
             }
         }
 
+        /// <summary>
+        /// Returns up to <paramref name="count"/> of the most recent messages, oldest first
+        /// </summary>
         public IReadOnlyList<ChatEntry> GetRecent(int count)
         {
             lock (_lock)

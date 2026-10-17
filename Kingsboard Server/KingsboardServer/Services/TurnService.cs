@@ -1,3 +1,4 @@
+using KingsboardServer.Extensions;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Enumerations;
@@ -6,6 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
+    /// <summary>
+    /// Runs the global turn timer: starts a turn every TurnSettings:TurnDurationSeconds and moves it through its phases
+    /// </summary>
     public class TurnService : ITurnService
     {
         private readonly Serilog.ILogger _logger;
@@ -17,9 +21,18 @@ namespace KingsboardServer.Services
 
         private TimeSpan _lastValidDuration = TimeSpan.FromSeconds(TurnSettings.DefaultTurnDurationSeconds);
 
+        /// <summary>
+        /// Raised with a snapshot when a new turn begins. Handlers must be quick and non-blocking.
+        /// </summary>
         public event EventHandler<Turn>? TurnStarted;
+        /// <summary>
+        /// Raised with a snapshot when a turn ends. Handlers must be quick and non-blocking.
+        /// </summary>
         public event EventHandler<Turn>? TurnEnded;
 
+        /// <summary>
+        /// Creates the service. No turns run until <see cref="RunTurnLoopAsync"/> is called.
+        /// </summary>
         public TurnService(Serilog.ILogger logger, IOptionsMonitor<TurnSettings> settings, TimeProvider timeProvider)
         {
             _logger = logger;
@@ -27,6 +40,9 @@ namespace KingsboardServer.Services
             _timeProvider = timeProvider;
         }
 
+        /// <summary>
+        /// Returns a snapshot of the turn in progress, or null if no turn has started yet
+        /// </summary>
         public Turn? GetCurrentTurn()
         {
             lock (_turnLock)
@@ -35,6 +51,9 @@ namespace KingsboardServer.Services
             }
         }
 
+        /// <summary>
+        /// Runs turns back to back, scheduled from each turn's end time so they don't drift, until cancelled
+        /// </summary>
         public async Task RunTurnLoopAsync(CancellationToken cancellationToken)
         {
             // Turns are scheduled back-to-back from the previous turn's end time (not "now"),

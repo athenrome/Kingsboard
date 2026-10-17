@@ -6,7 +6,7 @@ namespace Kingsboard.Chat
 {
     /// <summary>
     /// Handles all client-side chat in Unity: it owns the chat window (bottom-left of the screen, built with UI Toolkit)
-    /// and talks to the server only through <see cref="ChatHandler"/>. All chat rules (validation, rate limiting,
+    /// and talks to the server only through <see cref="ChatGrpcHandler"/>. All chat rules (validation, rate limiting,
     /// usernames) are enforced by the server.
     /// It creates itself when the game starts, so nothing needs adding to a scene.
     /// To set the username in the Inspector, add this component to a GameObject in the scene instead.
@@ -14,10 +14,14 @@ namespace Kingsboard.Chat
     /// </summary>
     public class ChatController : MonoBehaviour
     {
-        /// <summary>Longest message the input box accepts (matches the server's ChatSettings.MaxMessageLength)</summary>
+        /// <summary>
+        /// Longest message the input box accepts (matches the server's ChatSettings.MaxMessageLength)
+        /// </summary>
         public const int MaxMessageLength = 256;
 
-        /// <summary>Most lines kept in the chat window; the oldest are removed first</summary>
+        /// <summary>
+        /// Most lines kept in the chat window; the oldest are removed first
+        /// </summary>
         public const int MaxLines = 200;
 
         [Tooltip("Name to join the chat with. The server may change it to keep names unique.")]
@@ -26,16 +30,20 @@ namespace Kingsboard.Chat
         private static readonly Color PlayerColor = Color.white;
         private static readonly Color SystemColor = new Color(1f, 0.85f, 0.4f);
 
-        private ChatHandler _handler;
+        private ChatGrpcHandler _handler;
         private UIDocument _document;
         private Label _status;
         private ScrollView _messages;
         private TextField _input;
 
-        /// <summary>Our name in the chat (set by the server when we join), or null before joining</summary>
+        /// <summary>
+        /// Our name in the chat (set by the server when we join), or null before joining
+        /// </summary>
         public string Username { get; private set; }
 
-        /// <summary>True while we are joined to the chat</summary>
+        /// <summary>
+        /// True while we are joined to the chat
+        /// </summary>
         public bool IsConnected { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -73,7 +81,7 @@ namespace Kingsboard.Chat
             BuildWindow(root);
             UpdateStatus();
 
-            _handler = new ChatHandler();
+            _handler = new ChatGrpcHandler();
             _handler.Joined += OnJoined;
             _handler.MessageReceived += AddLine;
             _handler.Disconnected += OnDisconnected;

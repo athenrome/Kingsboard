@@ -2,6 +2,7 @@ using System.Threading.Channels;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcTurnTimer;
+using KingsboardServer.Extensions;
 using KingsboardServer.Models;
 using KingsboardServer.Services.Interfaces;
 
@@ -10,7 +11,7 @@ namespace KingsboardServer.Handlers
     /// <summary>
     /// Handles turn timer requests from clients (gRPC). Broadcasts the global turn timer (turn started / turn ended) to every connected client.
     /// </summary>
-    public class TurnTimerHandler : TurnTimerService.TurnTimerServiceBase
+    public class TurnTimerGrpcHandler : TurnTimerService.TurnTimerServiceBase
     {
         // Per-client buffer. If a client falls this far behind, its oldest events are dropped
         // rather than blocking the turn loop or other clients.
@@ -21,7 +22,10 @@ namespace KingsboardServer.Handlers
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
-        public TurnTimerHandler(ITurnService turnService, TimeProvider timeProvider, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        /// <summary>
+        /// Created by gRPC for each call, with the turn service, clock and server lifetime it uses
+        /// </summary>
+        public TurnTimerGrpcHandler(ITurnService turnService, TimeProvider timeProvider, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _turnService = turnService;
             _timeProvider = timeProvider;
@@ -29,12 +33,18 @@ namespace KingsboardServer.Handlers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Returns the turn in progress (turn_id 0 if no turn has started yet)
+        /// </summary>
         public override Task<TurnState> GetCurrentTurn(Empty request, ServerCallContext context)
         {
             Turn? turn = _turnService.GetCurrentTurn();
             return Task.FromResult(turn is null ? new TurnState() : ToTurnState(turn));
         }
 
+        /// <summary>
+        /// Streams turn events to one client: a sync for the current turn, then every turn start and end, until the client disconnects
+        /// </summary>
         public override async Task JoinTurnStream(Empty request, IServerStreamWriter<TurnEvent> responseStream, ServerCallContext context)
         {
             Channel<TurnEvent> outbox = System.Threading.Channels.Channel.CreateBounded<TurnEvent>(new BoundedChannelOptions(OutboxCapacity)
@@ -101,7 +111,7 @@ namespace KingsboardServer.Handlers
                 TurnId = turn.Id,
                 StartedAt = Timestamp.FromDateTimeOffset(turn.StartedAt),
                 EndsAt = Timestamp.FromDateTimeOffset(turn.EndsAt),
-                TurnDurationMs = (int)turn.Duration.TotalMilliseconds,
+                TurnDurationMs = (int)turn.GetDuration().TotalMilliseconds,
                 TimeRemainingMs = (int)turn.GetTimeRemaining(_timeProvider.GetUtcNow()).TotalMilliseconds
             };
         }

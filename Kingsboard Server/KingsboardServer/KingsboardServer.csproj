@@ -7,6 +7,12 @@
     <UserSecretsId>2a91c367-d4f9-487c-9793-9d73a142ebcb</UserSecretsId>
     <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
+    <!--
+      Every public type and member must have an XML <summary>. The doc file lets the compiler check this,
+      and a missing summary (CS1591) or a broken cref/param reference (CS1572-CS1574) fails the build.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591;CS1572;CS1573;CS1574</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
