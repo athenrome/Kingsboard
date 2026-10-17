@@ -24,6 +24,10 @@ namespace KingsboardServer.Models.Enumerations
         /// <summary>
         /// High peaks. Impassable.
         /// </summary>
-        Mountain
+        Mountain,
+        /// <summary>
+        /// Bedrock that fills a stack below its surface tile
+        /// </summary>
+        Stone
     }
 }

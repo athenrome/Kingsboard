@@ -25,27 +25,31 @@ namespace GrpcBoard {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg9HcnBjQm9hcmQucHJvdG8aG2dvb2dsZS9wcm90b2J1Zi9lbXB0eS5wcm90",
-            "byJHCgRUaWxlEgkKAXgYASABKAUSCQoBeRgCIAEoBRIXCgR0eXBlGAMgASgO",
-            "MgkuVGlsZVR5cGUSEAoIcGFzc2FibGUYBCABKAgiZAoKQm9hcmRTdGF0ZRIQ",
-            "Cghib2FyZF9pZBgBIAEoCRIPCgd2ZXJzaW9uGAIgASgDEg0KBXdpZHRoGAMg",
-            "ASgFEg4KBmhlaWdodBgEIAEoBRIUCgV0aWxlcxgFIAMoCzIFLlRpbGUiRwoM",
-            "VGlsZXNDaGFuZ2VkEhAKCGJvYXJkX2lkGAEgASgJEg8KB3ZlcnNpb24YAiAB",
-            "KAMSFAoFdGlsZXMYAyADKAsyBS5UaWxlIl0KCkJvYXJkRXZlbnQSHAoFYm9h",
-            "cmQYASABKAsyCy5Cb2FyZFN0YXRlSAASJgoNdGlsZXNfY2hhbmdlZBgCIAEo",
-            "CzINLlRpbGVzQ2hhbmdlZEgAQgkKB3BheWxvYWQqkwEKCFRpbGVUeXBlEhkK",
-            "FVRJTEVfVFlQRV9VTlNQRUNJRklFRBAAEhMKD1RJTEVfVFlQRV9XQVRFUhAB",
-            "EhQKEFRJTEVfVFlQRV9QTEFJTlMQAhIUChBUSUxFX1RZUEVfRk9SRVNUEAMS",
-            "EwoPVElMRV9UWVBFX0hJTExTEAQSFgoSVElMRV9UWVBFX01PVU5UQUlOEAUy",
-            "eQoMQm9hcmRTZXJ2aWNlEjgKD0pvaW5Cb2FyZFN0cmVhbRIWLmdvb2dsZS5w",
-            "cm90b2J1Zi5FbXB0eRoLLkJvYXJkRXZlbnQwARIvCghHZXRCb2FyZBIWLmdv",
-            "b2dsZS5wcm90b2J1Zi5FbXB0eRoLLkJvYXJkU3RhdGVCDKoCCUdycGNCb2Fy",
-            "ZGIGcHJvdG8z"));
+            "byIwCg1Cb2FyZFBvc2l0aW9uEgkKAXgYASABKAUSCQoBeRgCIAEoBRIJCgF6",
+            "GAMgASgFImUKBFRpbGUSIAoIcG9zaXRpb24YBiABKAsyDi5Cb2FyZFBvc2l0",
+            "aW9uEhcKBHR5cGUYAyABKA4yCS5UaWxlVHlwZRIQCghwYXNzYWJsZRgEIAEo",
+            "CEoECAEQAkoECAIQA0oECAUQBiJzCgpCb2FyZFN0YXRlEhAKCGJvYXJkX2lk",
+            "GAEgASgJEg8KB3ZlcnNpb24YAiABKAMSDQoFd2lkdGgYAyABKAUSDQoFZGVw",
+            "dGgYBCABKAUSDgoGaGVpZ2h0GAYgASgFEhQKBXRpbGVzGAUgAygLMgUuVGls",
+            "ZSJoCgxUaWxlc0NoYW5nZWQSEAoIYm9hcmRfaWQYASABKAkSDwoHdmVyc2lv",
+            "bhgCIAEoAxIUCgV0aWxlcxgDIAMoCzIFLlRpbGUSHwoHcmVtb3ZlZBgEIAMo",
+            "CzIOLkJvYXJkUG9zaXRpb24iXQoKQm9hcmRFdmVudBIcCgVib2FyZBgBIAEo",
+            "CzILLkJvYXJkU3RhdGVIABImCg10aWxlc19jaGFuZ2VkGAIgASgLMg0uVGls",
+            "ZXNDaGFuZ2VkSABCCQoHcGF5bG9hZCqoAQoIVGlsZVR5cGUSGQoVVElMRV9U",
+            "WVBFX1VOU1BFQ0lGSUVEEAASEwoPVElMRV9UWVBFX1dBVEVSEAESFAoQVElM",
+            "RV9UWVBFX1BMQUlOUxACEhQKEFRJTEVfVFlQRV9GT1JFU1QQAxITCg9USUxF",
+            "X1RZUEVfSElMTFMQBBIWChJUSUxFX1RZUEVfTU9VTlRBSU4QBRITCg9USUxF",
+            "X1RZUEVfU1RPTkUQBjJ5CgxCb2FyZFNlcnZpY2USOAoPSm9pbkJvYXJkU3Ry",
+            "ZWFtEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GgsuQm9hcmRFdmVudDABEi8K",
+            "CEdldEJvYXJkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GgsuQm9hcmRTdGF0",
+            "ZUIMqgIJR3JwY0JvYXJkYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GrpcBoard.TileType), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.Tile), global::GrpcBoard.Tile.Parser, new[]{ "X", "Y", "Type", "Passable" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardState), global::GrpcBoard.BoardState.Parser, new[]{ "BoardId", "Version", "Width", "Height", "Tiles" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.TilesChanged), global::GrpcBoard.TilesChanged.Parser, new[]{ "BoardId", "Version", "Tiles" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardPosition), global::GrpcBoard.BoardPosition.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.Tile), global::GrpcBoard.Tile.Parser, new[]{ "Position", "Type", "Passable" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardState), global::GrpcBoard.BoardState.Parser, new[]{ "BoardId", "Version", "Width", "Depth", "Height", "Tiles" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.TilesChanged), global::GrpcBoard.TilesChanged.Parser, new[]{ "BoardId", "Version", "Tiles", "Removed" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardEvent), global::GrpcBoard.BoardEvent.Parser, new[]{ "Board", "TilesChanged" }, new[]{ "Payload" }, null, null, null)
           }));
     }
@@ -66,22 +70,29 @@ namespace GrpcBoard {
     /// Impassable
     /// </summary>
     [pbr::OriginalName("TILE_TYPE_MOUNTAIN")] Mountain = 5,
+    /// <summary>
+    /// Bedrock that fills a stack below its surface tile
+    /// </summary>
+    [pbr::OriginalName("TILE_TYPE_STONE")] Stone = 6,
   }
 
   #endregion
 
   #region Messages
+  /// <summary>
+  /// A position on the board. It may hold a tile or be empty space.
+  /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class Tile : pb::IMessage<Tile>
+  public sealed partial class BoardPosition : pb::IMessage<BoardPosition>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<Tile> _parser = new pb::MessageParser<Tile>(() => new Tile());
+    private static readonly pb::MessageParser<BoardPosition> _parser = new pb::MessageParser<BoardPosition>(() => new BoardPosition());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<Tile> Parser { get { return _parser; } }
+    public static pb::MessageParser<BoardPosition> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -97,7 +108,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Tile() {
+    public BoardPosition() {
       OnConstruction();
     }
 
@@ -105,18 +116,17 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Tile(Tile other) : this() {
+    public BoardPosition(BoardPosition other) : this() {
       x_ = other.x_;
       y_ = other.y_;
-      type_ = other.type_;
-      passable_ = other.passable_;
+      z_ = other.z_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public Tile Clone() {
-      return new Tile(this);
+    public BoardPosition Clone() {
+      return new BoardPosition(this);
     }
 
     /// <summary>Field number for the "x" field.</summary>
@@ -143,42 +153,27 @@ namespace GrpcBoard {
       }
     }
 
-    /// <summary>Field number for the "type" field.</summary>
-    public const int TypeFieldNumber = 3;
-    private global::GrpcBoard.TileType type_ = global::GrpcBoard.TileType.Unspecified;
+    /// <summary>Field number for the "z" field.</summary>
+    public const int ZFieldNumber = 3;
+    private int z_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GrpcBoard.TileType Type {
-      get { return type_; }
+    public int Z {
+      get { return z_; }
       set {
-        type_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "passable" field.</summary>
-    public const int PassableFieldNumber = 4;
-    private bool passable_;
-    /// <summary>
-    /// Whether pawns can move onto this tile
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Passable {
-      get { return passable_; }
-      set {
-        passable_ = value;
+        z_ = value;
       }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as Tile);
+      return Equals(other as BoardPosition);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(Tile other) {
+    public bool Equals(BoardPosition other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -187,8 +182,7 @@ namespace GrpcBoard {
       }
       if (X != other.X) return false;
       if (Y != other.Y) return false;
-      if (Type != other.Type) return false;
-      if (Passable != other.Passable) return false;
+      if (Z != other.Z) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -198,8 +192,7 @@ namespace GrpcBoard {
       int hash = 1;
       if (X != 0) hash ^= X.GetHashCode();
       if (Y != 0) hash ^= Y.GetHashCode();
-      if (Type != global::GrpcBoard.TileType.Unspecified) hash ^= Type.GetHashCode();
-      if (Passable != false) hash ^= Passable.GetHashCode();
+      if (Z != 0) hash ^= Z.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -226,13 +219,9 @@ namespace GrpcBoard {
         output.WriteRawTag(16);
         output.WriteInt32(Y);
       }
-      if (Type != global::GrpcBoard.TileType.Unspecified) {
+      if (Z != 0) {
         output.WriteRawTag(24);
-        output.WriteEnum((int) Type);
-      }
-      if (Passable != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(Passable);
+        output.WriteInt32(Z);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -252,13 +241,9 @@ namespace GrpcBoard {
         output.WriteRawTag(16);
         output.WriteInt32(Y);
       }
-      if (Type != global::GrpcBoard.TileType.Unspecified) {
+      if (Z != 0) {
         output.WriteRawTag(24);
-        output.WriteEnum((int) Type);
-      }
-      if (Passable != false) {
-        output.WriteRawTag(32);
-        output.WriteBool(Passable);
+        output.WriteInt32(Z);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -276,11 +261,8 @@ namespace GrpcBoard {
       if (Y != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Y);
       }
-      if (Type != global::GrpcBoard.TileType.Unspecified) {
-        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
-      }
-      if (Passable != false) {
-        size += 1 + 1;
+      if (Z != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Z);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -290,7 +272,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(Tile other) {
+    public void MergeFrom(BoardPosition other) {
       if (other == null) {
         return;
       }
@@ -300,11 +282,8 @@ namespace GrpcBoard {
       if (other.Y != 0) {
         Y = other.Y;
       }
-      if (other.Type != global::GrpcBoard.TileType.Unspecified) {
-        Type = other.Type;
-      }
-      if (other.Passable != false) {
-        Passable = other.Passable;
+      if (other.Z != 0) {
+        Z = other.Z;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -334,11 +313,7 @@ namespace GrpcBoard {
             break;
           }
           case 24: {
-            Type = (global::GrpcBoard.TileType) input.ReadEnum();
-            break;
-          }
-          case 32: {
-            Passable = input.ReadBool();
+            Z = input.ReadInt32();
             break;
           }
         }
@@ -369,11 +344,291 @@ namespace GrpcBoard {
             break;
           }
           case 24: {
+            Z = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class Tile : pb::IMessage<Tile>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<Tile> _parser = new pb::MessageParser<Tile>(() => new Tile());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<Tile> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Tile() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Tile(Tile other) : this() {
+      position_ = other.position_ != null ? other.position_.Clone() : null;
+      type_ = other.type_;
+      passable_ = other.passable_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public Tile Clone() {
+      return new Tile(this);
+    }
+
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 6;
+    private global::GrpcBoard.BoardPosition position_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardPosition Position {
+      get { return position_; }
+      set {
+        position_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 3;
+    private global::GrpcBoard.TileType type_ = global::GrpcBoard.TileType.Unspecified;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.TileType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "passable" field.</summary>
+    public const int PassableFieldNumber = 4;
+    private bool passable_;
+    /// <summary>
+    /// Whether pawns can stand on this tile when it's the top of its stack
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Passable {
+      get { return passable_; }
+      set {
+        passable_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as Tile);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(Tile other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Position, other.Position)) return false;
+      if (Type != other.Type) return false;
+      if (Passable != other.Passable) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (position_ != null) hash ^= Position.GetHashCode();
+      if (Type != global::GrpcBoard.TileType.Unspecified) hash ^= Type.GetHashCode();
+      if (Passable != false) hash ^= Passable.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Type != global::GrpcBoard.TileType.Unspecified) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) Type);
+      }
+      if (Passable != false) {
+        output.WriteRawTag(32);
+        output.WriteBool(Passable);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(Position);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Type != global::GrpcBoard.TileType.Unspecified) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) Type);
+      }
+      if (Passable != false) {
+        output.WriteRawTag(32);
+        output.WriteBool(Passable);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(Position);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (Type != global::GrpcBoard.TileType.Unspecified) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Passable != false) {
+        size += 1 + 1;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(Tile other) {
+      if (other == null) {
+        return;
+      }
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::GrpcBoard.BoardPosition();
+        }
+        Position.MergeFrom(other.Position);
+      }
+      if (other.Type != global::GrpcBoard.TileType.Unspecified) {
+        Type = other.Type;
+      }
+      if (other.Passable != false) {
+        Passable = other.Passable;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 24: {
             Type = (global::GrpcBoard.TileType) input.ReadEnum();
             break;
           }
           case 32: {
             Passable = input.ReadBool();
+            break;
+          }
+          case 50: {
+            if (position_ == null) {
+              Position = new global::GrpcBoard.BoardPosition();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 24: {
+            Type = (global::GrpcBoard.TileType) input.ReadEnum();
+            break;
+          }
+          case 32: {
+            Passable = input.ReadBool();
+            break;
+          }
+          case 50: {
+            if (position_ == null) {
+              Position = new global::GrpcBoard.BoardPosition();
+            }
+            input.ReadMessage(Position);
             break;
           }
         }
@@ -398,7 +653,7 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[1]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -421,6 +676,7 @@ namespace GrpcBoard {
       boardId_ = other.boardId_;
       version_ = other.version_;
       width_ = other.width_;
+      depth_ = other.depth_;
       height_ = other.height_;
       tiles_ = other.tiles_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -465,6 +721,9 @@ namespace GrpcBoard {
     /// <summary>Field number for the "width" field.</summary>
     public const int WidthFieldNumber = 3;
     private int width_;
+    /// <summary>
+    /// Number of columns (x)
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Width {
@@ -474,9 +733,27 @@ namespace GrpcBoard {
       }
     }
 
+    /// <summary>Field number for the "depth" field.</summary>
+    public const int DepthFieldNumber = 4;
+    private int depth_;
+    /// <summary>
+    /// Number of rows (y)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Depth {
+      get { return depth_; }
+      set {
+        depth_ = value;
+      }
+    }
+
     /// <summary>Field number for the "height" field.</summary>
-    public const int HeightFieldNumber = 4;
+    public const int HeightFieldNumber = 6;
     private int height_;
+    /// <summary>
+    /// Most tiles a stack can hold (z)
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Height {
@@ -492,7 +769,7 @@ namespace GrpcBoard {
         = pb::FieldCodec.ForMessage(42, global::GrpcBoard.Tile.Parser);
     private readonly pbc::RepeatedField<global::GrpcBoard.Tile> tiles_ = new pbc::RepeatedField<global::GrpcBoard.Tile>();
     /// <summary>
-    /// Every tile, row by row: index = y * width + x
+    /// Every tile on the board, in no particular order. Positions with no tile are empty space.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -518,6 +795,7 @@ namespace GrpcBoard {
       if (BoardId != other.BoardId) return false;
       if (Version != other.Version) return false;
       if (Width != other.Width) return false;
+      if (Depth != other.Depth) return false;
       if (Height != other.Height) return false;
       if(!tiles_.Equals(other.tiles_)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -530,6 +808,7 @@ namespace GrpcBoard {
       if (BoardId.Length != 0) hash ^= BoardId.GetHashCode();
       if (Version != 0L) hash ^= Version.GetHashCode();
       if (Width != 0) hash ^= Width.GetHashCode();
+      if (Depth != 0) hash ^= Depth.GetHashCode();
       if (Height != 0) hash ^= Height.GetHashCode();
       hash ^= tiles_.GetHashCode();
       if (_unknownFields != null) {
@@ -562,11 +841,15 @@ namespace GrpcBoard {
         output.WriteRawTag(24);
         output.WriteInt32(Width);
       }
-      if (Height != 0) {
+      if (Depth != 0) {
         output.WriteRawTag(32);
-        output.WriteInt32(Height);
+        output.WriteInt32(Depth);
       }
       tiles_.WriteTo(output, _repeated_tiles_codec);
+      if (Height != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Height);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -589,11 +872,15 @@ namespace GrpcBoard {
         output.WriteRawTag(24);
         output.WriteInt32(Width);
       }
-      if (Height != 0) {
+      if (Depth != 0) {
         output.WriteRawTag(32);
-        output.WriteInt32(Height);
+        output.WriteInt32(Depth);
       }
       tiles_.WriteTo(ref output, _repeated_tiles_codec);
+      if (Height != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Height);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -612,6 +899,9 @@ namespace GrpcBoard {
       }
       if (Width != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Width);
+      }
+      if (Depth != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Depth);
       }
       if (Height != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Height);
@@ -637,6 +927,9 @@ namespace GrpcBoard {
       }
       if (other.Width != 0) {
         Width = other.Width;
+      }
+      if (other.Depth != 0) {
+        Depth = other.Depth;
       }
       if (other.Height != 0) {
         Height = other.Height;
@@ -674,11 +967,15 @@ namespace GrpcBoard {
             break;
           }
           case 32: {
-            Height = input.ReadInt32();
+            Depth = input.ReadInt32();
             break;
           }
           case 42: {
             tiles_.AddEntriesFrom(input, _repeated_tiles_codec);
+            break;
+          }
+          case 48: {
+            Height = input.ReadInt32();
             break;
           }
         }
@@ -713,11 +1010,15 @@ namespace GrpcBoard {
             break;
           }
           case 32: {
-            Height = input.ReadInt32();
+            Depth = input.ReadInt32();
             break;
           }
           case 42: {
             tiles_.AddEntriesFrom(ref input, _repeated_tiles_codec);
+            break;
+          }
+          case 48: {
+            Height = input.ReadInt32();
             break;
           }
         }
@@ -742,7 +1043,7 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[2]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -765,6 +1066,7 @@ namespace GrpcBoard {
       boardId_ = other.boardId_;
       version_ = other.version_;
       tiles_ = other.tiles_.Clone();
+      removed_ = other.removed_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -806,10 +1108,27 @@ namespace GrpcBoard {
     private static readonly pb::FieldCodec<global::GrpcBoard.Tile> _repeated_tiles_codec
         = pb::FieldCodec.ForMessage(26, global::GrpcBoard.Tile.Parser);
     private readonly pbc::RepeatedField<global::GrpcBoard.Tile> tiles_ = new pbc::RepeatedField<global::GrpcBoard.Tile>();
+    /// <summary>
+    /// Tiles placed or replaced: put these on the board
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::GrpcBoard.Tile> Tiles {
       get { return tiles_; }
+    }
+
+    /// <summary>Field number for the "removed" field.</summary>
+    public const int RemovedFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::GrpcBoard.BoardPosition> _repeated_removed_codec
+        = pb::FieldCodec.ForMessage(34, global::GrpcBoard.BoardPosition.Parser);
+    private readonly pbc::RepeatedField<global::GrpcBoard.BoardPosition> removed_ = new pbc::RepeatedField<global::GrpcBoard.BoardPosition>();
+    /// <summary>
+    /// Tiles taken off the board: these positions are now empty space
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcBoard.BoardPosition> Removed {
+      get { return removed_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -830,6 +1149,7 @@ namespace GrpcBoard {
       if (BoardId != other.BoardId) return false;
       if (Version != other.Version) return false;
       if(!tiles_.Equals(other.tiles_)) return false;
+      if(!removed_.Equals(other.removed_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -840,6 +1160,7 @@ namespace GrpcBoard {
       if (BoardId.Length != 0) hash ^= BoardId.GetHashCode();
       if (Version != 0L) hash ^= Version.GetHashCode();
       hash ^= tiles_.GetHashCode();
+      hash ^= removed_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -867,6 +1188,7 @@ namespace GrpcBoard {
         output.WriteInt64(Version);
       }
       tiles_.WriteTo(output, _repeated_tiles_codec);
+      removed_.WriteTo(output, _repeated_removed_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -886,6 +1208,7 @@ namespace GrpcBoard {
         output.WriteInt64(Version);
       }
       tiles_.WriteTo(ref output, _repeated_tiles_codec);
+      removed_.WriteTo(ref output, _repeated_removed_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -903,6 +1226,7 @@ namespace GrpcBoard {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Version);
       }
       size += tiles_.CalculateSize(_repeated_tiles_codec);
+      size += removed_.CalculateSize(_repeated_removed_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -922,6 +1246,7 @@ namespace GrpcBoard {
         Version = other.Version;
       }
       tiles_.Add(other.tiles_);
+      removed_.Add(other.removed_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -951,6 +1276,10 @@ namespace GrpcBoard {
           }
           case 26: {
             tiles_.AddEntriesFrom(input, _repeated_tiles_codec);
+            break;
+          }
+          case 34: {
+            removed_.AddEntriesFrom(input, _repeated_removed_codec);
             break;
           }
         }
@@ -984,6 +1313,10 @@ namespace GrpcBoard {
             tiles_.AddEntriesFrom(ref input, _repeated_tiles_codec);
             break;
           }
+          case 34: {
+            removed_.AddEntriesFrom(ref input, _repeated_removed_codec);
+            break;
+          }
         }
       }
     }
@@ -1006,7 +1339,7 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[3]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1062,7 +1395,7 @@ namespace GrpcBoard {
     /// <summary>Field number for the "tiles_changed" field.</summary>
     public const int TilesChangedFieldNumber = 2;
     /// <summary>
-    /// Some tiles changed: replace just these
+    /// Some tiles changed: apply just these
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

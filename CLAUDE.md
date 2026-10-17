@@ -42,9 +42,9 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
   - Services publish changes as C# events whose handlers must be quick and non-blocking.
   - Services hand out snapshots or clones, never live state.
   - `GameService` runs the game loop: it creates the board, then runs the turn loop.
-- **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories lock internally and return copies.
+- **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories hold no game rules. Thread-safety and handing out copies is the owning service's job (e.g. `BoardService` locks and clones around `BoardRepository`).
 - **`Models/`**: domain types, with subfolders `Chat/`, `Board/`, `Configuration/` and `Enumerations/`. See the model rule below.
-- **`Extensions/`**: static `XxxExtensions` classes holding the logic for models, such as `turn.Clone()`, `board.GetTile(x, y)` and `tile.IsPassable()`.
+- **`Extensions/`**: static `XxxExtensions` helpers, only for models that have no owning service (currently just `TurnExtensions`). Board logic lives in `BoardService` and tile logic in `TileService`.
 - **Settings:** each system has a settings class in `Models/Configuration/` with a `SectionName` constant. It is bound in `Program.cs` with `.Validate(...).ValidateOnStart()`, mirrored in `appsettings.json`, and read through `IOptionsMonitor<T>.CurrentValue`.
 - **Other dependencies:** inject `Serilog.ILogger` for logging and `TimeProvider` for time; never call `DateTime.Now`.
 
@@ -54,8 +54,26 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
 - Each system has a pair of classes:
   - A **`XxxGrpcHandler`** (plain class, `IDisposable`) manages the gRPC communication with the server and is the only code that touches gRPC types. It runs a reconnect loop and raises C# events on the main thread using client-side model classes.
   - A **`XxxController`** (`MonoBehaviour`) owns state and visuals. It creates itself via `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` when the scene doesn't contain one.
-- **Board:** tile (x, y) sits at local position (x, 0, y). The board is rebuilt in full on each snapshot and patched on `tiles_changed`. Updates are ignored if they belong to a different board id or have a version older than the current one.
+- **Board (client):** the block at `BoardPosition` (x, y, z) is centred at local position (x, (z + 0.5) × `LevelHeight`, y): board y maps to world z and the level z to world y. The board is rebuilt in full on each snapshot and patched on `tiles_changed` (removals first, then placements). Updates are ignored if they belong to a different board id or have a version older than the current one.
 - Server rules, such as validation and limits, are enforced server-side only. Client copies of limits, such as `ChatController.MaxMessageLength`, are only for UX.
+
+## Board model (3D)
+
+- The board is Width (x) × Depth (y) × Height (z levels). Each (x, y) column is a stack of up to Height tiles, and z = 0 is the bottom.
+- Stacks are always solid from z = 0 up. `BoardService` rejects any change that would leave a tile floating, and rejected changes leave nothing changed.
+- `GameBoard.Tiles` is a flat array indexed by `(z * Depth + y) * Width + x`, with null for empty positions. The proto sends only tiles that exist.
+- All board changes go through `BoardService.ApplyChanges`, which applies removals and then placements to a copy, checks that every stack is still solid, then saves, bumps the version and raises the event.
+- The public entry points for changes are `PlaceTile`, `RemoveTile`, `SetTiles` and `RemoveTiles`.
+
+### BoardPosition
+
+`BoardPosition` (X, Y, Z) represents every position on the board: in the proto, on the server (a `readonly record struct`) and on the client (a plain struct). A position may hold a tile or be empty space.
+
+- **Always use it for board positions.** Use `BoardPosition` whenever you check or evaluate a position: methods take a `BoardPosition`, not separate x/y/z ints, and `MapTile` carries one as `Position`. Don't add new APIs that take loose coordinates.
+- **Empty space is a first-class position.** `IsEmpty(position)` means "on the board and holds no tile". `GetPlacementPosition(column)` returns the empty position on top of a stack, and a removed tile leaves its position as empty space. A position off the board is neither on the board nor empty, so check with `IsOnBoard`/`Contains`.
+- **Column methods ignore Z.** `GetStack`, `GetTopTile` and `GetPlacementPosition` act on the position's column. To change a position's level, use `position with { Z = ... }` on the server or `position.AtLevel(z)` on the client (Unity is on C# 9 and has no `with` for structs).
+- **Ask before you change.** `CanPlaceTile(position)` is true when the position is empty space resting on a tile or the ground. `CanRemoveTile(position)` is true when the position holds a tile with nothing on top of it.
+- **Client helpers:** `BoardController.WorldToPosition` turns a world point, such as a raycast hit, into a `BoardPosition`, which may be empty space. `PositionToWorld` goes the other way.
 
 ## Model rule: models hold data only
 
@@ -77,9 +95,9 @@ This applies to model files on both the server (`Models/**`) and the client (dat
 - Operators
 - Private fields that back behaviour
 
-Put logic in the type's `XxxExtensions` class (server: `KingsboardServer/Extensions/`; client: next to the model, e.g. `Assets/Systems/Board/BoardExtensions.cs`), or in the service that owns it. This applies even to small conveniences.
+Server: put logic in the service that owns the model, such as `BoardService` for boards (bounds, validation, cloning, versioning) and `TileService` for tiles (`IsPassable`). Only use a `KingsboardServer/Extensions/` class for a model with no owning service. Repositories stay plain storage with no rules. Client: put logic next to the model, e.g. `Assets/Systems/Board/BoardExtensions.cs`. This applies even to small conveniences.
 
-When you find logic in an existing model, move it to an extensions class rather than adding to it.
+When you find logic in an existing model, move it to the owning service (or an extensions class) rather than adding to it.
 
 ## Conventions
 

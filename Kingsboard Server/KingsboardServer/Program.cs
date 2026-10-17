@@ -68,11 +68,12 @@ namespace KingsboardServer
                 //Board settings (appsettings.json -> "BoardSettings")
                 builder.Services.AddOptions<BoardSettings>()
                     .Bind(builder.Configuration.GetSection(BoardSettings.SectionName))
-                    .Validate(s => s.Width > 0 && s.Height > 0, "BoardSettings: Width and Height must be greater than 0")
+                    .Validate(s => s.Width > 0 && s.Depth > 0 && s.Height > 0, "BoardSettings: Width, Depth and Height must be greater than 0")
                     .ValidateOnStart();
 
                 builder.Services.AddSingleton<IBoardRepository, BoardRepository>();
                 builder.Services.AddSingleton<IBoardService, BoardService>();
+                builder.Services.AddSingleton<ITileService, TileService>();
 
                 builder.Services.AddSingleton<IGameService, GameService>();
 

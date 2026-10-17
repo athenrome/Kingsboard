@@ -37,7 +37,9 @@ namespace TestConsole
                             else if (boardEvent.PayloadCase == BoardEvent.PayloadOneofCase.TilesChanged)
                             {
                                 var changed = boardEvent.TilesChanged;
-                                Console.WriteLine($"[Board v{changed.Version}] {changed.Tiles.Count} tile(s) changed: {string.Join(", ", changed.Tiles.Select(t => $"({t.X}, {t.Y}) {t.Type}"))}");
+                                string placed = string.Join(", ", changed.Tiles.Select(t => $"({t.Position.X}, {t.Position.Y}, {t.Position.Z}) {t.Type}"));
+                                string removed = string.Join(", ", changed.Removed.Select(p => $"({p.X}, {p.Y}, {p.Z})"));
+                                Console.WriteLine($"[Board v{changed.Version}] placed: [{placed}] removed: [{removed}]");
                             }
                         }
                     }
@@ -139,25 +141,41 @@ namespace TestConsole
 
         static void PrintBoard(BoardState board)
         {
-            Console.WriteLine($"[Board v{board.Version}] {board.Width} x {board.Height} (~ water, . plains, T forest, n hills, ^ mountain)");
+            Console.WriteLine($"[Board v{board.Version}] {board.Width} x {board.Depth} x {board.Height}, {board.Tiles.Count} tiles");
+            Console.WriteLine("Top tile of each stack (~ water, . plains, T forest, n hills, ^ mountain, # stone), then stack heights:");
 
-            // Top row first, so y = 0 is at the bottom like in the game
-            for (int y = board.Height - 1; y >= 0; y--)
+            // The top tile of each column is the one with the highest z
+            var tops = board.Tiles
+                .GroupBy(t => (t.Position.X, t.Position.Y))
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(t => t.Position.Z).First());
+
+            // Back row first, so y = 0 is at the bottom like looking down on the board
+            for (int y = board.Depth - 1; y >= 0; y--)
             {
-                var row = new System.Text.StringBuilder();
+                var types = new System.Text.StringBuilder();
+                var heights = new System.Text.StringBuilder();
                 for (int x = 0; x < board.Width; x++)
                 {
-                    row.Append(board.Tiles[y * board.Width + x].Type switch
+                    if (!tops.TryGetValue((x, y), out Tile? top))
+                    {
+                        types.Append(' ');
+                        heights.Append('0');
+                        continue;
+                    }
+
+                    types.Append(top.Type switch
                     {
                         TileType.Water => '~',
                         TileType.Plains => '.',
                         TileType.Forest => 'T',
                         TileType.Hills => 'n',
                         TileType.Mountain => '^',
+                        TileType.Stone => '#',
                         _ => '?'
                     });
+                    heights.Append(top.Position.Z + 1);
                 }
-                Console.WriteLine(row);
+                Console.WriteLine($"{types}   {heights}");
             }
         }
 

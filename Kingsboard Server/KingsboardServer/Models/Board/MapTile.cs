@@ -3,7 +3,9 @@ using KingsboardServer.Models.Enumerations;
 namespace KingsboardServer.Models.Board
 {
     /// <summary>
-    /// One square of the game board. Immutable: change a tile by replacing it on the board.
+    /// One block of the game board. Immutable: change a tile by replacing it on the board.
     /// </summary>
-    public record MapTile(int X, int Y, TileType Type);
+    /// <param name="Position">Where the tile sits on the board</param>
+    /// <param name="Type">The terrain this tile is made of</param>
+    public record MapTile(BoardPosition Position, TileType Type);
 }

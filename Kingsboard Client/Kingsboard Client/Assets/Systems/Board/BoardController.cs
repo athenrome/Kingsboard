@@ -6,17 +6,23 @@ namespace Kingsboard.Board
 {
     /// <summary>
     /// Handles the client-side game board in Unity: it keeps the latest <see cref="GameBoard"/> from the server
-    /// (through <see cref="BoardGrpcHandler"/>) and draws one block per tile. The board lies on the XZ plane:
-    /// tile (x, y) is centred at world position (x, 0, y), one unit per tile.
+    /// (through <see cref="BoardGrpcHandler"/>) and draws one block per tile, stacked into columns.
+    /// Board x maps to world x, board y to world z, and board z (the level) to world y:
+    /// tile (x, y, z) is centred at local position (x, (z + 0.5) * <see cref="LevelHeight"/>, y).
     /// It creates itself when the game starts, so nothing needs adding to a scene.
     /// To change its settings in the Inspector, add this component to a GameObject in the scene instead.
     /// </summary>
     public class BoardController : MonoBehaviour
     {
         /// <summary>
-        /// Gap between neighbouring tiles, in world units
+        /// Height of one level of a stack, in world units (each tile is 1 x 1 across)
         /// </summary>
-        public const float TileGap = 0.05f;
+        public const float LevelHeight = 0.5f;
+
+        /// <summary>
+        /// Gap left between neighbouring blocks so the tiles and levels stay readable, in world units
+        /// </summary>
+        public const float TileGap = 0.04f;
 
         [Tooltip("Move the main camera to look at the board whenever a new board arrives")]
         [SerializeField] private bool frameCamera = true;
@@ -37,9 +43,9 @@ namespace Kingsboard.Board
         public event Action<GameBoard> BoardLoaded;
 
         /// <summary>
-        /// Raised after tiles on the current board change
+        /// Raised after tiles on the current board change, with the tiles placed or replaced and the positions removed
         /// </summary>
-        public event Action<IReadOnlyList<MapTile>> TilesChanged;
+        public event Action<IReadOnlyList<MapTile>, IReadOnlyList<BoardPosition>> TilesChanged;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void CreateIfMissing()
@@ -53,22 +59,37 @@ namespace Kingsboard.Board
         }
 
         /// <summary>
-        /// World position of the centre of the top of tile (x, y)
+        /// World position of the centre of a board position's block. Works for empty space as well as tiles.
         /// </summary>
-        public Vector3 TileToWorld(int x, int y)
+        public Vector3 PositionToWorld(BoardPosition position)
         {
-            MapTile tile = Board?.GetTile(x, y);
-            float height = tile != null ? GetHeight(tile.Type) : 0f;
-            return transform.TransformPoint(new Vector3(x, height, y));
+            return transform.TransformPoint(PositionToLocal(position));
         }
 
         /// <summary>
-        /// The tile under a world position, or null if it's off the board
+        /// World position of the centre of the top surface of the stack in the position's column (its Z is ignored),
+        /// where a pawn would stand
         /// </summary>
-        public MapTile WorldToTile(Vector3 worldPosition)
+        public Vector3 StackTopToWorld(BoardPosition column)
+        {
+            int stackHeight = Board != null ? Board.GetStackHeight(column) : 0;
+            return transform.TransformPoint(new Vector3(column.X, stackHeight * LevelHeight, column.Y));
+        }
+
+        /// <summary>
+        /// The board position whose block contains a world position. It may be a tile, empty space, or off the board
+        /// (check with <see cref="BoardExtensions.Contains"/>). For a raycast hit, nudge the point into the block you
+        /// want first: hit.point - hit.normal * 0.01f for the tile hit, or + hit.normal * 0.01f for the empty space in front of it.
+        /// </summary>
+        public BoardPosition WorldToPosition(Vector3 worldPosition)
         {
             Vector3 local = transform.InverseTransformPoint(worldPosition);
-            return Board?.GetTile(Mathf.RoundToInt(local.x), Mathf.RoundToInt(local.z));
+            return new BoardPosition()
+            {
+                X = Mathf.RoundToInt(local.x),
+                Y = Mathf.RoundToInt(local.z),
+                Z = Mathf.FloorToInt(local.y / LevelHeight)
+            };
         }
 
         private void Start()
@@ -111,11 +132,11 @@ namespace Kingsboard.Board
                 FrameCamera();
             }
 
-            Debug.Log($"[Board] Received a {board.Width} x {board.Height} board");
+            Debug.Log($"[Board] Received a {board.Width} x {board.Depth} x {board.Height} board");
             BoardLoaded?.Invoke(board);
         }
 
-        private void OnTilesChanged(string boardId, long version, IReadOnlyList<MapTile> tiles)
+        private void OnTilesChanged(string boardId, long version, IReadOnlyList<MapTile> placed, IReadOnlyList<BoardPosition> removed)
         {
             // Ignore changes for a board we don't have, or older than what we already have
             if (Board == null || boardId != Board.Id || version <= Board.Version)
@@ -123,16 +144,24 @@ namespace Kingsboard.Board
                 return;
             }
 
-            Board.ApplyChanges(version, tiles);
-            foreach (MapTile tile in tiles)
+            Board.ApplyChanges(version, placed, removed);
+
+            foreach (BoardPosition position in removed)
             {
-                if (Board.Contains(tile.X, tile.Y))
+                if (Board.Contains(position))
                 {
-                    UpdateTileObject(_tileObjects[tile.Y * Board.Width + tile.X], tile);
+                    SetTileObject(Board.IndexOf(position), null);
+                }
+            }
+            foreach (MapTile tile in placed)
+            {
+                if (Board.Contains(tile.Position))
+                {
+                    SetTileObject(Board.IndexOf(tile.Position), tile);
                 }
             }
 
-            TilesChanged?.Invoke(tiles);
+            TilesChanged?.Invoke(placed, removed);
         }
 
         private void OnDisconnected()
@@ -145,39 +174,58 @@ namespace Kingsboard.Board
         {
             foreach (GameObject tileObject in _tileObjects)
             {
-                Destroy(tileObject);
+                if (tileObject != null)
+                {
+                    Destroy(tileObject);
+                }
             }
 
-            _tileObjects = new GameObject[Board.Width * Board.Height];
-            for (int y = 0; y < Board.Height; y++)
+            _tileObjects = new GameObject[Board.Tiles.Length];
+            for (int i = 0; i < Board.Tiles.Length; i++)
             {
-                for (int x = 0; x < Board.Width; x++)
-                {
-                    GameObject tileObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    tileObject.name = $"Tile ({x}, {y})";
-                    tileObject.transform.SetParent(_tileRoot, false);
-                    _tileObjects[y * Board.Width + x] = tileObject;
-
-                    UpdateTileObject(tileObject, Board.GetTile(x, y));
-                }
+                SetTileObject(i, Board.Tiles[i]);
             }
         }
 
-        private void UpdateTileObject(GameObject tileObject, MapTile tile)
+        /// <summary>
+        /// Makes the block at a board index match <paramref name="tile"/>: creates, updates or (for null) destroys it
+        /// </summary>
+        private void SetTileObject(int index, MapTile tile)
         {
-            if (tileObject == null)
+            GameObject tileObject = _tileObjects[index];
+
+            if (tile == null)
             {
+                if (tileObject != null)
+                {
+                    Destroy(tileObject);
+                    _tileObjects[index] = null;
+                }
                 return;
             }
 
-            TileType type = tile != null ? tile.Type : TileType.Unknown;
-            float height = GetHeight(type);
-            Vector2Int position = tile != null ? new Vector2Int(tile.X, tile.Y) : Vector2Int.zero;
+            if (tileObject == null)
+            {
+                tileObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                tileObject.transform.SetParent(_tileRoot, false);
+                _tileObjects[index] = tileObject;
+            }
 
-            // A block standing on the board plane, so higher terrain is taller
-            tileObject.transform.localPosition = new Vector3(position.x, height / 2f, position.y);
-            tileObject.transform.localScale = new Vector3(1f - TileGap, height, 1f - TileGap);
-            tileObject.GetComponent<Renderer>().sharedMaterial = GetMaterial(type, tileObject.GetComponent<Renderer>().sharedMaterial);
+            BoardPosition position = tile.Position;
+            tileObject.name = $"Tile ({position.X}, {position.Y}, {position.Z})";
+            tileObject.transform.localPosition = PositionToLocal(position);
+            tileObject.transform.localScale = new Vector3(1f - TileGap, LevelHeight - TileGap, 1f - TileGap);
+
+            Renderer tileRenderer = tileObject.GetComponent<Renderer>();
+            tileRenderer.sharedMaterial = GetMaterial(tile.Type, tileRenderer.sharedMaterial);
+        }
+
+        /// <summary>
+        /// Centre of a board position's block, relative to this board's transform
+        /// </summary>
+        private static Vector3 PositionToLocal(BoardPosition position)
+        {
+            return new Vector3(position.X, (position.Z + 0.5f) * LevelHeight, position.Y);
         }
 
         /// <summary>
@@ -203,23 +251,11 @@ namespace Kingsboard.Board
                 return;
             }
 
-            Vector3 centre = transform.TransformPoint(new Vector3((Board.Width - 1) / 2f, 0f, (Board.Height - 1) / 2f));
-            float size = Mathf.Max(Board.Width, Board.Height);
-            camera.transform.position = centre + new Vector3(0f, size * 0.9f, -size * 0.75f);
+            float halfHeight = Board.Height * LevelHeight / 2f;
+            Vector3 centre = transform.TransformPoint(new Vector3((Board.Width - 1) / 2f, halfHeight, (Board.Depth - 1) / 2f));
+            float size = Mathf.Max(Board.Width, Board.Depth);
+            camera.transform.position = centre + new Vector3(0f, size * 0.8f + halfHeight, -size * 0.8f);
             camera.transform.LookAt(centre);
-        }
-
-        private static float GetHeight(TileType type)
-        {
-            switch (type)
-            {
-                case TileType.Water: return 0.1f;
-                case TileType.Plains: return 0.2f;
-                case TileType.Forest: return 0.3f;
-                case TileType.Hills: return 0.5f;
-                case TileType.Mountain: return 0.9f;
-                default: return 0.2f;
-            }
         }
 
         private static Color GetColor(TileType type)
@@ -230,7 +266,8 @@ namespace Kingsboard.Board
                 case TileType.Plains: return new Color(0.55f, 0.75f, 0.35f);
                 case TileType.Forest: return new Color(0.15f, 0.45f, 0.2f);
                 case TileType.Hills: return new Color(0.6f, 0.5f, 0.3f);
-                case TileType.Mountain: return new Color(0.55f, 0.55f, 0.58f);
+                case TileType.Mountain: return new Color(0.85f, 0.85f, 0.9f);
+                case TileType.Stone: return new Color(0.45f, 0.45f, 0.48f);
                 default: return Color.magenta;
             }
         }

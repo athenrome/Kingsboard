@@ -28,31 +28,30 @@ namespace Kingsboard.Board
         /// <summary>
         /// High peaks. Impassable.
         /// </summary>
-        Mountain
+        Mountain,
+        /// <summary>
+        /// Bedrock that fills a stack below its surface tile
+        /// </summary>
+        Stone
     }
 
     /// <summary>
-    /// One square of the game board, as last sent by the server
+    /// One block of the game board, as last sent by the server
     /// </summary>
     public class MapTile
     {
         /// <summary>
-        /// Column (0 = left)
+        /// Where the tile sits on the board
         /// </summary>
-        public int X { get; set; }
+        public BoardPosition Position { get; set; }
 
         /// <summary>
-        /// Row (0 = bottom)
-        /// </summary>
-        public int Y { get; set; }
-
-        /// <summary>
-        /// The terrain on this tile
+        /// The terrain this tile is made of
         /// </summary>
         public TileType Type { get; set; }
 
         /// <summary>
-        /// Whether pawns can move onto this tile
+        /// Whether pawns can stand on this tile when it's the top of its stack
         /// </summary>
         public bool IsPassable { get; set; }
     }

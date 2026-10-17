@@ -8,6 +8,8 @@ using Grpc.Core;
 using GrpcBoard;
 using Kingsboard.Networking;
 using UnityEngine;
+using BoardPosition = Kingsboard.Board.BoardPosition;
+using TileType = Kingsboard.Board.TileType;
 
 namespace Kingsboard.Board
 {
@@ -30,9 +32,10 @@ namespace Kingsboard.Board
         public event Action<GameBoard> BoardReceived;
 
         /// <summary>
-        /// Raised when tiles change: the board id, the new board version and the changed tiles
+        /// Raised when tiles change: the board id, the new board version, the tiles placed or replaced,
+        /// and the positions whose tiles were removed
         /// </summary>
-        public event Action<string, long, IReadOnlyList<MapTile>> TilesChanged;
+        public event Action<string, long, IReadOnlyList<MapTile>, IReadOnlyList<BoardPosition>> TilesChanged;
 
         /// <summary>
         /// Raised when the connection to the board is lost. It reconnects by itself.
@@ -68,7 +71,7 @@ namespace Kingsboard.Board
                         else if (boardEvent.PayloadCase == BoardEvent.PayloadOneofCase.TilesChanged)
                         {
                             GrpcBoard.TilesChanged changed = boardEvent.TilesChanged;
-                            TilesChanged?.Invoke(changed.BoardId, changed.Version, changed.Tiles.Select(ToMapTile).ToList());
+                            TilesChanged?.Invoke(changed.BoardId, changed.Version, changed.Tiles.Select(ToMapTile).ToList(), changed.Removed.Select(ToBoardPosition).ToList());
                         }
                     }
                 }
@@ -124,6 +127,7 @@ namespace Kingsboard.Board
                 Id = state.BoardId,
                 Version = state.Version,
                 Width = state.Width,
+                Depth = state.Depth,
                 Height = state.Height
             };
             board.PlaceTiles(state.Tiles.Select(ToMapTile));
@@ -134,10 +138,25 @@ namespace Kingsboard.Board
         {
             return new MapTile()
             {
-                X = tile.X,
-                Y = tile.Y,
+                Position = ToBoardPosition(tile.Position),
                 Type = ToTileType(tile.Type),
                 IsPassable = tile.Passable
+            };
+        }
+
+        private static BoardPosition ToBoardPosition(GrpcBoard.BoardPosition position)
+        {
+            // A missing message field arrives as null; proto3 treats that as all-zero
+            if (position == null)
+            {
+                return new BoardPosition();
+            }
+
+            return new BoardPosition()
+            {
+                X = position.X,
+                Y = position.Y,
+                Z = position.Z
             };
         }
 
@@ -150,6 +169,7 @@ namespace Kingsboard.Board
                 case GrpcBoard.TileType.Forest: return TileType.Forest;
                 case GrpcBoard.TileType.Hills: return TileType.Hills;
                 case GrpcBoard.TileType.Mountain: return TileType.Mountain;
+                case GrpcBoard.TileType.Stone: return TileType.Stone;
                 default: return TileType.Unknown;
             }
         }

@@ -12,14 +12,19 @@ namespace KingsboardServer.Models.Configuration
         public const string SectionName = "BoardSettings";
 
         /// <summary>
-        /// Number of columns
+        /// Number of columns (x)
         /// </summary>
         public int Width { get; set; } = 16;
 
         /// <summary>
-        /// Number of rows
+        /// Number of rows (y)
         /// </summary>
-        public int Height { get; set; } = 16;
+        public int Depth { get; set; } = 16;
+
+        /// <summary>
+        /// Most tiles a stack can hold (z). Generated terrain uses up to this many levels.
+        /// </summary>
+        public int Height { get; set; } = 6;
 
         /// <summary>
         /// Seed for map generation, so a map can be reproduced. Leave empty for a different map every game.

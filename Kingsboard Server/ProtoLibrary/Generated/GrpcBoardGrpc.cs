@@ -9,9 +9,16 @@ using grpc = global::Grpc.Core;
 
 namespace GrpcBoard {
   /// <summary>
-  /// The game board: a grid of map tiles owned by the server. Clients only ever read it;
-  /// the server changes tiles as the game plays out and streams the changes to everyone.
-  /// Coordinates: x is the column (0 = left), y is the row (0 = bottom), both starting at 0.
+  /// The game board: a 3D grid of map tiles owned by the server. Tiles stack on top of each other
+  /// in columns. Clients only ever read it; the server changes tiles as the game plays out and
+  /// streams the changes to everyone.
+  ///
+  /// Positions on the board are always a BoardPosition (x, y, z), all starting at 0:
+  ///   x - column across the board (0 = left)
+  ///   y - row into the board (0 = front)
+  ///   z - level in a stack (0 = bottom)
+  /// A position may hold a tile or be empty space.
+  /// Every stack is solid from z = 0 up to its top tile: there are never gaps or floating tiles.
   /// </summary>
   public static partial class BoardService
   {

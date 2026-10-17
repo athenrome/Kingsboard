@@ -3,7 +3,8 @@ using System;
 namespace Kingsboard.Board
 {
     /// <summary>
-    /// The client's copy of the game board: a <see cref="Width"/> x <see cref="Height"/> grid of <see cref="MapTile"/>s.
+    /// The client's copy of the game board: a 3D grid of <see cref="Width"/> x <see cref="Depth"/> columns, each a stack of
+    /// up to <see cref="Height"/> <see cref="MapTile"/>s. x is the column, y the row and z the level (0 = bottom).
     /// The server owns the real board; this is only ever updated from what the server sends.
     /// </summary>
     public class GameBoard
@@ -19,17 +20,23 @@ namespace Kingsboard.Board
         public long Version { get; set; }
 
         /// <summary>
-        /// Number of columns
+        /// Number of columns (x)
         /// </summary>
         public int Width { get; set; }
 
         /// <summary>
-        /// Number of rows
+        /// Number of rows (y)
+        /// </summary>
+        public int Depth { get; set; }
+
+        /// <summary>
+        /// Most tiles a stack can hold (z)
         /// </summary>
         public int Height { get; set; }
 
         /// <summary>
-        /// Every tile, row by row (index = y * Width + x)
+        /// Every position on the board, null where there is no tile.
+        /// Index = (z * Depth + y) * Width + x.
         /// </summary>
         public MapTile[] Tiles { get; set; } = Array.Empty<MapTile>();
     }

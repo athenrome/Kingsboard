@@ -2,11 +2,12 @@ using System.Threading.Channels;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcBoard;
-using KingsboardServer.Extensions;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Services.Interfaces;
 using ProtoTileType = GrpcBoard.TileType;
 using TileType = KingsboardServer.Models.Enumerations.TileType;
+using ProtoBoardPosition = GrpcBoard.BoardPosition;
+using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
 
 namespace KingsboardServer.Handlers
 {
@@ -20,15 +21,17 @@ namespace KingsboardServer.Handlers
         private const int OutboxCapacity = 256;
 
         private readonly IBoardService _boardService;
+        private readonly ITileService _tileService;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
         /// <summary>
-        /// Created by gRPC for each call, with the board service and server lifetime it streams from
+        /// Created by gRPC for each call, with the board and tile services and server lifetime it streams from
         /// </summary>
-        public BoardGrpcHandler(IBoardService boardService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        public BoardGrpcHandler(IBoardService boardService, ITileService tileService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _boardService = boardService;
+            _tileService = tileService;
             _lifetime = lifetime;
             _logger = logger;
         }
@@ -139,38 +142,50 @@ namespace KingsboardServer.Handlers
             }
         }
 
-        private static BoardState ToBoardState(GameBoard board)
+        private BoardState ToBoardState(GameBoard board)
         {
             BoardState state = new BoardState()
             {
                 BoardId = board.Id.ToString(),
                 Version = board.Version,
                 Width = board.Width,
+                Depth = board.Depth,
                 Height = board.Height
             };
-            state.Tiles.AddRange(board.Tiles.Select(ToProto));
+            // Only positions that hold a tile are sent; everything else is empty
+            state.Tiles.AddRange(board.Tiles.OfType<MapTile>().Select(ToProto));
             return state;
         }
 
-        private static TilesChanged ToTilesChanged(TilesChange change)
+        private TilesChanged ToTilesChanged(TilesChange change)
         {
             TilesChanged message = new TilesChanged()
             {
                 BoardId = change.BoardId.ToString(),
                 Version = change.Version
             };
-            message.Tiles.AddRange(change.Tiles.Select(ToProto));
+            message.Tiles.AddRange(change.Placed.Select(ToProto));
+            message.Removed.AddRange(change.Removed.Select(ToProto));
             return message;
         }
 
-        private static Tile ToProto(MapTile tile)
+        private Tile ToProto(MapTile tile)
         {
             return new Tile()
             {
-                X = tile.X,
-                Y = tile.Y,
+                Position = ToProto(tile.Position),
                 Type = ToProto(tile.Type),
-                Passable = tile.IsPassable()
+                Passable = _tileService.IsPassable(tile)
+            };
+        }
+
+        private static ProtoBoardPosition ToProto(BoardPosition position)
+        {
+            return new ProtoBoardPosition()
+            {
+                X = position.X,
+                Y = position.Y,
+                Z = position.Z
             };
         }
 
@@ -181,6 +196,7 @@ namespace KingsboardServer.Handlers
             TileType.Forest => ProtoTileType.Forest,
             TileType.Hills => ProtoTileType.Hills,
             TileType.Mountain => ProtoTileType.Mountain,
+            TileType.Stone => ProtoTileType.Stone,
             _ => ProtoTileType.Unspecified
         };
     }
