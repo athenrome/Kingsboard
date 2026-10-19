@@ -8,7 +8,6 @@ Kingsboard Server/
   ProtoLibrary/       Shared gRPC contract (netstandard2.1)
     Protos/           .proto files — the only place protos are added or edited
     Generated/        C# generated from Protos/ on build. TRACKED in git; also a Unity local package
-  TestConsole/        Console client for exercising the server
 Kingsboard Client/Kingsboard Client/   Unity 6000.6.2f1 project (URP)
 ```
 
@@ -17,17 +16,18 @@ Kingsboard Client/Kingsboard Client/   Unity 6000.6.2f1 project (URP)
 ```bash
 dotnet build "Kingsboard Server/KingsboardServer/KingsboardServer.csproj"
 dotnet run --project "Kingsboard Server/KingsboardServer" --launch-profile https   # https://localhost:7116
-dotnet run --project "Kingsboard Server/TestConsole" -- --turns --board --pawns    # --server=<url> to override
 ```
 
 - The server has no MVC controllers. Visual Studio injects its Endpoints Explorer hosting startup (`Microsoft.WebTools.ApiEndpointDiscovery`), which uses MVC and logs "No action descriptors found". Every launch profile in `launchSettings.json` excludes it with `ASPNETCORE_HOSTINGSTARTUPEXCLUDEASSEMBLIES`; keep that when adding profiles.
 - If the server is already running, its `bin/` is locked and builds fail with MSB3021. Build to another folder with `-o <dir>` instead of killing the user's server.
 - The Unity client can't be compiled from the CLI. Check that its scripts compile with a throwaway `netstandard2.1` csproj that compiles `Assets/Systems/**/*.cs` and `ProtoLibrary/Generated/*.cs`, referencing `<Unity Editor>/Data/Managed/UnityEngine/*.dll` and `Assets/Plugins/Grpc/*.dll`.
-- There are no automated tests yet. Verify server changes by running a copy on a spare port (`--urls http://localhost:<port>`) and pointing TestConsole at it.
+- There are no automated tests yet. Verify server changes in two ways:
+  - **Logic:** a throwaway console project in the scratchpad that references `KingsboardServer.csproj` and calls the services directly. Don't add it to the repo.
+  - **End to end:** run the Unity client in Play mode against the server on `https://localhost:7116`. If the user's server isn't running, run a copy with `--urls https://localhost:7116`, then stop it afterwards.
 
 ## Protos
 
-- To change the contract, edit `Protos/*.proto` and build ProtoLibrary. That regenerates `Generated/`, which the server, TestConsole and Unity (package `com.kingsboard.protos`) all share. Never hand-edit `Generated/*.cs`; commit the regenerated files.
+- To change the contract, edit `Protos/*.proto` and build ProtoLibrary. That regenerates `Generated/`, which the server and Unity (package `com.kingsboard.protos`) share. Never hand-edit `Generated/*.cs`; commit the regenerated files.
 - Protos have no protobuf `package`, so one proto refers to another's types by bare name after `import` (e.g. `GrpcPawn.proto` imports `GrpcBoard.proto` and uses `BoardPosition`).
 - Each proto uses its own `csharp_namespace` (`GrpcChat`, `GrpcTurnTimer`, `GrpcBoard`, `GrpcPawn`).
 
@@ -44,7 +44,9 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
   - `GameService` runs the game loop: it creates the board and spawns the pawns, then runs the turn loop.
 - **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories hold no game rules. Thread-safety and handing out copies is the owning service's job (e.g. `BoardService` locks and clones around `BoardRepository`).
 - **`Models/`**: domain types, with subfolders `Chat/`, `Board/`, `Configuration/` and `Enumerations/`. See the model rule below.
-- **`Extensions/`**: static `XxxExtensions` helpers, only for models that have no owning service (currently just `TurnExtensions`). Board logic lives in `BoardService` and tile logic in `TileService`.
+- **`Events/<Category>/`**: event objects, the payloads passed through C# events. They are grouped by category, each with its own namespace: `Events/Board/` (`KingsboardServer.Events.Board`: `TilesChangeEvent`, `BoardViewEvent`) and `Events/Pawns/` (`KingsboardServer.Events.Pawns`: `PawnsChangeEvent`). Add a new category folder for a new system. The model rule applies to these too.
+- **`Subscriptions/<Category>/`**: subscription objects, which a service returns when a client joins a stream (a session id plus the `ChannelReader` it reads from). They are grouped by category, each with its own namespace: `Subscriptions/Chat/` (`KingsboardServer.Subscriptions.Chat`: `ChatSubscription`) and `Subscriptions/Board/` (`KingsboardServer.Subscriptions.Board`: `BoardViewSubscription`). Name them `XxxSubscription`, keep one type per file, and apply the model rule to them too.
+- **No extension classes.** All logic for a model lives in the service that owns it: `BoardService` for boards, `TileService` for tiles, `TurnService` for turns (`GetDuration`, `GetTimeRemaining`, cloning), `PawnService` for pawns. Don't add `XxxExtensions` classes on the server.
 - **Settings:** each system has a settings class in `Models/Configuration/` with a `SectionName` constant. It is bound in `Program.cs` with `.Validate(...).ValidateOnStart()`, mirrored in `appsettings.json`, and read through `IOptionsMonitor<T>.CurrentValue`.
 - **Other dependencies:** inject `Serilog.ILogger` for logging and `TimeProvider` for time; never call `DateTime.Now`.
 
@@ -74,7 +76,7 @@ The board, 128 × 128 × 8 by default, is too big to send whole. Each client vie
 - **Streaming:** `JoinBoardStream(region?)` sends `joined` (a session id and the size limits), then the section, then `tiles_changed` for that section only. `SetBoardSection(session_id, region)` sends a new `section` on the same stream. `GetBoardSection(region)` is a one-off query. No RPC returns the whole board.
 - **`BoardViewService`:** owns who is viewing what. It's modelled on `ChatRoomService` (join, set, leave, with a bounded queue per client). A client that falls behind has its backlog replaced by a fresh section.
 - **Ordering:** every section snapshot is taken inside `IBoardService.ReadSection(region, callback)`, which runs under the board lock. Board events are raised under the same lock, so each client's queue is always a section followed by exactly the changes after it. Keep it that way: take board-related view state only inside `ReadSection` or the board events, and never hold the view lock while calling into `BoardService` from outside them. That second rule avoids lock-order deadlocks.
-- **Testing:** in TestConsole, run with `--board`, then type `/view x y [width depth]` to move.
+- **Testing:** in the Unity client (Play mode), call `BoardController.RequestSection(region)` or `PanSection(dx, dy)` to move.
 
 ### BoardPosition
 
@@ -82,7 +84,7 @@ The board, 128 × 128 × 8 by default, is too big to send whole. Each client vie
 
 - **Always use it for board positions.** Use `BoardPosition` whenever you check or evaluate a position: methods take a `BoardPosition`, not separate x/y/z ints, and `MapTile` carries one as `Position`. Don't add new APIs that take loose coordinates.
 - **Empty space is a first-class position.** `IsEmpty(position)` means "on the board and holds no tile". `GetPlacementPosition(column)` returns the empty position on top of a stack, and a removed tile leaves its position as empty space. A position off the board is neither on the board nor empty, so check with `IsOnBoard`/`Contains`.
-- **Column methods ignore Z.** `GetStack`, `GetTopTile` and `GetPlacementPosition` act on the position's column. To change a position's level, use `position with { Z = ... }` on the server or `position.AtLevel(z)` on the client (Unity is on C# 9 and has no `with` for structs).
+- **Column methods ignore Z.** `GetStack`, `GetTopTile` and `GetPlacementPosition` act on the position's column. To change a position's level, use `position with { Z = ... }` on the server or `BoardService.AtLevel(position, z)` on the client (Unity is on C# 9 and has no `with` for structs).
 - **Ask before you change.** `CanPlaceTile(position)` is true when the position is empty space resting on a tile or the ground. `CanRemoveTile(position)` is true when the position holds a tile with nothing on top of it.
 - **Client helpers:** `BoardController.WorldToPosition` turns a world point, such as a raycast hit, into a `BoardPosition`, which may be empty space. `PositionToWorld` goes the other way.
 
@@ -135,7 +137,7 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 
 ## Model rule: models hold data only
 
-This applies to model files on both the server (`Models/**`) and the client (data classes such as `BoardSection`, `BoardRegion`, `MapTile` and `ChatLine`).
+This applies to model files on both the server (`Models/**`, `Events/**` and `Subscriptions/**`) and the client (data classes such as `BoardSection`, `BoardRegion`, `MapTile` and `ChatLine`).
 
 **Allowed in a model file:**
 - Auto-properties, optionally with a default value (`public int Width { get; set; } = 16;`)
@@ -153,13 +155,18 @@ This applies to model files on both the server (`Models/**`) and the client (dat
 - Operators
 - Private fields that back behaviour
 
-Server: put logic in the service that owns the model, such as `BoardService` for boards (bounds, validation, cloning, versioning) and `TileService` for tiles (`IsPassable`). Only use a `KingsboardServer/Extensions/` class for a model with no owning service. Repositories stay plain storage with no rules. Client: put logic next to the model, e.g. `Assets/Systems/Board/BoardExtensions.cs`. This applies even to small conveniences.
+Server: put logic in the service that owns the model, such as `BoardService` for boards (bounds, validation, cloning, versioning), `TileService` for tiles (`IsPassable`) and `TurnService` for turns (duration, time remaining, cloning). There are no extension classes on the server. If a model has no owning service yet, give it one. Repositories stay plain storage with no rules. Client: put logic in a static `XxxService` class next to the model, e.g. `Assets/Systems/Board/BoardService.cs` (`BoardService.GetTile(section, position)`). There are no extension classes on the client either. This applies even to small conveniences.
 
-When you find logic in an existing model, move it to the owning service (or an extensions class) rather than adding to it.
+When you find logic in an existing model, move it to the owning service rather than adding to it.
 
 ## Conventions
 
 - Brace style is Allman. Fields are `_camelCase`. Write `/// <summary>` docs on public members and interfaces in plain language.
+- **Event objects end in `Event`.** Any type whose job is to describe something that happened gets the suffix. That includes:
+  - payloads passed through C# events, e.g. `TilesChangeEvent`, `PawnsChangeEvent` and `BoardViewEvent`. These live in `KingsboardServer/Events/<Category>/`, not `Models/`;
+  - proto messages sent as stream events, e.g. `ChatEvent`, `BoardEvent`, `TilesChangedEvent`, `PawnsMovedEvent` and `BoardJoinedEvent`. These stay in their service's `.proto` file, alongside the service that streams them.
+
+  Domain objects that an event merely carries keep their own names: `Turn`, `GameBoard`, `ChatMessage`, and `BoardSection` (also an RPC response). C# `event` members are named for what happened, without the suffix (`TilesChanged`, `PawnsChanged`).
 
 ## Documentation rule
 
