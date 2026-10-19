@@ -87,7 +87,7 @@ namespace Kingsboard.Board
             {
                 return Task.FromResult("No section has loaded yet");
             }
-            return RequestSection(Section.Region.Moved(dx, dy));
+            return RequestSection(BoardService.Move(Section.Region, dx, dy));
         }
 
         /// <summary>
@@ -104,13 +104,13 @@ namespace Kingsboard.Board
         /// </summary>
         public Vector3 StackTopToWorld(BoardPosition column)
         {
-            int stackHeight = Section != null ? Section.GetStackHeight(column) : 0;
+            int stackHeight = Section != null ? BoardService.GetStackHeight(Section, column) : 0;
             return transform.TransformPoint(new Vector3(column.X, stackHeight * LevelHeight, column.Y));
         }
 
         /// <summary>
         /// The board position whose block contains a world position. It may be a tile, empty space, or outside the loaded
-        /// section (check with <see cref="BoardExtensions.Contains(BoardSection, BoardPosition)"/>). For a raycast hit, nudge
+        /// section (check with <see cref="BoardService.Contains(BoardSection, BoardPosition)"/>). For a raycast hit, nudge
         /// the point into the block you want first: hit.point - hit.normal * 0.01f for the tile hit, or + hit.normal * 0.01f
         /// for the empty space in front of it.
         /// </summary>
@@ -192,20 +192,20 @@ namespace Kingsboard.Board
                 return;
             }
 
-            Section.ApplyChanges(version, placed, removed);
+            BoardService.ApplyChanges(Section, version, placed, removed);
 
             foreach (BoardPosition position in removed)
             {
-                if (Section.Contains(position))
+                if (BoardService.Contains(Section, position))
                 {
-                    SetTileObject(Section.IndexOf(position), null);
+                    SetTileObject(BoardService.IndexOf(Section, position), null);
                 }
             }
             foreach (MapTile tile in placed)
             {
-                if (Section.Contains(tile.Position))
+                if (BoardService.Contains(Section, tile.Position))
                 {
-                    SetTileObject(Section.IndexOf(tile.Position), tile);
+                    SetTileObject(BoardService.IndexOf(Section, tile.Position), tile);
                 }
             }
 

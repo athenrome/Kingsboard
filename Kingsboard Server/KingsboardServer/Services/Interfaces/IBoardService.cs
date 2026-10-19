@@ -1,3 +1,4 @@
+using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Enumerations;
 
@@ -21,7 +22,7 @@ namespace KingsboardServer.Services.Interfaces
         /// Raised when tiles are placed, replaced or removed. Raised in version order.
         /// Handlers must be quick and non-blocking.
         /// </summary>
-        event EventHandler<TilesChange>? TilesChanged;
+        event EventHandler<TilesChangeEvent>? TilesChanged;
 
         /// <summary>
         /// Generates a new board from BoardSettings, replacing the current one

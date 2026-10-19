@@ -101,7 +101,7 @@ namespace Kingsboard.Board
                                 break;
 
                             case BoardEvent.PayloadOneofCase.TilesChanged:
-                                GrpcBoard.TilesChanged changed = boardEvent.TilesChanged;
+                                GrpcBoard.TilesChangedEvent changed = boardEvent.TilesChanged;
                                 TilesChanged?.Invoke(changed.BoardId, changed.Version, changed.Tiles.Select(ToMapTile).ToList(), changed.Removed.Select(ToBoardPosition).ToList());
                                 break;
                         }
@@ -188,7 +188,7 @@ namespace Kingsboard.Board
                 BoardHeight = message.BoardHeight,
                 Region = ToBoardRegion(message.Region)
             };
-            section.PlaceTiles(message.Tiles.Select(ToMapTile));
+            BoardService.PlaceTiles(section, message.Tiles.Select(ToMapTile));
             return section;
         }
 

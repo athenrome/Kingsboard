@@ -1,3 +1,4 @@
+using KingsboardServer.Subscriptions.Board;
 using KingsboardServer.Models.Board;
 
 namespace KingsboardServer.Services.Interfaces

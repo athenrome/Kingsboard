@@ -78,7 +78,7 @@ message SetBoardSectionRequest {
   BoardRegion region = 2;
 }
 
-message BoardJoined {
+message BoardJoinedEvent {
   string session_id = 1;           // Pass this to SetBoardSection
   int32 max_section_size = 2;      // Largest width or depth a region may have
   int32 default_section_size = 3;  // Width and depth of the default section
@@ -97,7 +97,7 @@ message BoardSection {
 }
 
 // Tiles that changed inside the client's current section
-message TilesChanged {
+message TilesChangedEvent {
   string board_id = 1;
   int64 version = 2;                   // The board version after this change
   repeated Tile tiles = 3;             // Tiles placed or replaced: put these on the board
@@ -107,8 +107,8 @@ message TilesChanged {
 message BoardEvent {
   reserved 1; // Old whole-board snapshot: now `section`
   oneof payload {
-    BoardJoined joined = 3;         // Sent once, first
+    BoardJoinedEvent joined = 3;         // Sent once, first
     BoardSection section = 4;       // A full section: replace everything the client had
-    TilesChanged tiles_changed = 2; // Some tiles in the section changed: apply just these
+    TilesChangedEvent tiles_changed = 2; // Some tiles in the section changed: apply just these
   }
 }

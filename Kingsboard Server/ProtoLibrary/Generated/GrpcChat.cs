@@ -27,27 +27,27 @@ namespace GrpcChat {
             "Cg5HcnBjQ2hhdC5wcm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3Rv",
             "Gh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIiMKD0pvaW5DaGF0",
             "UmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSI6ChZTZW5kQ2hhdE1lc3NhZ2VS",
-            "ZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkSDAoEdGV4dBgCIAEoCSJWCglD",
-            "aGF0RXZlbnQSHQoGam9pbmVkGAEgASgLMgsuQ2hhdEpvaW5lZEgAEh8KB21l",
-            "c3NhZ2UYAiABKAsyDC5DaGF0TWVzc2FnZUgAQgkKB3BheWxvYWQiMgoKQ2hh",
-            "dEpvaW5lZBISCgpzZXNzaW9uX2lkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJ",
-            "IpoBCgtDaGF0TWVzc2FnZRIKCgJpZBgBIAEoAxIeCgR0eXBlGAIgASgOMhAu",
-            "Q2hhdE1lc3NhZ2VUeXBlEhAKCHVzZXJuYW1lGAMgASgJEgwKBHRleHQYBCAB",
-            "KAkSKwoHc2VudF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh",
-            "bXASEgoKaXNfaGlzdG9yeRgGIAEoCCpwCg9DaGF0TWVzc2FnZVR5cGUSIQod",
-            "Q0hBVF9NRVNTQUdFX1RZUEVfVU5TUEVDSUZJRUQQABIcChhDSEFUX01FU1NB",
-            "R0VfVFlQRV9QTEFZRVIQARIcChhDSEFUX01FU1NBR0VfVFlQRV9TWVNURU0Q",
-            "AjJ9CgtDaGF0U2VydmljZRIqCghKb2luQ2hhdBIQLkpvaW5DaGF0UmVxdWVz",
-            "dBoKLkNoYXRFdmVudDABEkIKD1NlbmRDaGF0TWVzc2FnZRIXLlNlbmRDaGF0",
-            "TWVzc2FnZVJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHlCC6oCCEdy",
-            "cGNDaGF0YgZwcm90bzM="));
+            "ZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkSDAoEdGV4dBgCIAEoCSJbCglD",
+            "aGF0RXZlbnQSIgoGam9pbmVkGAEgASgLMhAuQ2hhdEpvaW5lZEV2ZW50SAAS",
+            "HwoHbWVzc2FnZRgCIAEoCzIMLkNoYXRNZXNzYWdlSABCCQoHcGF5bG9hZCI3",
+            "Cg9DaGF0Sm9pbmVkRXZlbnQSEgoKc2Vzc2lvbl9pZBgBIAEoCRIQCgh1c2Vy",
+            "bmFtZRgCIAEoCSKaAQoLQ2hhdE1lc3NhZ2USCgoCaWQYASABKAMSHgoEdHlw",
+            "ZRgCIAEoDjIQLkNoYXRNZXNzYWdlVHlwZRIQCgh1c2VybmFtZRgDIAEoCRIM",
+            "CgR0ZXh0GAQgASgJEisKB3NlbnRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9i",
+            "dWYuVGltZXN0YW1wEhIKCmlzX2hpc3RvcnkYBiABKAgqcAoPQ2hhdE1lc3Nh",
+            "Z2VUeXBlEiEKHUNIQVRfTUVTU0FHRV9UWVBFX1VOU1BFQ0lGSUVEEAASHAoY",
+            "Q0hBVF9NRVNTQUdFX1RZUEVfUExBWUVSEAESHAoYQ0hBVF9NRVNTQUdFX1RZ",
+            "UEVfU1lTVEVNEAIyfQoLQ2hhdFNlcnZpY2USKgoISm9pbkNoYXQSEC5Kb2lu",
+            "Q2hhdFJlcXVlc3QaCi5DaGF0RXZlbnQwARJCCg9TZW5kQ2hhdE1lc3NhZ2US",
+            "Fy5TZW5kQ2hhdE1lc3NhZ2VSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVt",
+            "cHR5QguqAghHcnBjQ2hhdGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GrpcChat.ChatMessageType), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcChat.JoinChatRequest), global::GrpcChat.JoinChatRequest.Parser, new[]{ "Username" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcChat.SendChatMessageRequest), global::GrpcChat.SendChatMessageRequest.Parser, new[]{ "SessionId", "Text" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcChat.ChatEvent), global::GrpcChat.ChatEvent.Parser, new[]{ "Joined", "Message" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcChat.ChatJoined), global::GrpcChat.ChatJoined.Parser, new[]{ "SessionId", "Username" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcChat.ChatJoinedEvent), global::GrpcChat.ChatJoinedEvent.Parser, new[]{ "SessionId", "Username" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcChat.ChatMessage), global::GrpcChat.ChatMessage.Parser, new[]{ "Id", "Type", "Username", "Text", "SentAt", "IsHistory" }, null, null, null, null)
           }));
     }
@@ -566,8 +566,8 @@ namespace GrpcChat {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GrpcChat.ChatJoined Joined {
-      get { return payloadCase_ == PayloadOneofCase.Joined ? (global::GrpcChat.ChatJoined) payload_ : null; }
+    public global::GrpcChat.ChatJoinedEvent Joined {
+      get { return payloadCase_ == PayloadOneofCase.Joined ? (global::GrpcChat.ChatJoinedEvent) payload_ : null; }
       set {
         payload_ = value;
         payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Joined;
@@ -710,7 +710,7 @@ namespace GrpcChat {
       switch (other.PayloadCase) {
         case PayloadOneofCase.Joined:
           if (Joined == null) {
-            Joined = new global::GrpcChat.ChatJoined();
+            Joined = new global::GrpcChat.ChatJoinedEvent();
           }
           Joined.MergeFrom(other.Joined);
           break;
@@ -742,7 +742,7 @@ namespace GrpcChat {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            global::GrpcChat.ChatJoined subBuilder = new global::GrpcChat.ChatJoined();
+            global::GrpcChat.ChatJoinedEvent subBuilder = new global::GrpcChat.ChatJoinedEvent();
             if (payloadCase_ == PayloadOneofCase.Joined) {
               subBuilder.MergeFrom(Joined);
             }
@@ -779,7 +779,7 @@ namespace GrpcChat {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            global::GrpcChat.ChatJoined subBuilder = new global::GrpcChat.ChatJoined();
+            global::GrpcChat.ChatJoinedEvent subBuilder = new global::GrpcChat.ChatJoinedEvent();
             if (payloadCase_ == PayloadOneofCase.Joined) {
               subBuilder.MergeFrom(Joined);
             }
@@ -804,16 +804,16 @@ namespace GrpcChat {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class ChatJoined : pb::IMessage<ChatJoined>
+  public sealed partial class ChatJoinedEvent : pb::IMessage<ChatJoinedEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<ChatJoined> _parser = new pb::MessageParser<ChatJoined>(() => new ChatJoined());
+    private static readonly pb::MessageParser<ChatJoinedEvent> _parser = new pb::MessageParser<ChatJoinedEvent>(() => new ChatJoinedEvent());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<ChatJoined> Parser { get { return _parser; } }
+    public static pb::MessageParser<ChatJoinedEvent> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -829,7 +829,7 @@ namespace GrpcChat {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public ChatJoined() {
+    public ChatJoinedEvent() {
       OnConstruction();
     }
 
@@ -837,7 +837,7 @@ namespace GrpcChat {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public ChatJoined(ChatJoined other) : this() {
+    public ChatJoinedEvent(ChatJoinedEvent other) : this() {
       sessionId_ = other.sessionId_;
       username_ = other.username_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -845,8 +845,8 @@ namespace GrpcChat {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public ChatJoined Clone() {
-      return new ChatJoined(this);
+    public ChatJoinedEvent Clone() {
+      return new ChatJoinedEvent(this);
     }
 
     /// <summary>Field number for the "session_id" field.</summary>
@@ -882,12 +882,12 @@ namespace GrpcChat {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as ChatJoined);
+      return Equals(other as ChatJoinedEvent);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(ChatJoined other) {
+    public bool Equals(ChatJoinedEvent other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -973,7 +973,7 @@ namespace GrpcChat {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(ChatJoined other) {
+    public void MergeFrom(ChatJoinedEvent other) {
       if (other == null) {
         return;
       }

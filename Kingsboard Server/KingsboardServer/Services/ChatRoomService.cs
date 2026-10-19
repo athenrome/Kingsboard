@@ -1,5 +1,7 @@
 using System.Text;
 using System.Threading.Channels;
+using KingsboardServer.Models.Enumerations;
+using KingsboardServer.Subscriptions.Chat;
 using KingsboardServer.Models.Chat;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Repositories.Interfaces;

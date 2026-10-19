@@ -1,6 +1,8 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcBoard;
+using KingsboardServer.Subscriptions.Board;
+using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Services.Interfaces;
 using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
@@ -62,7 +64,7 @@ namespace KingsboardServer.Handlers
             {
                 await responseStream.WriteAsync(new BoardEvent()
                 {
-                    Joined = new BoardJoined()
+                    Joined = new BoardJoinedEvent()
                     {
                         SessionId = subscription.SessionId.ToString(),
                         MaxSectionSize = _viewService.MaxSectionSize,
@@ -77,7 +79,7 @@ namespace KingsboardServer.Handlers
                     {
                         await responseStream.WriteAsync(new BoardEvent() { Section = ToProto(section) });
                     }
-                    else if (viewEvent.Change is TilesChange change)
+                    else if (viewEvent.Change is TilesChangeEvent change)
                     {
                         await responseStream.WriteAsync(new BoardEvent() { TilesChanged = ToProto(change) });
                     }
@@ -164,9 +166,9 @@ namespace KingsboardServer.Handlers
             return message;
         }
 
-        private TilesChanged ToProto(TilesChange change)
+        private TilesChangedEvent ToProto(TilesChangeEvent change)
         {
-            TilesChanged message = new TilesChanged()
+            TilesChangedEvent message = new TilesChangedEvent()
             {
                 BoardId = change.BoardId.ToString(),
                 Version = change.Version

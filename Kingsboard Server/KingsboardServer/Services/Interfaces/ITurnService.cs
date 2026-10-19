@@ -31,6 +31,16 @@ namespace KingsboardServer.Services.Interfaces
         Turn? GetCurrentTurn();
 
         /// <summary>
+        /// How long the turn lasts in total
+        /// </summary>
+        TimeSpan GetDuration(Turn turn);
+
+        /// <summary>
+        /// Time left in the turn right now, by the server clock; never negative
+        /// </summary>
+        TimeSpan GetTimeRemaining(Turn turn);
+
+        /// <summary>
         /// Runs turns back-to-back until <paramref name="cancellationToken"/> is cancelled.
         /// </summary>
         Task RunTurnLoopAsync(CancellationToken cancellationToken);

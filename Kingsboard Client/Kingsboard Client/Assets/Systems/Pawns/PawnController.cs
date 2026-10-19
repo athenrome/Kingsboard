@@ -289,7 +289,7 @@ namespace Kingsboard.Pawns
 
         private bool IsInLoadedSection(BoardPosition position)
         {
-            return _board == null || (_board.Section != null && _board.Section.Region.Contains(position));
+            return _board == null || (_board.Section != null && BoardService.Contains(_board.Section.Region, position));
         }
 
         /// <summary>

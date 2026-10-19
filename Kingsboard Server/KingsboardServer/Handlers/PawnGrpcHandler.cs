@@ -2,6 +2,7 @@ using System.Threading.Channels;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcPawn;
+using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models.Enumerations;
 using KingsboardServer.Models.Pawns;
 using KingsboardServer.Services.Interfaces;
@@ -71,7 +72,7 @@ namespace KingsboardServer.Handlers
                 outbox.Writer.TryWrite(ToSnapshot(_pawnService.GetPawns()));
                 _logger.Warning("Client {Peer} fell behind on the pawn stream; resending every pawn", context.Peer);
             }
-            void OnPawnsChanged(object? sender, PawnsChange change) => Queue(ToEvent(change));
+            void OnPawnsChanged(object? sender, PawnsChangeEvent change) => Queue(ToEvent(change));
 
             // End the stream when the client disconnects or the server shuts down
             using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken, _lifetime.ApplicationStopping);
@@ -108,27 +109,27 @@ namespace KingsboardServer.Handlers
 
         private static PawnEvent ToSnapshot(IReadOnlyList<Pawn> pawns)
         {
-            PawnsSnapshot snapshot = new PawnsSnapshot();
+            PawnsSnapshotEvent snapshot = new PawnsSnapshotEvent();
             snapshot.Pawns.AddRange(pawns.Select(ToProto));
             return new PawnEvent() { Snapshot = snapshot };
         }
 
-        private static PawnEvent ToEvent(PawnsChange change)
+        private static PawnEvent ToEvent(PawnsChangeEvent change)
         {
             switch (change.Reason)
             {
                 case PawnChangeReason.Spawned:
-                    PawnsSpawned spawned = new PawnsSpawned();
+                    PawnsSpawnedEvent spawned = new PawnsSpawnedEvent();
                     spawned.Pawns.AddRange(change.Pawns.Select(ToProto));
                     return new PawnEvent() { Spawned = spawned };
 
                 case PawnChangeReason.Planned:
-                    PawnsPlanned planned = new PawnsPlanned() { TurnId = change.TurnId };
+                    PawnsPlannedEvent planned = new PawnsPlannedEvent() { TurnId = change.TurnId };
                     planned.Pawns.AddRange(change.Pawns.Select(ToProto));
                     return new PawnEvent() { Planned = planned };
 
                 default:
-                    PawnsMoved moved = new PawnsMoved() { TurnId = change.TurnId };
+                    PawnsMovedEvent moved = new PawnsMovedEvent() { TurnId = change.TurnId };
                     moved.Movements.AddRange(change.Movements.Select(ToProto));
                     moved.Pawns.AddRange(change.Pawns.Select(ToProto));
                     return new PawnEvent() { Moved = moved };

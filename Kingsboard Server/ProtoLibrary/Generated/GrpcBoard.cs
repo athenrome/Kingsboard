@@ -33,26 +33,27 @@ namespace GrpcBoard {
             "SgQIBRAGIjYKFkpvaW5Cb2FyZFN0cmVhbVJlcXVlc3QSHAoGcmVnaW9uGAEg",
             "ASgLMgwuQm9hcmRSZWdpb24iSgoWU2V0Qm9hcmRTZWN0aW9uUmVxdWVzdBIS",
             "CgpzZXNzaW9uX2lkGAEgASgJEhwKBnJlZ2lvbhgCIAEoCzIMLkJvYXJkUmVn",
-            "aW9uIlkKC0JvYXJkSm9pbmVkEhIKCnNlc3Npb25faWQYASABKAkSGAoQbWF4",
-            "X3NlY3Rpb25fc2l6ZRgCIAEoBRIcChRkZWZhdWx0X3NlY3Rpb25fc2l6ZRgD",
-            "IAEoBSKlAQoMQm9hcmRTZWN0aW9uEhAKCGJvYXJkX2lkGAEgASgJEg8KB3Zl",
-            "cnNpb24YAiABKAMSEwoLYm9hcmRfd2lkdGgYAyABKAUSEwoLYm9hcmRfZGVw",
-            "dGgYBCABKAUSFAoMYm9hcmRfaGVpZ2h0GAUgASgFEhwKBnJlZ2lvbhgGIAEo",
-            "CzIMLkJvYXJkUmVnaW9uEhQKBXRpbGVzGAcgAygLMgUuVGlsZSJoCgxUaWxl",
-            "c0NoYW5nZWQSEAoIYm9hcmRfaWQYASABKAkSDwoHdmVyc2lvbhgCIAEoAxIU",
-            "CgV0aWxlcxgDIAMoCzIFLlRpbGUSHwoHcmVtb3ZlZBgEIAMoCzIOLkJvYXJk",
-            "UG9zaXRpb24ihwEKCkJvYXJkRXZlbnQSHgoGam9pbmVkGAMgASgLMgwuQm9h",
-            "cmRKb2luZWRIABIgCgdzZWN0aW9uGAQgASgLMg0uQm9hcmRTZWN0aW9uSAAS",
-            "JgoNdGlsZXNfY2hhbmdlZBgCIAEoCzINLlRpbGVzQ2hhbmdlZEgAQgkKB3Bh",
-            "eWxvYWRKBAgBEAIqqAEKCFRpbGVUeXBlEhkKFVRJTEVfVFlQRV9VTlNQRUNJ",
-            "RklFRBAAEhMKD1RJTEVfVFlQRV9XQVRFUhABEhQKEFRJTEVfVFlQRV9QTEFJ",
-            "TlMQAhIUChBUSUxFX1RZUEVfRk9SRVNUEAMSEwoPVElMRV9UWVBFX0hJTExT",
-            "EAQSFgoSVElMRV9UWVBFX01PVU5UQUlOEAUSEwoPVElMRV9UWVBFX1NUT05F",
-            "EAYyvQEKDEJvYXJkU2VydmljZRI5Cg9Kb2luQm9hcmRTdHJlYW0SFy5Kb2lu",
-            "Qm9hcmRTdHJlYW1SZXF1ZXN0GgsuQm9hcmRFdmVudDABEkIKD1NldEJvYXJk",
-            "U2VjdGlvbhIXLlNldEJvYXJkU2VjdGlvblJlcXVlc3QaFi5nb29nbGUucHJv",
-            "dG9idWYuRW1wdHkSLgoPR2V0Qm9hcmRTZWN0aW9uEgwuQm9hcmRSZWdpb24a",
-            "DS5Cb2FyZFNlY3Rpb25CDKoCCUdycGNCb2FyZGIGcHJvdG8z"));
+            "aW9uIl4KEEJvYXJkSm9pbmVkRXZlbnQSEgoKc2Vzc2lvbl9pZBgBIAEoCRIY",
+            "ChBtYXhfc2VjdGlvbl9zaXplGAIgASgFEhwKFGRlZmF1bHRfc2VjdGlvbl9z",
+            "aXplGAMgASgFIqUBCgxCb2FyZFNlY3Rpb24SEAoIYm9hcmRfaWQYASABKAkS",
+            "DwoHdmVyc2lvbhgCIAEoAxITCgtib2FyZF93aWR0aBgDIAEoBRITCgtib2Fy",
+            "ZF9kZXB0aBgEIAEoBRIUCgxib2FyZF9oZWlnaHQYBSABKAUSHAoGcmVnaW9u",
+            "GAYgASgLMgwuQm9hcmRSZWdpb24SFAoFdGlsZXMYByADKAsyBS5UaWxlIm0K",
+            "EVRpbGVzQ2hhbmdlZEV2ZW50EhAKCGJvYXJkX2lkGAEgASgJEg8KB3ZlcnNp",
+            "b24YAiABKAMSFAoFdGlsZXMYAyADKAsyBS5UaWxlEh8KB3JlbW92ZWQYBCAD",
+            "KAsyDi5Cb2FyZFBvc2l0aW9uIpEBCgpCb2FyZEV2ZW50EiMKBmpvaW5lZBgD",
+            "IAEoCzIRLkJvYXJkSm9pbmVkRXZlbnRIABIgCgdzZWN0aW9uGAQgASgLMg0u",
+            "Qm9hcmRTZWN0aW9uSAASKwoNdGlsZXNfY2hhbmdlZBgCIAEoCzISLlRpbGVz",
+            "Q2hhbmdlZEV2ZW50SABCCQoHcGF5bG9hZEoECAEQAiqoAQoIVGlsZVR5cGUS",
+            "GQoVVElMRV9UWVBFX1VOU1BFQ0lGSUVEEAASEwoPVElMRV9UWVBFX1dBVEVS",
+            "EAESFAoQVElMRV9UWVBFX1BMQUlOUxACEhQKEFRJTEVfVFlQRV9GT1JFU1QQ",
+            "AxITCg9USUxFX1RZUEVfSElMTFMQBBIWChJUSUxFX1RZUEVfTU9VTlRBSU4Q",
+            "BRITCg9USUxFX1RZUEVfU1RPTkUQBjK9AQoMQm9hcmRTZXJ2aWNlEjkKD0pv",
+            "aW5Cb2FyZFN0cmVhbRIXLkpvaW5Cb2FyZFN0cmVhbVJlcXVlc3QaCy5Cb2Fy",
+            "ZEV2ZW50MAESQgoPU2V0Qm9hcmRTZWN0aW9uEhcuU2V0Qm9hcmRTZWN0aW9u",
+            "UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRIuCg9HZXRCb2FyZFNl",
+            "Y3Rpb24SDC5Cb2FyZFJlZ2lvbhoNLkJvYXJkU2VjdGlvbkIMqgIJR3JwY0Jv",
+            "YXJkYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GrpcBoard.TileType), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -61,9 +62,9 @@ namespace GrpcBoard {
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.Tile), global::GrpcBoard.Tile.Parser, new[]{ "Position", "Type", "Passable" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.JoinBoardStreamRequest), global::GrpcBoard.JoinBoardStreamRequest.Parser, new[]{ "Region" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.SetBoardSectionRequest), global::GrpcBoard.SetBoardSectionRequest.Parser, new[]{ "SessionId", "Region" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardJoined), global::GrpcBoard.BoardJoined.Parser, new[]{ "SessionId", "MaxSectionSize", "DefaultSectionSize" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardJoinedEvent), global::GrpcBoard.BoardJoinedEvent.Parser, new[]{ "SessionId", "MaxSectionSize", "DefaultSectionSize" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardSection), global::GrpcBoard.BoardSection.Parser, new[]{ "BoardId", "Version", "BoardWidth", "BoardDepth", "BoardHeight", "Region", "Tiles" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.TilesChanged), global::GrpcBoard.TilesChanged.Parser, new[]{ "BoardId", "Version", "Tiles", "Removed" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.TilesChangedEvent), global::GrpcBoard.TilesChangedEvent.Parser, new[]{ "BoardId", "Version", "Tiles", "Removed" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardEvent), global::GrpcBoard.BoardEvent.Parser, new[]{ "Joined", "Section", "TilesChanged" }, new[]{ "Payload" }, null, null, null)
           }));
     }
@@ -1405,16 +1406,16 @@ namespace GrpcBoard {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class BoardJoined : pb::IMessage<BoardJoined>
+  public sealed partial class BoardJoinedEvent : pb::IMessage<BoardJoinedEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<BoardJoined> _parser = new pb::MessageParser<BoardJoined>(() => new BoardJoined());
+    private static readonly pb::MessageParser<BoardJoinedEvent> _parser = new pb::MessageParser<BoardJoinedEvent>(() => new BoardJoinedEvent());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<BoardJoined> Parser { get { return _parser; } }
+    public static pb::MessageParser<BoardJoinedEvent> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1430,7 +1431,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public BoardJoined() {
+    public BoardJoinedEvent() {
       OnConstruction();
     }
 
@@ -1438,7 +1439,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public BoardJoined(BoardJoined other) : this() {
+    public BoardJoinedEvent(BoardJoinedEvent other) : this() {
       sessionId_ = other.sessionId_;
       maxSectionSize_ = other.maxSectionSize_;
       defaultSectionSize_ = other.defaultSectionSize_;
@@ -1447,8 +1448,8 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public BoardJoined Clone() {
-      return new BoardJoined(this);
+    public BoardJoinedEvent Clone() {
+      return new BoardJoinedEvent(this);
     }
 
     /// <summary>Field number for the "session_id" field.</summary>
@@ -1499,12 +1500,12 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as BoardJoined);
+      return Equals(other as BoardJoinedEvent);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(BoardJoined other) {
+    public bool Equals(BoardJoinedEvent other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -1603,7 +1604,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(BoardJoined other) {
+    public void MergeFrom(BoardJoinedEvent other) {
       if (other == null) {
         return;
       }
@@ -2131,16 +2132,16 @@ namespace GrpcBoard {
   /// Tiles that changed inside the client's current section
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class TilesChanged : pb::IMessage<TilesChanged>
+  public sealed partial class TilesChangedEvent : pb::IMessage<TilesChangedEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<TilesChanged> _parser = new pb::MessageParser<TilesChanged>(() => new TilesChanged());
+    private static readonly pb::MessageParser<TilesChangedEvent> _parser = new pb::MessageParser<TilesChangedEvent>(() => new TilesChangedEvent());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<TilesChanged> Parser { get { return _parser; } }
+    public static pb::MessageParser<TilesChangedEvent> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2156,7 +2157,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public TilesChanged() {
+    public TilesChangedEvent() {
       OnConstruction();
     }
 
@@ -2164,7 +2165,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public TilesChanged(TilesChanged other) : this() {
+    public TilesChangedEvent(TilesChangedEvent other) : this() {
       boardId_ = other.boardId_;
       version_ = other.version_;
       tiles_ = other.tiles_.Clone();
@@ -2174,8 +2175,8 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public TilesChanged Clone() {
-      return new TilesChanged(this);
+    public TilesChangedEvent Clone() {
+      return new TilesChangedEvent(this);
     }
 
     /// <summary>Field number for the "board_id" field.</summary>
@@ -2236,12 +2237,12 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as TilesChanged);
+      return Equals(other as TilesChangedEvent);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(TilesChanged other) {
+    public bool Equals(TilesChangedEvent other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2337,7 +2338,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(TilesChanged other) {
+    public void MergeFrom(TilesChangedEvent other) {
       if (other == null) {
         return;
       }
@@ -2489,8 +2490,8 @@ namespace GrpcBoard {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GrpcBoard.BoardJoined Joined {
-      get { return payloadCase_ == PayloadOneofCase.Joined ? (global::GrpcBoard.BoardJoined) payload_ : null; }
+    public global::GrpcBoard.BoardJoinedEvent Joined {
+      get { return payloadCase_ == PayloadOneofCase.Joined ? (global::GrpcBoard.BoardJoinedEvent) payload_ : null; }
       set {
         payload_ = value;
         payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Joined;
@@ -2519,8 +2520,8 @@ namespace GrpcBoard {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GrpcBoard.TilesChanged TilesChanged {
-      get { return payloadCase_ == PayloadOneofCase.TilesChanged ? (global::GrpcBoard.TilesChanged) payload_ : null; }
+    public global::GrpcBoard.TilesChangedEvent TilesChanged {
+      get { return payloadCase_ == PayloadOneofCase.TilesChanged ? (global::GrpcBoard.TilesChangedEvent) payload_ : null; }
       set {
         payload_ = value;
         payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.TilesChanged;
@@ -2665,7 +2666,7 @@ namespace GrpcBoard {
       switch (other.PayloadCase) {
         case PayloadOneofCase.Joined:
           if (Joined == null) {
-            Joined = new global::GrpcBoard.BoardJoined();
+            Joined = new global::GrpcBoard.BoardJoinedEvent();
           }
           Joined.MergeFrom(other.Joined);
           break;
@@ -2677,7 +2678,7 @@ namespace GrpcBoard {
           break;
         case PayloadOneofCase.TilesChanged:
           if (TilesChanged == null) {
-            TilesChanged = new global::GrpcBoard.TilesChanged();
+            TilesChanged = new global::GrpcBoard.TilesChangedEvent();
           }
           TilesChanged.MergeFrom(other.TilesChanged);
           break;
@@ -2703,7 +2704,7 @@ namespace GrpcBoard {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 18: {
-            global::GrpcBoard.TilesChanged subBuilder = new global::GrpcBoard.TilesChanged();
+            global::GrpcBoard.TilesChangedEvent subBuilder = new global::GrpcBoard.TilesChangedEvent();
             if (payloadCase_ == PayloadOneofCase.TilesChanged) {
               subBuilder.MergeFrom(TilesChanged);
             }
@@ -2712,7 +2713,7 @@ namespace GrpcBoard {
             break;
           }
           case 26: {
-            global::GrpcBoard.BoardJoined subBuilder = new global::GrpcBoard.BoardJoined();
+            global::GrpcBoard.BoardJoinedEvent subBuilder = new global::GrpcBoard.BoardJoinedEvent();
             if (payloadCase_ == PayloadOneofCase.Joined) {
               subBuilder.MergeFrom(Joined);
             }
@@ -2749,7 +2750,7 @@ namespace GrpcBoard {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 18: {
-            global::GrpcBoard.TilesChanged subBuilder = new global::GrpcBoard.TilesChanged();
+            global::GrpcBoard.TilesChangedEvent subBuilder = new global::GrpcBoard.TilesChangedEvent();
             if (payloadCase_ == PayloadOneofCase.TilesChanged) {
               subBuilder.MergeFrom(TilesChanged);
             }
@@ -2758,7 +2759,7 @@ namespace GrpcBoard {
             break;
           }
           case 26: {
-            global::GrpcBoard.BoardJoined subBuilder = new global::GrpcBoard.BoardJoined();
+            global::GrpcBoard.BoardJoinedEvent subBuilder = new global::GrpcBoard.BoardJoinedEvent();
             if (payloadCase_ == PayloadOneofCase.Joined) {
               subBuilder.MergeFrom(Joined);
             }

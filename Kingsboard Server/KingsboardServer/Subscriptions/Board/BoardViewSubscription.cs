@@ -1,6 +1,7 @@
 using System.Threading.Channels;
+using KingsboardServer.Events.Board;
 
-namespace KingsboardServer.Models.Board
+namespace KingsboardServer.Subscriptions.Board
 {
     /// <summary>
     /// A client's view of the board, returned when they join

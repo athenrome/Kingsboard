@@ -1,4 +1,6 @@
-namespace KingsboardServer.Models.Board
+using KingsboardServer.Models.Board;
+
+namespace KingsboardServer.Events.Board
 {
     /// <summary>
     /// A change to tiles on the board
@@ -7,5 +9,5 @@ namespace KingsboardServer.Models.Board
     /// <param name="Version">The board version after the change</param>
     /// <param name="Placed">Tiles placed or replaced</param>
     /// <param name="Removed">Positions whose tiles were taken off the board (now empty space)</param>
-    public record TilesChange(Guid BoardId, long Version, IReadOnlyList<MapTile> Placed, IReadOnlyList<BoardPosition> Removed);
+    public record TilesChangeEvent(Guid BoardId, long Version, IReadOnlyList<MapTile> Placed, IReadOnlyList<BoardPosition> Removed);
 }

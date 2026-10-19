@@ -1,3 +1,4 @@
+using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Configuration;
@@ -48,7 +49,7 @@ namespace KingsboardServer.Services
         /// Raised when pawns are spawned, plan their moves, or move. Raised under the pawn lock, in order.
         /// Handlers must be quick and non-blocking.
         /// </summary>
-        public event EventHandler<PawnsChange>? PawnsChanged;
+        public event EventHandler<PawnsChangeEvent>? PawnsChanged;
 
         /// <summary>
         /// Creates the service. There are no pawns until <see cref="SpawnPawns"/> is called.
@@ -348,7 +349,7 @@ namespace KingsboardServer.Services
         /// </summary>
         private void RaiseChanged(PawnChangeReason reason, int turnId, IReadOnlyList<Pawn> pawns, IReadOnlyList<PawnMovement> movements)
         {
-            PawnsChanged?.Invoke(this, new PawnsChange(reason, turnId, CloneAll(pawns), movements));
+            PawnsChanged?.Invoke(this, new PawnsChangeEvent(reason, turnId, CloneAll(pawns), movements));
         }
 
         /// <summary>

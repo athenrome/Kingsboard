@@ -1,3 +1,4 @@
+using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models.Pawns;
 
 namespace KingsboardServer.Services.Interfaces
@@ -13,7 +14,7 @@ namespace KingsboardServer.Services.Interfaces
         /// Raised when pawns are spawned, plan their moves, or move. Raised in order, under the same guarantee as
         /// <see cref="ReadPawns"/>. Handlers must be quick and non-blocking.
         /// </summary>
-        event EventHandler<PawnsChange>? PawnsChanged;
+        event EventHandler<PawnsChangeEvent>? PawnsChanged;
 
         /// <summary>
         /// Gets snapshots of every pawn (empty before any are spawned)

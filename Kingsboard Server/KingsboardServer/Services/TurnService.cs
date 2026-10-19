@@ -1,4 +1,3 @@
-using KingsboardServer.Extensions;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Enumerations;
@@ -61,7 +60,7 @@ namespace KingsboardServer.Services
         {
             lock (_turnLock)
             {
-                return _currentTurn?.Clone();
+                return _currentTurn is null ? null : Clone(_currentTurn);
             }
         }
 
@@ -127,7 +126,7 @@ namespace KingsboardServer.Services
                     StartedAt = startedAt,
                     EndsAt = startedAt + duration
                 };
-                snapshot = _currentTurn.Clone();
+                snapshot = Clone(_currentTurn);
             }
 
             _logger.Information("Turn {TurnId} started ({DurationSeconds}s)", snapshot.Id, duration.TotalSeconds);
@@ -155,7 +154,7 @@ namespace KingsboardServer.Services
 
                 try
                 {
-                    await handler.RunPhaseAsync(snapshot.Clone(), cancellationToken);
+                    await handler.RunPhaseAsync(Clone(snapshot), cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -181,7 +180,7 @@ namespace KingsboardServer.Services
             lock (_turnLock)
             {
                 _currentTurn!.CurrentPhase = phase;
-                return _currentTurn.Clone();
+                return Clone(_currentTurn);
             }
         }
 
@@ -210,6 +209,34 @@ namespace KingsboardServer.Services
             }
 
             return _lastValidDuration;
+        }
+
+        /// <summary>
+        /// How long the turn lasts in total
+        /// </summary>
+        public TimeSpan GetDuration(Turn turn) => turn.EndsAt - turn.StartedAt;
+
+        /// <summary>
+        /// Time left in the turn right now, by the server clock; never negative
+        /// </summary>
+        public TimeSpan GetTimeRemaining(Turn turn)
+        {
+            TimeSpan remaining = turn.EndsAt - _timeProvider.GetUtcNow();
+            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+        }
+
+        /// <summary>
+        /// Creates a copy so callers can't change the live turn
+        /// </summary>
+        private static Turn Clone(Turn turn)
+        {
+            return new Turn()
+            {
+                Id = turn.Id,
+                CurrentPhase = turn.CurrentPhase,
+                StartedAt = turn.StartedAt,
+                EndsAt = turn.EndsAt
+            };
         }
 
         private void RaiseTurnEvent(EventHandler<Turn>? handler, Turn snapshot)

@@ -1,4 +1,6 @@
 using System.Threading.Channels;
+using KingsboardServer.Subscriptions.Board;
+using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Services.Interfaces;
@@ -168,7 +170,7 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Sends each viewer just the part of the change inside its current section. Runs inside the board lock.
         /// </summary>
-        private void OnTilesChanged(object? sender, TilesChange change)
+        private void OnTilesChanged(object? sender, TilesChangeEvent change)
         {
             lock (_lock)
             {

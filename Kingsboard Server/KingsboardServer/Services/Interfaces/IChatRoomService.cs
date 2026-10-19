@@ -1,3 +1,4 @@
+using KingsboardServer.Subscriptions.Chat;
 using KingsboardServer.Models.Chat;
 
 namespace KingsboardServer.Services.Interfaces

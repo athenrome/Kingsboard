@@ -2,7 +2,6 @@ using System.Threading.Channels;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcTurnTimer;
-using KingsboardServer.Extensions;
 using KingsboardServer.Models;
 using KingsboardServer.Services.Interfaces;
 using ModelTurnPhase = KingsboardServer.Models.Enumerations.TurnPhase;
@@ -20,17 +19,15 @@ namespace KingsboardServer.Handlers
         private const int OutboxCapacity = 32;
 
         private readonly ITurnService _turnService;
-        private readonly TimeProvider _timeProvider;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
         /// <summary>
-        /// Created by gRPC for each call, with the turn service, clock and server lifetime it uses
+        /// Created by gRPC for each call, with the turn service and server lifetime it uses
         /// </summary>
-        public TurnTimerGrpcHandler(ITurnService turnService, TimeProvider timeProvider, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        public TurnTimerGrpcHandler(ITurnService turnService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _turnService = turnService;
-            _timeProvider = timeProvider;
             _lifetime = lifetime;
             _logger = logger;
         }
@@ -116,8 +113,8 @@ namespace KingsboardServer.Handlers
                 TurnId = turn.Id,
                 StartedAt = Timestamp.FromDateTimeOffset(turn.StartedAt),
                 EndsAt = Timestamp.FromDateTimeOffset(turn.EndsAt),
-                TurnDurationMs = (int)turn.GetDuration().TotalMilliseconds,
-                TimeRemainingMs = (int)turn.GetTimeRemaining(_timeProvider.GetUtcNow()).TotalMilliseconds,
+                TurnDurationMs = (int)_turnService.GetDuration(turn).TotalMilliseconds,
+                TimeRemainingMs = (int)_turnService.GetTimeRemaining(turn).TotalMilliseconds,
                 Phase = ToProto(turn.CurrentPhase)
             };
         }

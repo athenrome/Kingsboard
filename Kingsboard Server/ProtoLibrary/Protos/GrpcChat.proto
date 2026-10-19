@@ -31,12 +31,12 @@ message SendChatMessageRequest {
 
 message ChatEvent {
   oneof payload {
-    ChatJoined joined = 1;   // Sent once, only to the client that joined
+    ChatJoinedEvent joined = 1;   // Sent once, only to the client that joined
     ChatMessage message = 2;
   }
 }
 
-message ChatJoined {
+message ChatJoinedEvent {
   string session_id = 1; // Pass this to SendChatMessage
   string username = 2;   // The name you were given
 }

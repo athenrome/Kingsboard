@@ -42,20 +42,20 @@ message PawnMovement {
   bool blocked = 4;                 // True if it stopped short of its planned destination
 }
 
-message PawnsSnapshot {
+message PawnsSnapshotEvent {
   repeated Pawn pawns = 1;
 }
 
-message PawnsSpawned {
+message PawnsSpawnedEvent {
   repeated Pawn pawns = 1; // Every pawn: a new set replaces all earlier pawns (e.g. a new game)
 }
 
-message PawnsPlanned {
+message PawnsPlannedEvent {
   int32 turn_id = 1;
   repeated Pawn pawns = 2; // Every pawn, with its planned_path for this turn
 }
 
-message PawnsMoved {
+message PawnsMovedEvent {
   int32 turn_id = 1;
   repeated PawnMovement movements = 2; // How each pawn moved, for animating
   repeated Pawn pawns = 3;             // Every pawn after moving (plans cleared)
@@ -63,9 +63,9 @@ message PawnsMoved {
 
 message PawnEvent {
   oneof payload {
-    PawnsSnapshot snapshot = 1; // Sent first: replace everything the client had
-    PawnsSpawned spawned = 2;
-    PawnsPlanned planned = 3;
-    PawnsMoved moved = 4;
+    PawnsSnapshotEvent snapshot = 1; // Sent first: replace everything the client had
+    PawnsSpawnedEvent spawned = 2;
+    PawnsPlannedEvent planned = 3;
+    PawnsMovedEvent moved = 4;
   }
 }

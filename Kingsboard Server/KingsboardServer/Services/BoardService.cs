@@ -1,3 +1,4 @@
+using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Enumerations;
@@ -38,7 +39,7 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Raised, in version order, when tiles are placed, replaced or removed. Handlers must be quick and non-blocking.
         /// </summary>
-        public event EventHandler<TilesChange>? TilesChanged;
+        public event EventHandler<TilesChangeEvent>? TilesChanged;
 
         /// <summary>
         /// Creates the service. No board exists until <see cref="CreateBoard"/> is called.
@@ -363,7 +364,7 @@ namespace KingsboardServer.Services
             updated.Version++;
             _repository.SaveBoard(updated);
 
-            TilesChanged?.Invoke(this, new TilesChange(updated.Id, updated.Version, placed.ToArray(), removed.ToArray()));
+            TilesChanged?.Invoke(this, new TilesChangeEvent(updated.Id, updated.Version, placed.ToArray(), removed.ToArray()));
         }
 
         private GameBoard GetStoredBoard()

@@ -1,6 +1,8 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcChat;
+using KingsboardServer.Models.Enumerations;
+using KingsboardServer.Subscriptions.Chat;
 using KingsboardServer.Models.Chat;
 using KingsboardServer.Services.Interfaces;
 
@@ -40,7 +42,7 @@ namespace KingsboardServer.Handlers
             {
                 await responseStream.WriteAsync(new ChatEvent()
                 {
-                    Joined = new ChatJoined()
+                    Joined = new ChatJoinedEvent()
                     {
                         SessionId = subscription.SessionId.ToString(),
                         Username = subscription.Username
