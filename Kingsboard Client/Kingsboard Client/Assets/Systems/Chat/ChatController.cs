@@ -8,8 +8,7 @@ namespace Kingsboard.Chat
     /// Handles all client-side chat in Unity: it owns the chat window (bottom-left of the screen, built with UI Toolkit)
     /// and talks to the server only through <see cref="ChatGrpcHandler"/>. All chat rules (validation, rate limiting,
     /// usernames) are enforced by the server.
-    /// It creates itself when the game starts, so nothing needs adding to a scene.
-    /// To set the username in the Inspector, add this component to a GameObject in the scene instead.
+    /// Lives on the Chat prefab (Assets/Prefabs/Chat/Chat.prefab), placed in the scene; set the username there.
     /// Type a message and press Enter to send it.
     /// </summary>
     public class ChatController : MonoBehaviour
@@ -45,17 +44,6 @@ namespace Kingsboard.Chat
         /// True while we are joined to the chat
         /// </summary>
         public bool IsConnected { get; private set; }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void CreateIfMissing()
-        {
-            if (FindAnyObjectByType<ChatController>() == null)
-            {
-                GameObject chat = new GameObject("Chat");
-                DontDestroyOnLoad(chat);
-                chat.AddComponent<ChatController>();
-            }
-        }
 
         private void Awake()
         {

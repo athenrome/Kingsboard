@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Kingsboard.Board
 {
     /// <summary>
-    /// Handles the client-side game board in Unity: it keeps the latest <see cref="GameBoard"/> from the server
-    /// (through <see cref="BoardGrpcHandler"/>) and draws one block per tile, stacked into columns.
-    /// Board x maps to world x, board y to world z, and board z (the level) to world y:
-    /// tile (x, y, z) is centred at local position (x, (z + 0.5) * <see cref="LevelHeight"/>, y).
-    /// It creates itself when the game starts, so nothing needs adding to a scene.
-    /// To change its settings in the Inspector, add this component to a GameObject in the scene instead.
+    /// Handles the client-side game board in Unity. The board is too big to load whole, so this shows one section of it
+    /// at a time (through <see cref="BoardGrpcHandler"/>) and loads another with <see cref="RequestSection"/> or
+    /// <see cref="PanSection"/>. It draws one block per tile, stacked into columns.
+    /// Tiles are drawn at their position on the whole board: board x maps to world x, board y to world z, and board z
+    /// (the level) to world y, so tile (x, y, z) is centred at local position (x, (z + 0.5) * <see cref="LevelHeight"/>, y).
+    /// Lives on the Board prefab (Assets/Prefabs/Board/Board.prefab), placed in the scene. Every tile block is an
+    /// instance of the BoardTile prefab, created under the prefab's Tiles child.
     /// </summary>
     public class BoardController : MonoBehaviour
     {
@@ -24,38 +26,68 @@ namespace Kingsboard.Board
         /// </summary>
         public const float TileGap = 0.04f;
 
-        [Tooltip("Move the main camera to look at the board whenever a new board arrives")]
+        [Tooltip("Move the main camera to look at the section whenever a new section arrives")]
         [SerializeField] private bool frameCamera = true;
+
+        [Tooltip("Width and depth of the first section to load. 0 uses the server's default size.")]
+        [SerializeField] private int sectionSize = 0;
+
+        [Tooltip("Prefab drawn for every tile (Assets/Prefabs/Board/BoardTile.prefab). Needs a Renderer; it is coloured and scaled per tile.")]
+        [SerializeField] private GameObject tilePrefab;
+
+        [Tooltip("Where tile blocks are created (the Tiles child of the Board prefab)")]
+        [SerializeField] private Transform tileRoot;
 
         private BoardGrpcHandler _handler;
         private readonly Dictionary<TileType, Material> _materials = new Dictionary<TileType, Material>();
         private GameObject[] _tileObjects = Array.Empty<GameObject>();
-        private Transform _tileRoot;
 
         /// <summary>
-        /// The latest board from the server, or null before one has arrived
+        /// The section of the board currently loaded, or null before one has arrived
         /// </summary>
-        public GameBoard Board { get; private set; }
+        public BoardSection Section { get; private set; }
 
         /// <summary>
-        /// Raised when a whole new board arrives (on connect, or when the server recreates the board)
+        /// Largest width or depth of a section the server allows (0 until connected)
         /// </summary>
-        public event Action<GameBoard> BoardLoaded;
+        public int MaxSectionSize => _handler != null ? _handler.MaxSectionSize : 0;
 
         /// <summary>
-        /// Raised after tiles on the current board change, with the tiles placed or replaced and the positions removed
+        /// Raised when a whole new section arrives (on connect, after <see cref="RequestSection"/>, or when the server
+        /// recreates the board)
+        /// </summary>
+        public event Action<BoardSection> SectionLoaded;
+
+        /// <summary>
+        /// Raised after tiles in the current section change, with the tiles placed or replaced and the positions removed
         /// </summary>
         public event Action<IReadOnlyList<MapTile>, IReadOnlyList<BoardPosition>> TilesChanged;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void CreateIfMissing()
+        /// <summary>
+        /// Asks the server for a different section of the board; it replaces the current one when it arrives.
+        /// A region hanging over the board's edge is moved back onto it.
+        /// Returns null when the request was accepted, otherwise the reason it wasn't.
+        /// </summary>
+        public Task<string> RequestSection(BoardRegion region)
         {
-            if (FindAnyObjectByType<BoardController>() == null)
+            if (_handler == null)
             {
-                GameObject board = new GameObject("Board");
-                DontDestroyOnLoad(board);
-                board.AddComponent<BoardController>();
+                return Task.FromResult("The board isn't connected");
             }
+            return _handler.RequestSectionAsync(region);
+        }
+
+        /// <summary>
+        /// Loads the section next to the current one: moved by <paramref name="dx"/> columns and <paramref name="dy"/> rows,
+        /// keeping its size. Returns null when the request was accepted, otherwise the reason it wasn't.
+        /// </summary>
+        public Task<string> PanSection(int dx, int dy)
+        {
+            if (Section == null)
+            {
+                return Task.FromResult("No section has loaded yet");
+            }
+            return RequestSection(Section.Region.Moved(dx, dy));
         }
 
         /// <summary>
@@ -68,18 +100,19 @@ namespace Kingsboard.Board
 
         /// <summary>
         /// World position of the centre of the top surface of the stack in the position's column (its Z is ignored),
-        /// where a pawn would stand
+        /// where a pawn would stand. Columns outside the loaded section count as empty.
         /// </summary>
         public Vector3 StackTopToWorld(BoardPosition column)
         {
-            int stackHeight = Board != null ? Board.GetStackHeight(column) : 0;
+            int stackHeight = Section != null ? Section.GetStackHeight(column) : 0;
             return transform.TransformPoint(new Vector3(column.X, stackHeight * LevelHeight, column.Y));
         }
 
         /// <summary>
-        /// The board position whose block contains a world position. It may be a tile, empty space, or off the board
-        /// (check with <see cref="BoardExtensions.Contains"/>). For a raycast hit, nudge the point into the block you
-        /// want first: hit.point - hit.normal * 0.01f for the tile hit, or + hit.normal * 0.01f for the empty space in front of it.
+        /// The board position whose block contains a world position. It may be a tile, empty space, or outside the loaded
+        /// section (check with <see cref="BoardExtensions.Contains(BoardSection, BoardPosition)"/>). For a raycast hit, nudge
+        /// the point into the block you want first: hit.point - hit.normal * 0.01f for the tile hit, or + hit.normal * 0.01f
+        /// for the empty space in front of it.
         /// </summary>
         public BoardPosition WorldToPosition(Vector3 worldPosition)
         {
@@ -94,21 +127,35 @@ namespace Kingsboard.Board
 
         private void Start()
         {
-            _tileRoot = new GameObject("Tiles").transform;
-            _tileRoot.SetParent(transform, false);
+            if (tilePrefab == null)
+            {
+                Debug.LogError("[Board] No tile prefab is assigned to the BoardController, so the board can't be drawn. Use the Board prefab.", this);
+                enabled = false;
+                return;
+            }
+            if (tileRoot == null)
+            {
+                tileRoot = transform;
+            }
 
             _handler = new BoardGrpcHandler();
-            _handler.BoardReceived += OnBoardReceived;
+            _handler.SectionReceived += OnSectionReceived;
             _handler.TilesChanged += OnTilesChanged;
             _handler.Disconnected += OnDisconnected;
-            _handler.Connect();
+
+            BoardRegion? firstRegion = null;
+            if (sectionSize > 0)
+            {
+                firstRegion = new BoardRegion() { Origin = new BoardPosition(), Width = sectionSize, Depth = sectionSize };
+            }
+            _handler.Connect(firstRegion);
         }
 
         private void OnDestroy()
         {
             if (_handler != null)
             {
-                _handler.BoardReceived -= OnBoardReceived;
+                _handler.SectionReceived -= OnSectionReceived;
                 _handler.TilesChanged -= OnTilesChanged;
                 _handler.Disconnected -= OnDisconnected;
                 _handler.Dispose();
@@ -122,9 +169,9 @@ namespace Kingsboard.Board
             _materials.Clear();
         }
 
-        private void OnBoardReceived(GameBoard board)
+        private void OnSectionReceived(BoardSection section)
         {
-            Board = board;
+            Section = section;
             RebuildTiles();
 
             if (frameCamera)
@@ -132,32 +179,33 @@ namespace Kingsboard.Board
                 FrameCamera();
             }
 
-            Debug.Log($"[Board] Received a {board.Width} x {board.Depth} x {board.Height} board");
-            BoardLoaded?.Invoke(board);
+            BoardRegion region = section.Region;
+            Debug.Log($"[Board] Loaded a {region.Width} x {region.Depth} section at ({region.Origin.X}, {region.Origin.Y}) of the {section.BoardWidth} x {section.BoardDepth} x {section.BoardHeight} board");
+            SectionLoaded?.Invoke(section);
         }
 
         private void OnTilesChanged(string boardId, long version, IReadOnlyList<MapTile> placed, IReadOnlyList<BoardPosition> removed)
         {
             // Ignore changes for a board we don't have, or older than what we already have
-            if (Board == null || boardId != Board.Id || version <= Board.Version)
+            if (Section == null || boardId != Section.Id || version <= Section.Version)
             {
                 return;
             }
 
-            Board.ApplyChanges(version, placed, removed);
+            Section.ApplyChanges(version, placed, removed);
 
             foreach (BoardPosition position in removed)
             {
-                if (Board.Contains(position))
+                if (Section.Contains(position))
                 {
-                    SetTileObject(Board.IndexOf(position), null);
+                    SetTileObject(Section.IndexOf(position), null);
                 }
             }
             foreach (MapTile tile in placed)
             {
-                if (Board.Contains(tile.Position))
+                if (Section.Contains(tile.Position))
                 {
-                    SetTileObject(Board.IndexOf(tile.Position), tile);
+                    SetTileObject(Section.IndexOf(tile.Position), tile);
                 }
             }
 
@@ -166,7 +214,7 @@ namespace Kingsboard.Board
 
         private void OnDisconnected()
         {
-            // Keep showing the last board; the server sends it again in full when we reconnect
+            // Keep showing the last section; the server sends it again in full when we reconnect
             Debug.LogWarning("[Board] Disconnected from the board server. Reconnecting...");
         }
 
@@ -180,15 +228,15 @@ namespace Kingsboard.Board
                 }
             }
 
-            _tileObjects = new GameObject[Board.Tiles.Length];
-            for (int i = 0; i < Board.Tiles.Length; i++)
+            _tileObjects = new GameObject[Section.Tiles.Length];
+            for (int i = 0; i < Section.Tiles.Length; i++)
             {
-                SetTileObject(i, Board.Tiles[i]);
+                SetTileObject(i, Section.Tiles[i]);
             }
         }
 
         /// <summary>
-        /// Makes the block at a board index match <paramref name="tile"/>: creates, updates or (for null) destroys it
+        /// Makes the block at a section index match <paramref name="tile"/>: creates, updates or (for null) destroys it
         /// </summary>
         private void SetTileObject(int index, MapTile tile)
         {
@@ -206,8 +254,7 @@ namespace Kingsboard.Board
 
             if (tileObject == null)
             {
-                tileObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                tileObject.transform.SetParent(_tileRoot, false);
+                tileObject = Instantiate(tilePrefab, tileRoot, false);
                 _tileObjects[index] = tileObject;
             }
 
@@ -243,6 +290,9 @@ namespace Kingsboard.Board
             return material;
         }
 
+        /// <summary>
+        /// Points the main camera at the middle of the loaded section, far enough back to see all of it
+        /// </summary>
         private void FrameCamera()
         {
             Camera camera = Camera.main;
@@ -251,9 +301,13 @@ namespace Kingsboard.Board
                 return;
             }
 
-            float halfHeight = Board.Height * LevelHeight / 2f;
-            Vector3 centre = transform.TransformPoint(new Vector3((Board.Width - 1) / 2f, halfHeight, (Board.Depth - 1) / 2f));
-            float size = Mathf.Max(Board.Width, Board.Depth);
+            BoardRegion region = Section.Region;
+            float halfHeight = Section.BoardHeight * LevelHeight / 2f;
+            Vector3 centre = transform.TransformPoint(new Vector3(
+                region.Origin.X + (region.Width - 1) / 2f,
+                halfHeight,
+                region.Origin.Y + (region.Depth - 1) / 2f));
+            float size = Mathf.Max(region.Width, region.Depth);
             camera.transform.position = centre + new Vector3(0f, size * 0.8f + halfHeight, -size * 0.8f);
             camera.transform.LookAt(centre);
         }

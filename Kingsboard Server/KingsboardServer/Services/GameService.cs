@@ -3,13 +3,14 @@ using KingsboardServer.Services.Interfaces;
 namespace KingsboardServer.Services
 {
     /// <summary>
-    /// Runs the game: creates the board, then drives the turn loop on a background task
+    /// Runs the game: creates the board and spawns the pawns, then drives the turn loop on a background task
     /// </summary>
     public class GameService : IGameService
     {
         private readonly Serilog.ILogger _logger;
         private readonly ITurnService _turnService;
         private readonly IBoardService _boardService;
+        private readonly IPawnService _pawnService;
 
         private readonly object _lifecycleLock = new();
         private CancellationTokenSource? _gameCts;
@@ -18,11 +19,12 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Creates the service. Nothing runs until <see cref="StartGame"/> is called.
         /// </summary>
-        public GameService(Serilog.ILogger logger, ITurnService turnService, IBoardService boardService)
+        public GameService(Serilog.ILogger logger, ITurnService turnService, IBoardService boardService, IPawnService pawnService)
         {
             _logger = logger;
             _turnService = turnService;
             _boardService = boardService;
+            _pawnService = pawnService;
         }
 
         /// <summary>
@@ -32,8 +34,9 @@ namespace KingsboardServer.Services
         {
             try
             {
-                // Every game is played on a freshly generated board
+                // Every game is played on a freshly generated board, with a fresh set of pawns
                 _boardService.CreateBoard();
+                _pawnService.SpawnPawns();
 
                 await _turnService.RunTurnLoopAsync(cancellationToken);
             }

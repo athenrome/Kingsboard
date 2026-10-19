@@ -69,11 +69,25 @@ namespace KingsboardServer
                 builder.Services.AddOptions<BoardSettings>()
                     .Bind(builder.Configuration.GetSection(BoardSettings.SectionName))
                     .Validate(s => s.Width > 0 && s.Depth > 0 && s.Height > 0, "BoardSettings: Width, Depth and Height must be greater than 0")
+                    .Validate(s => s.MaxSectionSize > 0 && s.DefaultSectionSize > 0 && s.DefaultSectionSize <= s.MaxSectionSize, "BoardSettings: DefaultSectionSize must be between 1 and MaxSectionSize")
                     .ValidateOnStart();
 
                 builder.Services.AddSingleton<IBoardRepository, BoardRepository>();
                 builder.Services.AddSingleton<IBoardService, BoardService>();
                 builder.Services.AddSingleton<ITileService, TileService>();
+                builder.Services.AddSingleton<IBoardViewService, BoardViewService>();
+
+                //Pawn settings (appsettings.json -> "PawnSettings")
+                builder.Services.AddOptions<PawnSettings>()
+                    .Bind(builder.Configuration.GetSection(PawnSettings.SectionName))
+                    .Validate(s => s.Count >= 0 && s.SpawnAreaSize > 0 && s.MoveRange >= 0 && s.MaxClimb >= 0, "PawnSettings: Count, MoveRange and MaxClimb can't be negative, and SpawnAreaSize must be greater than 0")
+                    .ValidateOnStart();
+
+                builder.Services.AddSingleton<IPawnRepository, PawnRepository>();
+                // One PawnService instance is both the pawn API and the handler for the turn phases pawns act in
+                builder.Services.AddSingleton<PawnService>();
+                builder.Services.AddSingleton<IPawnService>(services => services.GetRequiredService<PawnService>());
+                builder.Services.AddSingleton<ITurnPhaseHandler>(services => services.GetRequiredService<PawnService>());
 
                 builder.Services.AddSingleton<IGameService, GameService>();
 
@@ -88,6 +102,7 @@ namespace KingsboardServer
                 app.MapGrpcService<ChatGrpcHandler>();
                 app.MapGrpcService<TurnTimerGrpcHandler>();
                 app.MapGrpcService<BoardGrpcHandler>();
+                app.MapGrpcService<PawnGrpcHandler>();
                 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
                 IGameService game = app.Services.GetRequiredService<IGameService>();

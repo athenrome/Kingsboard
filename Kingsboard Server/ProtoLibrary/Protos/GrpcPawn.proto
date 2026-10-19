@@ -1,0 +1,71 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcPawn";
+
+import "google/protobuf/empty.proto";
+import "GrpcBoard.proto";
+
+// Pawns: characters that move around the board on their own. The server decides everything about them;
+// clients only display what they're sent.
+//
+// Pawns move in two stages every turn:
+//   Planning phase   - each pawn chooses where it intends to go and the path to get there (`planned` event)
+//   Resolution phase - each pawn walks its path as far as it still can (`moved` event)
+// A pawn always stands on top of a stack: its position is the empty space directly above the stack's top tile.
+service PawnService {
+  // Server stream of pawn events. The first event is always a `snapshot` of every pawn (with any plan already made
+  // this turn), followed by `spawned`, `planned` and `moved` events as the game plays out.
+  rpc JoinPawnStream(google.protobuf.Empty) returns (stream PawnEvent);
+
+  // One-off query for every pawn
+  rpc GetPawns(google.protobuf.Empty) returns (PawnList);
+}
+
+message Pawn {
+  string id = 1;
+  string name = 2;
+  string colour = 3;                    // "#RRGGBB"
+  BoardPosition position = 4;           // Where the pawn stands: the empty space on top of a stack
+  // The path the pawn plans to walk this turn: each step in order, ending at its intended destination.
+  // Empty when it has no plan (before Planning, after Resolution, or when it chose to stay put).
+  repeated BoardPosition planned_path = 5;
+}
+
+message PawnList {
+  repeated Pawn pawns = 1;
+}
+
+// How one pawn moved during Resolution
+message PawnMovement {
+  string pawn_id = 1;
+  repeated BoardPosition path = 2;  // Each position it moved through, in order (empty if it didn't move)
+  BoardPosition position = 3;       // Where it ended up
+  bool blocked = 4;                 // True if it stopped short of its planned destination
+}
+
+message PawnsSnapshot {
+  repeated Pawn pawns = 1;
+}
+
+message PawnsSpawned {
+  repeated Pawn pawns = 1; // Every pawn: a new set replaces all earlier pawns (e.g. a new game)
+}
+
+message PawnsPlanned {
+  int32 turn_id = 1;
+  repeated Pawn pawns = 2; // Every pawn, with its planned_path for this turn
+}
+
+message PawnsMoved {
+  int32 turn_id = 1;
+  repeated PawnMovement movements = 2; // How each pawn moved, for animating
+  repeated Pawn pawns = 3;             // Every pawn after moving (plans cleared)
+}
+
+message PawnEvent {
+  oneof payload {
+    PawnsSnapshot snapshot = 1; // Sent first: replace everything the client had
+    PawnsSpawned spawned = 2;
+    PawnsPlanned planned = 3;
+    PawnsMoved moved = 4;
+  }
+}

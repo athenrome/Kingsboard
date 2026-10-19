@@ -9,9 +9,10 @@ using grpc = global::Grpc.Core;
 
 namespace GrpcBoard {
   /// <summary>
-  /// The game board: a 3D grid of map tiles owned by the server. Tiles stack on top of each other
-  /// in columns. Clients only ever read it; the server changes tiles as the game plays out and
-  /// streams the changes to everyone.
+  /// The game board: a large 3D grid of map tiles owned by the server. Tiles stack on top of each other
+  /// in columns. The board is too big to send whole, so each client views one section of it at a time
+  /// (a rectangle of columns, full height) and asks for a different section when it needs one.
+  /// Clients only ever read the board; the server changes tiles and streams the changes in each client's section.
   ///
   /// Positions on the board are always a BoardPosition (x, y, z), all starting at 0:
   ///   x - column across the board (0 = left)
@@ -58,27 +59,41 @@ namespace GrpcBoard {
     }
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Marshaller<global::Google.Protobuf.WellKnownTypes.Empty> __Marshaller_google_protobuf_Empty = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Google.Protobuf.WellKnownTypes.Empty.Parser));
+    static readonly grpc::Marshaller<global::GrpcBoard.JoinBoardStreamRequest> __Marshaller_JoinBoardStreamRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcBoard.JoinBoardStreamRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::GrpcBoard.BoardEvent> __Marshaller_BoardEvent = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcBoard.BoardEvent.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Marshaller<global::GrpcBoard.BoardState> __Marshaller_BoardState = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcBoard.BoardState.Parser));
+    static readonly grpc::Marshaller<global::GrpcBoard.SetBoardSectionRequest> __Marshaller_SetBoardSectionRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcBoard.SetBoardSectionRequest.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::Google.Protobuf.WellKnownTypes.Empty> __Marshaller_google_protobuf_Empty = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Google.Protobuf.WellKnownTypes.Empty.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::GrpcBoard.BoardRegion> __Marshaller_BoardRegion = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcBoard.BoardRegion.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::GrpcBoard.BoardSection> __Marshaller_BoardSection = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcBoard.BoardSection.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcBoard.BoardEvent> __Method_JoinBoardStream = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcBoard.BoardEvent>(
+    static readonly grpc::Method<global::GrpcBoard.JoinBoardStreamRequest, global::GrpcBoard.BoardEvent> __Method_JoinBoardStream = new grpc::Method<global::GrpcBoard.JoinBoardStreamRequest, global::GrpcBoard.BoardEvent>(
         grpc::MethodType.ServerStreaming,
         __ServiceName,
         "JoinBoardStream",
-        __Marshaller_google_protobuf_Empty,
+        __Marshaller_JoinBoardStreamRequest,
         __Marshaller_BoardEvent);
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcBoard.BoardState> __Method_GetBoard = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcBoard.BoardState>(
+    static readonly grpc::Method<global::GrpcBoard.SetBoardSectionRequest, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SetBoardSection = new grpc::Method<global::GrpcBoard.SetBoardSectionRequest, global::Google.Protobuf.WellKnownTypes.Empty>(
         grpc::MethodType.Unary,
         __ServiceName,
-        "GetBoard",
-        __Marshaller_google_protobuf_Empty,
-        __Marshaller_BoardState);
+        "SetBoardSection",
+        __Marshaller_SetBoardSectionRequest,
+        __Marshaller_google_protobuf_Empty);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::GrpcBoard.BoardRegion, global::GrpcBoard.BoardSection> __Method_GetBoardSection = new grpc::Method<global::GrpcBoard.BoardRegion, global::GrpcBoard.BoardSection>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetBoardSection",
+        __Marshaller_BoardRegion,
+        __Marshaller_BoardSection);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -91,30 +106,48 @@ namespace GrpcBoard {
     public abstract partial class BoardServiceBase
     {
       /// <summary>
-      /// Server stream of board events. The first event is always a full `board` snapshot
-      /// (once the game has created the board), followed by `tiles_changed` updates.
-      /// A new `board` snapshot is sent whenever the board is recreated (e.g. a new game);
-      /// it replaces everything the client had.
+      /// Joins the board view and streams the client's section. Events, in order:
+      ///   1. `joined`  - always first: the session id (for SetBoardSection) and section size limits
+      ///   2. `section` - the requested section, once the game has created the board
+      ///   3. `tiles_changed` for tiles inside the section, and a new `section` whenever the client asks
+      ///      for a different one or the board is recreated (each `section` replaces everything the client had)
+      /// Leaving is automatic when the stream is closed. Errors:
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="responseStream">Used for sending responses back to the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
       /// <returns>A task indicating completion of the handler.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual global::System.Threading.Tasks.Task JoinBoardStream(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::IServerStreamWriter<global::GrpcBoard.BoardEvent> responseStream, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task JoinBoardStream(global::GrpcBoard.JoinBoardStreamRequest request, grpc::IServerStreamWriter<global::GrpcBoard.BoardEvent> responseStream, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
       /// <summary>
-      /// One-off query for the whole board. Errors:
-      ///   UNAVAILABLE - the game hasn't created a board yet
+      /// Changes which section a joined client is viewing. The new section is sent on its stream. Errors:
+      ///   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+      ///   INVALID_ARGUMENT    - the region is missing, smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
       /// <returns>The response to send back to the client (wrapped by a task).</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual global::System.Threading.Tasks.Task<global::GrpcBoard.BoardState> GetBoard(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::Google.Protobuf.WellKnownTypes.Empty> SetBoardSection(global::GrpcBoard.SetBoardSectionRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      /// <summary>
+      /// One-off query for a section of the board. Errors:
+      ///   UNAVAILABLE      - the game hasn't created a board yet
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+      /// </summary>
+      /// <param name="request">The request received from the client.</param>
+      /// <param name="context">The context of the server-side call handler being invoked.</param>
+      /// <returns>The response to send back to the client (wrapped by a task).</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::GrpcBoard.BoardSection> GetBoardSection(global::GrpcBoard.BoardRegion request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -149,10 +182,13 @@ namespace GrpcBoard {
       }
 
       /// <summary>
-      /// Server stream of board events. The first event is always a full `board` snapshot
-      /// (once the game has created the board), followed by `tiles_changed` updates.
-      /// A new `board` snapshot is sent whenever the board is recreated (e.g. a new game);
-      /// it replaces everything the client had.
+      /// Joins the board view and streams the client's section. Events, in order:
+      ///   1. `joined`  - always first: the session id (for SetBoardSection) and section size limits
+      ///   2. `section` - the requested section, once the game has created the board
+      ///   3. `tiles_changed` for tiles inside the section, and a new `section` whenever the client asks
+      ///      for a different one or the board is recreated (each `section` replaces everything the client had)
+      /// Leaving is automatic when the stream is closed. Errors:
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -160,27 +196,31 @@ namespace GrpcBoard {
       /// <param name="cancellationToken">An optional token for canceling the call.</param>
       /// <returns>The call object.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual grpc::AsyncServerStreamingCall<global::GrpcBoard.BoardEvent> JoinBoardStream(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncServerStreamingCall<global::GrpcBoard.BoardEvent> JoinBoardStream(global::GrpcBoard.JoinBoardStreamRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
         return JoinBoardStream(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// Server stream of board events. The first event is always a full `board` snapshot
-      /// (once the game has created the board), followed by `tiles_changed` updates.
-      /// A new `board` snapshot is sent whenever the board is recreated (e.g. a new game);
-      /// it replaces everything the client had.
+      /// Joins the board view and streams the client's section. Events, in order:
+      ///   1. `joined`  - always first: the session id (for SetBoardSection) and section size limits
+      ///   2. `section` - the requested section, once the game has created the board
+      ///   3. `tiles_changed` for tiles inside the section, and a new `section` whenever the client asks
+      ///      for a different one or the board is recreated (each `section` replaces everything the client had)
+      /// Leaving is automatic when the stream is closed. Errors:
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
       /// <returns>The call object.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual grpc::AsyncServerStreamingCall<global::GrpcBoard.BoardEvent> JoinBoardStream(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
+      public virtual grpc::AsyncServerStreamingCall<global::GrpcBoard.BoardEvent> JoinBoardStream(global::GrpcBoard.JoinBoardStreamRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncServerStreamingCall(__Method_JoinBoardStream, null, options, request);
       }
       /// <summary>
-      /// One-off query for the whole board. Errors:
-      ///   UNAVAILABLE - the game hasn't created a board yet
+      /// Changes which section a joined client is viewing. The new section is sent on its stream. Errors:
+      ///   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+      ///   INVALID_ARGUMENT    - the region is missing, smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -188,25 +228,27 @@ namespace GrpcBoard {
       /// <param name="cancellationToken">An optional token for canceling the call.</param>
       /// <returns>The response received from the server.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual global::GrpcBoard.BoardState GetBoard(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual global::Google.Protobuf.WellKnownTypes.Empty SetBoardSection(global::GrpcBoard.SetBoardSectionRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetBoard(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return SetBoardSection(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// One-off query for the whole board. Errors:
-      ///   UNAVAILABLE - the game hasn't created a board yet
+      /// Changes which section a joined client is viewing. The new section is sent on its stream. Errors:
+      ///   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+      ///   INVALID_ARGUMENT    - the region is missing, smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
       /// <returns>The response received from the server.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual global::GrpcBoard.BoardState GetBoard(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
+      public virtual global::Google.Protobuf.WellKnownTypes.Empty SetBoardSection(global::GrpcBoard.SetBoardSectionRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.BlockingUnaryCall(__Method_GetBoard, null, options, request);
+        return CallInvoker.BlockingUnaryCall(__Method_SetBoardSection, null, options, request);
       }
       /// <summary>
-      /// One-off query for the whole board. Errors:
-      ///   UNAVAILABLE - the game hasn't created a board yet
+      /// Changes which section a joined client is viewing. The new section is sent on its stream. Errors:
+      ///   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+      ///   INVALID_ARGUMENT    - the region is missing, smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -214,21 +256,78 @@ namespace GrpcBoard {
       /// <param name="cancellationToken">An optional token for canceling the call.</param>
       /// <returns>The call object.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual grpc::AsyncUnaryCall<global::GrpcBoard.BoardState> GetBoardAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      public virtual grpc::AsyncUnaryCall<global::Google.Protobuf.WellKnownTypes.Empty> SetBoardSectionAsync(global::GrpcBoard.SetBoardSectionRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
       {
-        return GetBoardAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+        return SetBoardSectionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// One-off query for the whole board. Errors:
-      ///   UNAVAILABLE - the game hasn't created a board yet
+      /// Changes which section a joined client is viewing. The new section is sent on its stream. Errors:
+      ///   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+      ///   INVALID_ARGUMENT    - the region is missing, smaller than 1 x 1 or bigger than the max section size
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
       /// <returns>The call object.</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual grpc::AsyncUnaryCall<global::GrpcBoard.BoardState> GetBoardAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
+      public virtual grpc::AsyncUnaryCall<global::Google.Protobuf.WellKnownTypes.Empty> SetBoardSectionAsync(global::GrpcBoard.SetBoardSectionRequest request, grpc::CallOptions options)
       {
-        return CallInvoker.AsyncUnaryCall(__Method_GetBoard, null, options, request);
+        return CallInvoker.AsyncUnaryCall(__Method_SetBoardSection, null, options, request);
+      }
+      /// <summary>
+      /// One-off query for a section of the board. Errors:
+      ///   UNAVAILABLE      - the game hasn't created a board yet
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::GrpcBoard.BoardSection GetBoardSection(global::GrpcBoard.BoardRegion request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetBoardSection(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// One-off query for a section of the board. Errors:
+      ///   UNAVAILABLE      - the game hasn't created a board yet
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::GrpcBoard.BoardSection GetBoardSection(global::GrpcBoard.BoardRegion request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetBoardSection, null, options, request);
+      }
+      /// <summary>
+      /// One-off query for a section of the board. Errors:
+      ///   UNAVAILABLE      - the game hasn't created a board yet
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::GrpcBoard.BoardSection> GetBoardSectionAsync(global::GrpcBoard.BoardRegion request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetBoardSectionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// One-off query for a section of the board. Errors:
+      ///   UNAVAILABLE      - the game hasn't created a board yet
+      ///   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::GrpcBoard.BoardSection> GetBoardSectionAsync(global::GrpcBoard.BoardRegion request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetBoardSection, null, options, request);
       }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
@@ -245,7 +344,8 @@ namespace GrpcBoard {
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_JoinBoardStream, serviceImpl.JoinBoardStream)
-          .AddMethod(__Method_GetBoard, serviceImpl.GetBoard).Build();
+          .AddMethod(__Method_SetBoardSection, serviceImpl.SetBoardSection)
+          .AddMethod(__Method_GetBoardSection, serviceImpl.GetBoardSection).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -255,8 +355,9 @@ namespace GrpcBoard {
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     public static void BindService(grpc::ServiceBinderBase serviceBinder, BoardServiceBase serviceImpl)
     {
-      serviceBinder.AddMethod(__Method_JoinBoardStream, serviceImpl == null ? null : new grpc::ServerStreamingServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcBoard.BoardEvent>(serviceImpl.JoinBoardStream));
-      serviceBinder.AddMethod(__Method_GetBoard, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcBoard.BoardState>(serviceImpl.GetBoard));
+      serviceBinder.AddMethod(__Method_JoinBoardStream, serviceImpl == null ? null : new grpc::ServerStreamingServerMethod<global::GrpcBoard.JoinBoardStreamRequest, global::GrpcBoard.BoardEvent>(serviceImpl.JoinBoardStream));
+      serviceBinder.AddMethod(__Method_SetBoardSection, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcBoard.SetBoardSectionRequest, global::Google.Protobuf.WellKnownTypes.Empty>(serviceImpl.SetBoardSection));
+      serviceBinder.AddMethod(__Method_GetBoardSection, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcBoard.BoardRegion, global::GrpcBoard.BoardSection>(serviceImpl.GetBoardSection));
     }
 
   }

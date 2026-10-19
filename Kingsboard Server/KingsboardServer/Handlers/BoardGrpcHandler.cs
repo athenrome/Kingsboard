@@ -1,163 +1,170 @@
-using System.Threading.Channels;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcBoard;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Services.Interfaces;
+using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
+using BoardRegion = KingsboardServer.Models.Board.BoardRegion;
+using BoardSection = KingsboardServer.Models.Board.BoardSection;
+using ProtoBoardPosition = GrpcBoard.BoardPosition;
+using ProtoBoardRegion = GrpcBoard.BoardRegion;
+using ProtoBoardSection = GrpcBoard.BoardSection;
 using ProtoTileType = GrpcBoard.TileType;
 using TileType = KingsboardServer.Models.Enumerations.TileType;
-using ProtoBoardPosition = GrpcBoard.BoardPosition;
-using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
 
 namespace KingsboardServer.Handlers
 {
     /// <summary>
-    /// Handles board requests from clients (gRPC). All board logic lives in <see cref="IBoardService"/>.
+    /// Handles board requests from clients (gRPC). Which section each client sees lives in <see cref="IBoardViewService"/>,
+    /// and all board rules live in <see cref="IBoardService"/>.
     /// </summary>
-    public class BoardGrpcHandler : BoardService.BoardServiceBase
+    public class BoardGrpcHandler : GrpcBoard.BoardService.BoardServiceBase
     {
-        // Per-client buffer of board events. If a client falls this far behind, its queued
-        // changes are thrown away and it is sent a fresh snapshot instead, so it never misses a change.
-        private const int OutboxCapacity = 256;
-
-        private readonly IBoardService _boardService;
+        private readonly IBoardViewService _viewService;
         private readonly ITileService _tileService;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
         /// <summary>
-        /// Created by gRPC for each call, with the board and tile services and server lifetime it streams from
+        /// Created by gRPC for each call, with the view and tile services and server lifetime it uses
         /// </summary>
-        public BoardGrpcHandler(IBoardService boardService, ITileService tileService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        public BoardGrpcHandler(IBoardViewService viewService, ITileService tileService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
-            _boardService = boardService;
+            _viewService = viewService;
             _tileService = tileService;
             _lifetime = lifetime;
             _logger = logger;
         }
 
         /// <summary>
-        /// Returns the whole current board. Fails with UNAVAILABLE if the game hasn't created a board yet.
+        /// Joins the client to the board view and streams its section: a `joined` event first, then the section,
+        /// then changes inside it and any new sections, until the client disconnects (which leaves the view)
         /// </summary>
-        public override Task<BoardState> GetBoard(Empty request, ServerCallContext context)
+        public override async Task JoinBoardStream(JoinBoardStreamRequest request, IServerStreamWriter<BoardEvent> responseStream, ServerCallContext context)
         {
-            GameBoard? board = _boardService.GetBoard();
-            if (board is null)
-            {
-                throw new RpcException(new Status(StatusCode.Unavailable, "The board hasn't been created yet"));
-            }
-            return Task.FromResult(ToBoardState(board));
-        }
+            BoardRegion region = request.Region is null ? _viewService.DefaultRegion : FromProto(request.Region);
 
-        /// <summary>
-        /// Streams the board to one client: a full snapshot first, then tile changes and any new boards, until the client disconnects
-        /// </summary>
-        public override async Task JoinBoardStream(Empty request, IServerStreamWriter<BoardEvent> responseStream, ServerCallContext context)
-        {
-            // Holds GameBoard snapshots and TilesChange updates, in the order they happened
-            Channel<object> outbox = System.Threading.Channels.Channel.CreateBounded<object>(new BoundedChannelOptions(OutboxCapacity)
+            BoardViewSubscription subscription;
+            try
             {
-                FullMode = BoundedChannelFullMode.Wait, // TryWrite fails when full, which triggers a resync
-                SingleReader = true,
-                SingleWriter = false
-            });
-            int resyncNeeded = 0;
-
-            // gRPC doesn't allow concurrent writes to one stream, so board events are only queued here
-            // and this call is the single writer to the client.
-            void Enqueue(object item)
-            {
-                if (!outbox.Writer.TryWrite(item))
-                {
-                    Interlocked.Exchange(ref resyncNeeded, 1);
-                }
+                subscription = _viewService.Join(region);
             }
-            void OnBoardCreated(object? sender, GameBoard board) => Enqueue(board);
-            void OnTilesChanged(object? sender, TilesChange change) => Enqueue(change);
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            }
 
             // End the stream when the client disconnects or the server shuts down
             using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken, _lifetime.ApplicationStopping);
             CancellationToken token = cts.Token;
 
-            // Subscribe before taking the snapshot so no change can fall between them.
-            // Changes already included in the snapshot are skipped below by version.
-            _boardService.BoardCreated += OnBoardCreated;
-            _boardService.TilesChanged += OnTilesChanged;
-            _logger.Information("Client {Peer} joined the board stream", context.Peer);
-
-            Guid? sentBoardId = null;
-            long sentVersion = 0;
-
             try
             {
-                GameBoard? current = _boardService.GetBoard();
-                if (current is not null)
+                await responseStream.WriteAsync(new BoardEvent()
                 {
-                    Enqueue(current);
-                }
-
-                await foreach (object item in outbox.Reader.ReadAllAsync(token))
-                {
-                    object next = item;
-
-                    if (Interlocked.Exchange(ref resyncNeeded, 0) == 1)
+                    Joined = new BoardJoined()
                     {
-                        // The client fell behind and changes were dropped: throw away the backlog and resend the whole board
-                        while (outbox.Reader.TryRead(out _)) { }
-                        GameBoard? latest = _boardService.GetBoard();
-                        if (latest is null)
-                        {
-                            continue;
-                        }
-                        _logger.Warning("Client {Peer} fell behind on the board stream; resending the board", context.Peer);
-                        next = latest;
+                        SessionId = subscription.SessionId.ToString(),
+                        MaxSectionSize = _viewService.MaxSectionSize,
+                        DefaultSectionSize = _viewService.DefaultSectionSize
                     }
+                });
 
-                    switch (next)
+                // Only this call writes to the stream (gRPC doesn't allow concurrent writes)
+                await foreach (BoardViewEvent viewEvent in subscription.Events.ReadAllAsync(token))
+                {
+                    if (viewEvent.Section is BoardSection section)
                     {
-                        case GameBoard board when board.Id != sentBoardId || board.Version > sentVersion:
-                            sentBoardId = board.Id;
-                            sentVersion = board.Version;
-                            await responseStream.WriteAsync(new BoardEvent() { Board = ToBoardState(board) });
-                            break;
-
-                        // Skip changes for a board the client doesn't have, or already included in what it was sent
-                        case TilesChange change when change.BoardId == sentBoardId && change.Version > sentVersion:
-                            sentVersion = change.Version;
-                            await responseStream.WriteAsync(new BoardEvent() { TilesChanged = ToTilesChanged(change) });
-                            break;
+                        await responseStream.WriteAsync(new BoardEvent() { Section = ToProto(section) });
+                    }
+                    else if (viewEvent.Change is TilesChange change)
+                    {
+                        await responseStream.WriteAsync(new BoardEvent() { TilesChanged = ToProto(change) });
                     }
                 }
             }
-            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            catch (Exception ex) when (token.IsCancellationRequested)
             {
                 // Client disconnected or server is stopping
+                _logger.Debug("Board stream for {SessionId} closed: {Reason}", subscription.SessionId, ex.Message);
             }
             finally
             {
-                _boardService.BoardCreated -= OnBoardCreated;
-                _boardService.TilesChanged -= OnTilesChanged;
-                outbox.Writer.TryComplete();
-                _logger.Information("Client {Peer} left the board stream", context.Peer);
+                _viewService.Leave(subscription.SessionId);
             }
         }
 
-        private BoardState ToBoardState(GameBoard board)
+        /// <summary>
+        /// Moves a joined client to a different section; the section is sent on its stream.
+        /// Fails with FAILED_PRECONDITION if the session isn't joined, or INVALID_ARGUMENT if the region is missing or the wrong size.
+        /// </summary>
+        public override Task<Empty> SetBoardSection(SetBoardSectionRequest request, ServerCallContext context)
         {
-            BoardState state = new BoardState()
+            if (!Guid.TryParse(request.SessionId, out Guid sessionId))
             {
-                BoardId = board.Id.ToString(),
-                Version = board.Version,
-                Width = board.Width,
-                Depth = board.Depth,
-                Height = board.Height
-            };
-            // Only positions that hold a tile are sent; everything else is empty
-            state.Tiles.AddRange(board.Tiles.OfType<MapTile>().Select(ToProto));
-            return state;
+                throw new RpcException(new Status(StatusCode.FailedPrecondition, "Missing or invalid session id. Join the board stream first."));
+            }
+            if (request.Region is null)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "A region is required"));
+            }
+
+            bool joined;
+            try
+            {
+                joined = _viewService.SetRegion(sessionId, FromProto(request.Region));
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            }
+
+            if (!joined)
+            {
+                throw new RpcException(new Status(StatusCode.FailedPrecondition, "You are not viewing the board. Join the board stream first."));
+            }
+            return Task.FromResult(new Empty());
         }
 
-        private TilesChanged ToTilesChanged(TilesChange change)
+        /// <summary>
+        /// Returns one section of the board. Fails with UNAVAILABLE if the game hasn't created a board yet,
+        /// or INVALID_ARGUMENT if the region is the wrong size.
+        /// </summary>
+        public override Task<ProtoBoardSection> GetBoardSection(ProtoBoardRegion request, ServerCallContext context)
+        {
+            BoardSection? section;
+            try
+            {
+                section = _viewService.GetSection(FromProto(request));
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            }
+
+            if (section is null)
+            {
+                throw new RpcException(new Status(StatusCode.Unavailable, "The board hasn't been created yet"));
+            }
+            return Task.FromResult(ToProto(section));
+        }
+
+        private ProtoBoardSection ToProto(BoardSection section)
+        {
+            ProtoBoardSection message = new ProtoBoardSection()
+            {
+                BoardId = section.BoardId.ToString(),
+                Version = section.Version,
+                BoardWidth = section.BoardWidth,
+                BoardDepth = section.BoardDepth,
+                BoardHeight = section.BoardHeight,
+                Region = ToProto(section.Region)
+            };
+            message.Tiles.AddRange(section.Tiles.Select(ToProto));
+            return message;
+        }
+
+        private TilesChanged ToProto(TilesChange change)
         {
             TilesChanged message = new TilesChanged()
             {
@@ -176,6 +183,16 @@ namespace KingsboardServer.Handlers
                 Position = ToProto(tile.Position),
                 Type = ToProto(tile.Type),
                 Passable = _tileService.IsPassable(tile)
+            };
+        }
+
+        private static ProtoBoardRegion ToProto(BoardRegion region)
+        {
+            return new ProtoBoardRegion()
+            {
+                Origin = ToProto(region.Origin),
+                Width = region.Width,
+                Depth = region.Depth
             };
         }
 
@@ -199,5 +216,12 @@ namespace KingsboardServer.Handlers
             TileType.Stone => ProtoTileType.Stone,
             _ => ProtoTileType.Unspecified
         };
+
+        private static BoardRegion FromProto(ProtoBoardRegion region)
+        {
+            // A missing origin arrives as null; proto3 treats that as (0, 0, 0)
+            BoardPosition origin = region.Origin is null ? new BoardPosition(0, 0, 0) : new BoardPosition(region.Origin.X, region.Origin.Y, 0);
+            return new BoardRegion(origin, region.Width, region.Depth);
+        }
     }
 }

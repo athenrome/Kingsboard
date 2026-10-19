@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace Kingsboard.Board
 {
     /// <summary>
-    /// Logic for <see cref="GameBoard"/> and <see cref="BoardPosition"/> (models hold data only).
-    /// Every position on the board is checked and evaluated as a <see cref="BoardPosition"/>.
+    /// Logic for <see cref="BoardSection"/>, <see cref="BoardRegion"/> and <see cref="BoardPosition"/> (models hold data only).
+    /// Every position on the board is checked and evaluated as a <see cref="BoardPosition"/>, using positions on the whole board.
     /// </summary>
     public static class BoardExtensions
     {
@@ -18,52 +18,73 @@ namespace Kingsboard.Board
         }
 
         /// <summary>
-        /// Whether the position is inside the board's bounds
+        /// The same region moved by <paramref name="dx"/> columns and <paramref name="dy"/> rows
         /// </summary>
-        public static bool Contains(this GameBoard board, BoardPosition position)
+        public static BoardRegion Moved(this BoardRegion region, int dx, int dy)
         {
-            return position.X >= 0 && position.X < board.Width
-                && position.Y >= 0 && position.Y < board.Depth
-                && position.Z >= 0 && position.Z < board.Height;
+            return new BoardRegion()
+            {
+                Origin = new BoardPosition() { X = region.Origin.X + dx, Y = region.Origin.Y + dy, Z = 0 },
+                Width = region.Width,
+                Depth = region.Depth
+            };
         }
 
         /// <summary>
-        /// Index of the position in <see cref="GameBoard.Tiles"/>
+        /// Whether the position's column is inside the region (its Z is ignored)
         /// </summary>
-        public static int IndexOf(this GameBoard board, BoardPosition position)
+        public static bool Contains(this BoardRegion region, BoardPosition position)
         {
-            return (position.Z * board.Depth + position.Y) * board.Width + position.X;
+            return position.X >= region.Origin.X && position.X < region.Origin.X + region.Width
+                && position.Y >= region.Origin.Y && position.Y < region.Origin.Y + region.Depth;
         }
 
         /// <summary>
-        /// Whether the position is on the board and is empty space (holds no tile)
+        /// Whether the position is inside this section: in its region and within the board's height
         /// </summary>
-        public static bool IsEmpty(this GameBoard board, BoardPosition position)
+        public static bool Contains(this BoardSection section, BoardPosition position)
         {
-            return board.Contains(position) && board.Tiles[board.IndexOf(position)] == null;
+            return section.Region.Contains(position) && position.Z >= 0 && position.Z < section.BoardHeight;
         }
 
         /// <summary>
-        /// The tile at the position, or null if it's empty space or off the board
+        /// Index of the position in <see cref="BoardSection.Tiles"/> (only meaningful if the section contains it)
         /// </summary>
-        public static MapTile GetTile(this GameBoard board, BoardPosition position)
+        public static int IndexOf(this BoardSection section, BoardPosition position)
         {
-            return board.Contains(position) ? board.Tiles[board.IndexOf(position)] : null;
+            BoardRegion region = section.Region;
+            return (position.Z * region.Depth + (position.Y - region.Origin.Y)) * region.Width + (position.X - region.Origin.X);
         }
 
         /// <summary>
-        /// Number of tiles in the stack in the position's column (its Z is ignored), or 0 if the column is off the board.
+        /// Whether the position is in this section and is empty space (holds no tile)
+        /// </summary>
+        public static bool IsEmpty(this BoardSection section, BoardPosition position)
+        {
+            return section.Contains(position) && section.Tiles[section.IndexOf(position)] == null;
+        }
+
+        /// <summary>
+        /// The tile at the position, or null if it's empty space or outside this section
+        /// </summary>
+        public static MapTile GetTile(this BoardSection section, BoardPosition position)
+        {
+            return section.Contains(position) ? section.Tiles[section.IndexOf(position)] : null;
+        }
+
+        /// <summary>
+        /// Number of tiles in the stack in the position's column (its Z is ignored), or 0 if the column is outside this section.
         /// Stacks are solid from the bottom up, so this is also the Z of the empty space on top of the stack.
         /// </summary>
-        public static int GetStackHeight(this GameBoard board, BoardPosition column)
+        public static int GetStackHeight(this BoardSection section, BoardPosition column)
         {
-            if (!board.Contains(column.AtLevel(0)))
+            if (!section.Region.Contains(column))
             {
                 return 0;
             }
 
             int z = 0;
-            while (z < board.Height && !board.IsEmpty(column.AtLevel(z)))
+            while (z < section.BoardHeight && !section.IsEmpty(column.AtLevel(z)))
             {
                 z++;
             }
@@ -71,59 +92,59 @@ namespace Kingsboard.Board
         }
 
         /// <summary>
-        /// The top tile of the stack in the position's column (its Z is ignored), or null if the stack is empty or off the board
+        /// The top tile of the stack in the position's column (its Z is ignored), or null if the stack is empty or outside this section
         /// </summary>
-        public static MapTile GetTopTile(this GameBoard board, BoardPosition column)
+        public static MapTile GetTopTile(this BoardSection section, BoardPosition column)
         {
-            int stackHeight = board.GetStackHeight(column);
-            return stackHeight == 0 ? null : board.GetTile(column.AtLevel(stackHeight - 1));
+            int stackHeight = section.GetStackHeight(column);
+            return stackHeight == 0 ? null : section.GetTile(column.AtLevel(stackHeight - 1));
         }
 
         /// <summary>
         /// The empty position on top of the stack in the position's column (its Z is ignored), where the next tile would go.
-        /// Null if the stack is full or the column is off the board.
+        /// Null if the stack is full or the column is outside this section.
         /// </summary>
-        public static BoardPosition? GetPlacementPosition(this GameBoard board, BoardPosition column)
+        public static BoardPosition? GetPlacementPosition(this BoardSection section, BoardPosition column)
         {
-            if (!board.Contains(column.AtLevel(0)))
+            if (!section.Region.Contains(column))
             {
                 return null;
             }
 
-            int stackHeight = board.GetStackHeight(column);
-            return stackHeight < board.Height ? column.AtLevel(stackHeight) : (BoardPosition?)null;
+            int stackHeight = section.GetStackHeight(column);
+            return stackHeight < section.BoardHeight ? column.AtLevel(stackHeight) : (BoardPosition?)null;
         }
 
         /// <summary>
-        /// Puts tiles onto the board at their own positions, replacing anything there. Tiles off the board are ignored.
+        /// Puts tiles into the section at their own positions, replacing anything there. Tiles outside the section are ignored.
         /// </summary>
-        public static void PlaceTiles(this GameBoard board, IEnumerable<MapTile> tiles)
+        public static void PlaceTiles(this BoardSection section, IEnumerable<MapTile> tiles)
         {
-            int size = board.Width * board.Depth * board.Height;
-            if (board.Tiles.Length != size)
+            int size = section.Region.Width * section.Region.Depth * section.BoardHeight;
+            if (section.Tiles.Length != size)
             {
-                board.Tiles = new MapTile[size];
+                section.Tiles = new MapTile[size];
             }
 
             foreach (MapTile tile in tiles)
             {
-                if (board.Contains(tile.Position))
+                if (section.Contains(tile.Position))
                 {
-                    board.Tiles[board.IndexOf(tile.Position)] = tile;
+                    section.Tiles[section.IndexOf(tile.Position)] = tile;
                 }
             }
         }
 
         /// <summary>
-        /// Turns these positions into empty space. Positions off the board are ignored.
+        /// Turns these positions into empty space. Positions outside the section are ignored.
         /// </summary>
-        public static void RemoveTiles(this GameBoard board, IEnumerable<BoardPosition> positions)
+        public static void RemoveTiles(this BoardSection section, IEnumerable<BoardPosition> positions)
         {
             foreach (BoardPosition position in positions)
             {
-                if (board.Contains(position))
+                if (section.Contains(position))
                 {
-                    board.Tiles[board.IndexOf(position)] = null;
+                    section.Tiles[section.IndexOf(position)] = null;
                 }
             }
         }
@@ -131,11 +152,11 @@ namespace Kingsboard.Board
         /// <summary>
         /// Applies a change from the server: removals first, then placements (the same order the server uses)
         /// </summary>
-        public static void ApplyChanges(this GameBoard board, long version, IEnumerable<MapTile> placed, IEnumerable<BoardPosition> removed)
+        public static void ApplyChanges(this BoardSection section, long version, IEnumerable<MapTile> placed, IEnumerable<BoardPosition> removed)
         {
-            board.RemoveTiles(removed);
-            board.PlaceTiles(placed);
-            board.Version = Math.Max(board.Version, version);
+            section.RemoveTiles(removed);
+            section.PlaceTiles(placed);
+            section.Version = Math.Max(section.Version, version);
         }
     }
 }

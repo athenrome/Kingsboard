@@ -3,9 +3,10 @@ option csharp_namespace = "GrpcBoard";
 
 import "google/protobuf/empty.proto";
 
-// The game board: a 3D grid of map tiles owned by the server. Tiles stack on top of each other
-// in columns. Clients only ever read it; the server changes tiles as the game plays out and
-// streams the changes to everyone.
+// The game board: a large 3D grid of map tiles owned by the server. Tiles stack on top of each other
+// in columns. The board is too big to send whole, so each client views one section of it at a time
+// (a rectangle of columns, full height) and asks for a different section when it needs one.
+// Clients only ever read the board; the server changes tiles and streams the changes in each client's section.
 //
 // Positions on the board are always a BoardPosition (x, y, z), all starting at 0:
 //   x - column across the board (0 = left)
@@ -14,15 +15,24 @@ import "google/protobuf/empty.proto";
 // A position may hold a tile or be empty space.
 // Every stack is solid from z = 0 up to its top tile: there are never gaps or floating tiles.
 service BoardService {
-  // Server stream of board events. The first event is always a full `board` snapshot
-  // (once the game has created the board), followed by `tiles_changed` updates.
-  // A new `board` snapshot is sent whenever the board is recreated (e.g. a new game);
-  // it replaces everything the client had.
-  rpc JoinBoardStream(google.protobuf.Empty) returns (stream BoardEvent);
+  // Joins the board view and streams the client's section. Events, in order:
+  //   1. `joined`  - always first: the session id (for SetBoardSection) and section size limits
+  //   2. `section` - the requested section, once the game has created the board
+  //   3. `tiles_changed` for tiles inside the section, and a new `section` whenever the client asks
+  //      for a different one or the board is recreated (each `section` replaces everything the client had)
+  // Leaving is automatic when the stream is closed. Errors:
+  //   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+  rpc JoinBoardStream(JoinBoardStreamRequest) returns (stream BoardEvent);
 
-  // One-off query for the whole board. Errors:
-  //   UNAVAILABLE - the game hasn't created a board yet
-  rpc GetBoard(google.protobuf.Empty) returns (BoardState);
+  // Changes which section a joined client is viewing. The new section is sent on its stream. Errors:
+  //   FAILED_PRECONDITION - the session id isn't joined (join first / rejoin after a disconnect)
+  //   INVALID_ARGUMENT    - the region is missing, smaller than 1 x 1 or bigger than the max section size
+  rpc SetBoardSection(SetBoardSectionRequest) returns (google.protobuf.Empty);
+
+  // One-off query for a section of the board. Errors:
+  //   UNAVAILABLE      - the game hasn't created a board yet
+  //   INVALID_ARGUMENT - the region is smaller than 1 x 1 or bigger than the max section size
+  rpc GetBoardSection(BoardRegion) returns (BoardSection);
 }
 
 enum TileType {
@@ -42,6 +52,15 @@ message BoardPosition {
   int32 z = 3;
 }
 
+// A rectangle of columns on the board, covering every level.
+// The server moves a region that hangs over the edge of the board back onto it (keeping its size where it can),
+// so always use the region a `BoardSection` comes back with.
+message BoardRegion {
+  BoardPosition origin = 1; // Front-left column of the region (its z is ignored)
+  int32 width = 2;          // Number of columns (x) in the region
+  int32 depth = 3;          // Number of rows (y) in the region
+}
+
 message Tile {
   reserved 1, 2, 5; // Old x, y, z fields: now `position`
   BoardPosition position = 6;
@@ -49,16 +68,35 @@ message Tile {
   bool passable = 4; // Whether pawns can stand on this tile when it's the top of its stack
 }
 
-message BoardState {
-  string board_id = 1; // Changes when the board is recreated
-  int64 version = 2;   // Goes up by one with every change to the board
-  int32 width = 3;     // Number of columns (x)
-  int32 depth = 4;     // Number of rows (y)
-  int32 height = 6;    // Most tiles a stack can hold (z)
-  // Every tile on the board, in no particular order. Positions with no tile are empty space.
-  repeated Tile tiles = 5;
+message JoinBoardStreamRequest {
+  // The section to start with. Leave unset for the server's default section (at the board's front-left corner).
+  BoardRegion region = 1;
 }
 
+message SetBoardSectionRequest {
+  string session_id = 1; // From the `joined` event
+  BoardRegion region = 2;
+}
+
+message BoardJoined {
+  string session_id = 1;           // Pass this to SetBoardSection
+  int32 max_section_size = 2;      // Largest width or depth a region may have
+  int32 default_section_size = 3;  // Width and depth of the default section
+}
+
+// A section of the board: every tile in a region of columns, plus the size of the whole board
+message BoardSection {
+  string board_id = 1;     // Changes when the board is recreated
+  int64 version = 2;       // The board version this section was taken at
+  int32 board_width = 3;   // Number of columns (x) on the whole board
+  int32 board_depth = 4;   // Number of rows (y) on the whole board
+  int32 board_height = 5;  // Most tiles a stack can hold (z)
+  BoardRegion region = 6;  // The region this section covers (after being moved onto the board)
+  // Every tile in the region, in no particular order. Positions with no tile are empty space.
+  repeated Tile tiles = 7;
+}
+
+// Tiles that changed inside the client's current section
 message TilesChanged {
   string board_id = 1;
   int64 version = 2;                   // The board version after this change
@@ -67,8 +105,10 @@ message TilesChanged {
 }
 
 message BoardEvent {
+  reserved 1; // Old whole-board snapshot: now `section`
   oneof payload {
-    BoardState board = 1;           // Full snapshot: replace the whole board
-    TilesChanged tiles_changed = 2; // Some tiles changed: apply just these
+    BoardJoined joined = 3;         // Sent once, first
+    BoardSection section = 4;       // A full section: replace everything the client had
+    TilesChanged tiles_changed = 2; // Some tiles in the section changed: apply just these
   }
 }

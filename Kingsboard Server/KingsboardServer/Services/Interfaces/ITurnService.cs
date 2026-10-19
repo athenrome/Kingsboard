@@ -14,6 +14,12 @@ namespace KingsboardServer.Services.Interfaces
         event EventHandler<Turn>? TurnStarted;
 
         /// <summary>
+        /// Raised when the turn moves into a new phase, before that phase's work runs. The <see cref="Turn"/> is a snapshot.
+        /// Handlers run on the turn loop, so they must be quick and non-blocking.
+        /// </summary>
+        event EventHandler<Turn>? PhaseStarted;
+
+        /// <summary>
         /// Raised when a turn ends (after resolution). The <see cref="Turn"/> is a snapshot.
         /// Handlers run on the turn loop, so they must be quick and non-blocking.
         /// </summary>

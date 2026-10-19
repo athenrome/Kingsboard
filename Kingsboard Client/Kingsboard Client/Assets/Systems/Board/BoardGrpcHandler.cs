@@ -3,75 +3,107 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcBoard;
 using Kingsboard.Networking;
 using UnityEngine;
 using BoardPosition = Kingsboard.Board.BoardPosition;
+using BoardRegion = Kingsboard.Board.BoardRegion;
+using BoardSection = Kingsboard.Board.BoardSection;
 using TileType = Kingsboard.Board.TileType;
 
 namespace Kingsboard.Board
 {
     /// <summary>
-    /// All communication with the server's board goes through here. Nothing outside this class
-    /// knows about gRPC: the rest of the game only sees <see cref="GameBoard"/>, <see cref="MapTile"/> and the events below.
+    /// Manages the gRPC communication with the server's board. The board is too big to send whole, so the client views
+    /// one section at a time and asks for another with <see cref="RequestSectionAsync"/>. Nothing outside this class knows
+    /// about gRPC: the rest of the game only sees <see cref="BoardSection"/>, <see cref="MapTile"/> and the events below.
     /// Create and use it from the main thread; its events are raised on the main thread.
     /// </summary>
     public class BoardGrpcHandler : IDisposable
     {
         private const double ReconnectDelaySeconds = 2;
+        private const double RequestTimeoutSeconds = 10;
 
         private readonly CancellationTokenSource _shutdown = new CancellationTokenSource();
-        private bool _connected;
+        private GrpcBoard.BoardService.BoardServiceClient _client;
+        private string _sessionId;
+        private BoardRegion? _region;
 
         /// <summary>
-        /// Raised with the whole board when we connect, and whenever the server recreates the board.
-        /// It replaces any board received before.
+        /// Largest width or depth of a section the server allows (0 until joined)
         /// </summary>
-        public event Action<GameBoard> BoardReceived;
+        public int MaxSectionSize { get; private set; }
 
         /// <summary>
-        /// Raised when tiles change: the board id, the new board version, the tiles placed or replaced,
-        /// and the positions whose tiles were removed
+        /// Width and depth of the server's default section (0 until joined)
+        /// </summary>
+        public int DefaultSectionSize { get; private set; }
+
+        /// <summary>
+        /// Raised with a whole section when we connect, when a requested section arrives, and whenever the server
+        /// recreates the board. It replaces any section received before.
+        /// </summary>
+        public event Action<BoardSection> SectionReceived;
+
+        /// <summary>
+        /// Raised when tiles inside the current section change: the board id, the new board version, the tiles placed
+        /// or replaced, and the positions whose tiles were removed
         /// </summary>
         public event Action<string, long, IReadOnlyList<MapTile>, IReadOnlyList<BoardPosition>> TilesChanged;
 
         /// <summary>
-        /// Raised when the connection to the board is lost. It reconnects by itself.
+        /// Raised when the connection to the board is lost. It reconnects by itself, back to the same section.
         /// </summary>
         public event Action Disconnected;
 
         /// <summary>
-        /// Starts listening for the board, reconnecting whenever the connection drops.
-        /// After each reconnect the server sends the whole board again.
+        /// Starts viewing the board at <paramref name="region"/> (or the server's default section if null),
+        /// reconnecting to the latest section whenever the connection drops
         /// </summary>
-        public async void Connect()
+        public async void Connect(BoardRegion? region = null)
         {
             CancellationToken token = _shutdown.Token;
-            GrpcBoard.BoardService.BoardServiceClient client = new GrpcBoard.BoardService.BoardServiceClient(GrpcConnection.Channel);
+            _client = new GrpcBoard.BoardService.BoardServiceClient(GrpcConnection.Channel);
+            _region = region;
             bool logFailure = true;
 
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    using AsyncServerStreamingCall<BoardEvent> call = client.JoinBoardStream(new Empty(), cancellationToken: token);
+                    JoinBoardStreamRequest request = new JoinBoardStreamRequest();
+                    if (_region is BoardRegion current)
+                    {
+                        request.Region = ToProto(current);
+                    }
+
+                    using AsyncServerStreamingCall<BoardEvent> call = _client.JoinBoardStream(request, cancellationToken: token);
 
                     while (await call.ResponseStream.MoveNext(token))
                     {
                         BoardEvent boardEvent = call.ResponseStream.Current;
 
-                        if (boardEvent.PayloadCase == BoardEvent.PayloadOneofCase.Board)
+                        switch (boardEvent.PayloadCase)
                         {
-                            _connected = true;
-                            logFailure = true;
-                            BoardReceived?.Invoke(ToGameBoard(boardEvent.Board));
-                        }
-                        else if (boardEvent.PayloadCase == BoardEvent.PayloadOneofCase.TilesChanged)
-                        {
-                            GrpcBoard.TilesChanged changed = boardEvent.TilesChanged;
-                            TilesChanged?.Invoke(changed.BoardId, changed.Version, changed.Tiles.Select(ToMapTile).ToList(), changed.Removed.Select(ToBoardPosition).ToList());
+                            case BoardEvent.PayloadOneofCase.Joined:
+                                _sessionId = boardEvent.Joined.SessionId;
+                                MaxSectionSize = boardEvent.Joined.MaxSectionSize;
+                                DefaultSectionSize = boardEvent.Joined.DefaultSectionSize;
+                                logFailure = true;
+                                break;
+
+                            case BoardEvent.PayloadOneofCase.Section:
+                                BoardSection section = ToBoardSection(boardEvent.Section);
+                                // Remember where we are, so a reconnect comes back to the same section
+                                _region = section.Region;
+                                SectionReceived?.Invoke(section);
+                                break;
+
+                            case BoardEvent.PayloadOneofCase.TilesChanged:
+                                GrpcBoard.TilesChanged changed = boardEvent.TilesChanged;
+                                TilesChanged?.Invoke(changed.BoardId, changed.Version, changed.Tiles.Select(ToMapTile).ToList(), changed.Removed.Select(ToBoardPosition).ToList());
+                                break;
                         }
                     }
                 }
@@ -95,9 +127,9 @@ namespace Kingsboard.Board
                     return;
                 }
 
-                if (_connected)
+                if (_sessionId != null)
                 {
-                    _connected = false;
+                    _sessionId = null;
                     Disconnected?.Invoke();
                 }
 
@@ -113,25 +145,51 @@ namespace Kingsboard.Board
         }
 
         /// <summary>
-        /// Stops listening (closing the stream is what tells the server we've gone)
+        /// Asks the server for a different section; it arrives through <see cref="SectionReceived"/>.
+        /// The server moves a region that hangs over the board's edge back onto it.
+        /// Returns null when the request was accepted, otherwise the reason it wasn't.
+        /// </summary>
+        public async Task<string> RequestSectionAsync(BoardRegion region)
+        {
+            if (_sessionId == null)
+            {
+                return "Not connected to the board";
+            }
+
+            try
+            {
+                SetBoardSectionRequest request = new SetBoardSectionRequest() { SessionId = _sessionId, Region = ToProto(region) };
+                await _client.SetBoardSectionAsync(request, deadline: DateTime.UtcNow.AddSeconds(RequestTimeoutSeconds), cancellationToken: _shutdown.Token);
+                return null;
+            }
+            catch (RpcException ex)
+            {
+                return string.IsNullOrEmpty(ex.Status.Detail) ? "Section could not be loaded" : ex.Status.Detail;
+            }
+        }
+
+        /// <summary>
+        /// Stops viewing the board (closing the stream is what tells the server we've gone)
         /// </summary>
         public void Dispose()
         {
             _shutdown.Cancel();
+            _sessionId = null;
         }
 
-        private static GameBoard ToGameBoard(BoardState state)
+        private static BoardSection ToBoardSection(GrpcBoard.BoardSection message)
         {
-            GameBoard board = new GameBoard()
+            BoardSection section = new BoardSection()
             {
-                Id = state.BoardId,
-                Version = state.Version,
-                Width = state.Width,
-                Depth = state.Depth,
-                Height = state.Height
+                Id = message.BoardId,
+                Version = message.Version,
+                BoardWidth = message.BoardWidth,
+                BoardDepth = message.BoardDepth,
+                BoardHeight = message.BoardHeight,
+                Region = ToBoardRegion(message.Region)
             };
-            board.PlaceTiles(state.Tiles.Select(ToMapTile));
-            return board;
+            section.PlaceTiles(message.Tiles.Select(ToMapTile));
+            return section;
         }
 
         private static MapTile ToMapTile(Tile tile)
@@ -141,6 +199,21 @@ namespace Kingsboard.Board
                 Position = ToBoardPosition(tile.Position),
                 Type = ToTileType(tile.Type),
                 IsPassable = tile.Passable
+            };
+        }
+
+        private static BoardRegion ToBoardRegion(GrpcBoard.BoardRegion region)
+        {
+            if (region == null)
+            {
+                return new BoardRegion();
+            }
+
+            return new BoardRegion()
+            {
+                Origin = ToBoardPosition(region.Origin),
+                Width = region.Width,
+                Depth = region.Depth
             };
         }
 
@@ -157,6 +230,16 @@ namespace Kingsboard.Board
                 X = position.X,
                 Y = position.Y,
                 Z = position.Z
+            };
+        }
+
+        private static GrpcBoard.BoardRegion ToProto(BoardRegion region)
+        {
+            return new GrpcBoard.BoardRegion()
+            {
+                Origin = new GrpcBoard.BoardPosition() { X = region.Origin.X, Y = region.Origin.Y },
+                Width = region.Width,
+                Depth = region.Depth
             };
         }
 

@@ -17,7 +17,7 @@ Kingsboard Client/Kingsboard Client/   Unity 6000.6.2f1 project (URP)
 ```bash
 dotnet build "Kingsboard Server/KingsboardServer/KingsboardServer.csproj"
 dotnet run --project "Kingsboard Server/KingsboardServer" --launch-profile https   # https://localhost:7116
-dotnet run --project "Kingsboard Server/TestConsole" -- --turns --board            # --server=<url> to override
+dotnet run --project "Kingsboard Server/TestConsole" -- --turns --board --pawns    # --server=<url> to override
 ```
 
 - The server has no MVC controllers. Visual Studio injects its Endpoints Explorer hosting startup (`Microsoft.WebTools.ApiEndpointDiscovery`), which uses MVC and logs "No action descriptors found". Every launch profile in `launchSettings.json` excludes it with `ASPNETCORE_HOSTINGSTARTUPEXCLUDEASSEMBLIES`; keep that when adding profiles.
@@ -28,8 +28,8 @@ dotnet run --project "Kingsboard Server/TestConsole" -- --turns --board         
 ## Protos
 
 - To change the contract, edit `Protos/*.proto` and build ProtoLibrary. That regenerates `Generated/`, which the server, TestConsole and Unity (package `com.kingsboard.protos`) all share. Never hand-edit `Generated/*.cs`; commit the regenerated files.
-- `Pawns.proto` is unfinished and excluded from the build in `ProtoLibrary.csproj`.
-- Each proto uses its own `csharp_namespace` (`GrpcChat`, `GrpcTurnTimer`, `GrpcBoard`).
+- Protos have no protobuf `package`, so one proto refers to another's types by bare name after `import` (e.g. `GrpcPawn.proto` imports `GrpcBoard.proto` and uses `BoardPosition`).
+- Each proto uses its own `csharp_namespace` (`GrpcChat`, `GrpcTurnTimer`, `GrpcBoard`, `GrpcPawn`).
 
 ## Server architecture (`KingsboardServer/`)
 
@@ -41,7 +41,7 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
 - **`Services/`** (and `Services/Interfaces/`): game logic.
   - Services publish changes as C# events whose handlers must be quick and non-blocking.
   - Services hand out snapshots or clones, never live state.
-  - `GameService` runs the game loop: it creates the board, then runs the turn loop.
+  - `GameService` runs the game loop: it creates the board and spawns the pawns, then runs the turn loop.
 - **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories hold no game rules. Thread-safety and handing out copies is the owning service's job (e.g. `BoardService` locks and clones around `BoardRepository`).
 - **`Models/`**: domain types, with subfolders `Chat/`, `Board/`, `Configuration/` and `Enumerations/`. See the model rule below.
 - **`Extensions/`**: static `XxxExtensions` helpers, only for models that have no owning service (currently just `TurnExtensions`). Board logic lives in `BoardService` and tile logic in `TileService`.
@@ -53,17 +53,28 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
 - `Networking/GrpcConnection` holds the one shared `GrpcChannel` (HTTP/2 via `UnityHttpMessageHandler`, address from `--server=`).
 - Each system has a pair of classes:
   - A **`XxxGrpcHandler`** (plain class, `IDisposable`) manages the gRPC communication with the server and is the only code that touches gRPC types. It runs a reconnect loop and raises C# events on the main thread using client-side model classes.
-  - A **`XxxController`** (`MonoBehaviour`) owns state and visuals. It creates itself via `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` when the scene doesn't contain one.
-- **Board (client):** the block at `BoardPosition` (x, y, z) is centred at local position (x, (z + 0.5) × `LevelHeight`, y): board y maps to world z and the level z to world y. The board is rebuilt in full on each snapshot and patched on `tiles_changed` (removals first, then placements). Updates are ignored if they belong to a different board id or have a version older than the current one.
+  - A **`XxxController`** (`MonoBehaviour`) owns state and visuals. It lives on its system's prefab (`Board`, `Pawns`, `Chat`), which is placed in the Main scene. Controllers never create themselves.
+- **Board (client):** the client holds one `BoardSection` (never the whole board). Tiles keep their whole-board positions, and the block at `BoardPosition` (x, y, z) is centred at local position (x, (z + 0.5) × `LevelHeight`, y): board y maps to world z and the level z to world y. Each `section` event rebuilds the view in full, and `tiles_changed` patches it (removals first, then placements). Updates are ignored if they belong to a different board id or have a version older than the current one. Load another section with `BoardController.RequestSection(region)` or `PanSection(dx, dy)`.
 - Server rules, such as validation and limits, are enforced server-side only. Client copies of limits, such as `ChatController.MaxMessageLength`, are only for UX.
 
 ## Board model (3D)
 
 - The board is Width (x) × Depth (y) × Height (z levels). Each (x, y) column is a stack of up to Height tiles, and z = 0 is the bottom.
 - Stacks are always solid from z = 0 up. `BoardService` rejects any change that would leave a tile floating, and rejected changes leave nothing changed.
-- `GameBoard.Tiles` is a flat array indexed by `(z * Depth + y) * Width + x`, with null for empty positions. The proto sends only tiles that exist.
+- Server `GameBoard.Tiles` is a flat array indexed by `(z * Depth + y) * Width + x`, with null for empty positions. The proto sends only tiles that exist.
 - All board changes go through `BoardService.ApplyChanges`, which applies removals and then placements to a copy, checks that every stack is still solid, then saves, bumps the version and raises the event.
 - The public entry points for changes are `PlaceTile`, `RemoveTile`, `SetTiles` and `RemoveTiles`.
+
+### Sections: clients see part of the board
+
+The board, 128 × 128 × 8 by default, is too big to send whole. Each client views one **section** at a time: a `BoardRegion`, which is an origin column plus width × depth, covering every level.
+
+- **Section sizes:** `BoardSettings:DefaultSectionSize` (24) sets the size a client gets when it doesn't ask. `MaxSectionSize` (64) caps every request.
+- **Region fitting:** a region hanging over the board's edge is moved back onto it at the same size where possible. Always use the region a section comes back with.
+- **Streaming:** `JoinBoardStream(region?)` sends `joined` (a session id and the size limits), then the section, then `tiles_changed` for that section only. `SetBoardSection(session_id, region)` sends a new `section` on the same stream. `GetBoardSection(region)` is a one-off query. No RPC returns the whole board.
+- **`BoardViewService`:** owns who is viewing what. It's modelled on `ChatRoomService` (join, set, leave, with a bounded queue per client). A client that falls behind has its backlog replaced by a fresh section.
+- **Ordering:** every section snapshot is taken inside `IBoardService.ReadSection(region, callback)`, which runs under the board lock. Board events are raised under the same lock, so each client's queue is always a section followed by exactly the changes after it. Keep it that way: take board-related view state only inside `ReadSection` or the board events, and never hold the view lock while calling into `BoardService` from outside them. That second rule avoids lock-order deadlocks.
+- **Testing:** in TestConsole, run with `--board`, then type `/view x y [width depth]` to move.
 
 ### BoardPosition
 
@@ -75,9 +86,56 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
 - **Ask before you change.** `CanPlaceTile(position)` is true when the position is empty space resting on a tile or the ground. `CanRemoveTile(position)` is true when the position holds a tile with nothing on top of it.
 - **Client helpers:** `BoardController.WorldToPosition` turns a world point, such as a raycast hit, into a `BoardPosition`, which may be empty space. `PositionToWorld` goes the other way.
 
+## Turn phases
+
+Every turn runs Start → Upkeep → Planning → Player → Resolution → End. The Player phase lasts until the turn timer runs out.
+
+- **Phase handlers:** a service that has work in a phase implements `ITurnPhaseHandler` (`Phases` plus `RunPhaseAsync`) and is registered in `Program.cs` as an `ITurnPhaseHandler`. `TurnService` runs every handler for a phase and **awaits them all before the next phase begins**, so put a phase's work inside `RunPhaseAsync` and return once it's actually done.
+- **Failures:** a handler that throws is logged, and the turn carries on.
+- **Events:** `ITurnService.PhaseStarted` fires as each phase begins. The turn timer stream sends it as `TURN_EVENT_TYPE_PHASE_STARTED`, and `TurnState.phase` carries the current phase.
+- **Client:** `TurnTimerController` (on the TurnTimer prefab) shows the turn number and phase at the top of the screen. During the Player phase it adds a countdown and a draining bar, which turn red in the last `warningSeconds`. The countdown runs locally from the server's `time_remaining_ms`, so it's smooth and unaffected by clock differences. The Player phase ends when the turn's time runs out, so turn time remaining is the Player time remaining.
+
+## Pawns
+
+Pawns are characters that move around the board on their own. All pawn logic is on the server in `PawnService`; the Unity client (`PawnManager` and a `PawnController` per pawn) only displays it. A pawn has an id, a name, a colour (`#RRGGBB`) and a `Position`.
+
+- **Position:** the empty space directly above its stack's top tile.
+- **Spawning:** `GameService` spawns `PawnSettings:Count` pawns on passable ground near the board's front-left corner, inside `SpawnAreaSize`. That's where the default board section is.
+- **Planning phase:** each pawn picks a random destination it can reach and stores the path in `PlannedPath`.
+  - A move is up to `MoveRange` steps. Each step goes to a neighbouring column (4-way) with a passable top, at most `MaxClimb` levels up or down, and never through another pawn.
+  - No two pawns pick the same destination, and none picks a column where another pawn stands.
+- **Resolution phase:** each pawn walks its path step by step and re-checks every step against the current board and the other pawns, because tiles may have changed. It stops at the first step it can't take (`Blocked`), then its plan is cleared.
+- **One instance:** `PawnService` is both `IPawnService` and the `ITurnPhaseHandler` for Planning and Resolution.
+- **Ordering:** `PawnsChanged` is raised under the pawn lock, and `ReadPawns(callback)` subscribes and takes a snapshot together, the same pattern as `BoardService.ReadSection`. Lock order is pawn, then board; the board never calls into pawns.
+- **gRPC:** `JoinPawnStream` sends a `snapshot`, then `spawned`, `planned` and `moved` events. Every pawn is sent; the client shows only those inside its loaded board section.
+- **Client:** `PawnManager` (on the Pawns prefab) handles pawns as a group. It receives them from the server, spawns a `Pawn` prefab per new pawn and despawns pawns that are gone, passes each pawn its own plans and moves, and keeps one pawn selected (click a pawn to select it, click empty space to deselect). Each pawn has its own `PawnController` (on the Pawn prefab) that drives its client actions: name and colour, showing its planned path, walking the path when moves resolve, hiding outside the loaded section, and being selected (`Select`/`Deselect`, which shows its `SelectionRing`). Put per-pawn behaviour in `PawnController` and group behaviour in `PawnManager`.
+
+## Prefab rule (Unity): every GameObject comes from a prefab
+
+- **Scenes:** never build GameObjects in a scene by hand. Place prefab instances instead.
+- **Code:** code that spawns GameObjects instantiates a prefab it references through a `[SerializeField]`. Never use `new GameObject(...)`, `GameObject.CreatePrimitive`, or `AddComponent` to assemble an object at runtime.
+- **Configuration:** a prefab's references and child containers are set on the prefab, not found or created in code.
+- **Location:** prefabs live in `Assets/Prefabs/<System>/`, named for what they are. Materials they need live in `Assets/Materials/<System>/`.
+
+| Prefab | What it is |
+|---|---|
+| `Prefabs/Board/Board.prefab` | `BoardController`, with a `Tiles` child that tile blocks are created under |
+| `Prefabs/Board/BoardTile.prefab` | One tile block (a cube) |
+| `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under |
+| `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` capsule, a `Name` label, a nested `PawnPath` and a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`). Its pivot is at its feet. |
+| `Prefabs/Pawns/PawnPath.prefab` | `LineRenderer` for a planned path (`Materials/Pawns/PawnPath.mat`), nested in `Pawn`. It draws in world space, so it stays put while the pawn walks. |
+| `Prefabs/Chat/Chat.prefab` | `ChatController` |
+| `Prefabs/TurnTimer/TurnTimer.prefab` | `TurnTimerController` and its `UIDocument` |
+
+**Making or changing prefabs:**
+- **Use the live editor.** When the Unity Editor is open, change prefabs and scenes through it (`unity command ...`, e.g. `eval_file` with fully-qualified type names, since `eval` code can't have `using` lines). Don't hand-edit `.prefab` or `.unity` YAML.
+- **Recompile first.** After adding a component script, recompile (`unity command recompile --focus true`, since Unity won't finish a reload in the background) before putting the component on a prefab.
+- **Rename or move scripts with `AssetDatabase.MoveAsset`.** Do it through the editor (e.g. via `eval`), never by moving `.cs`/`.meta` files on disk. A script moved on disk can be silently left out of compilation.
+- **Screenshots:** `capture_game_view` saves under `Assets/`, so delete the file afterwards. Pass `--source screen` in Play mode to include UI Toolkit overlays (chat, turn timer); the default camera capture leaves them out. Bring the editor to the front (`unity command editor_focus`) before Play mode checks, because a background editor runs too slowly for `eval` to respond.
+
 ## Model rule: models hold data only
 
-This applies to model files on both the server (`Models/**`) and the client (data classes such as `GameBoard`, `MapTile` and `ChatLine`).
+This applies to model files on both the server (`Models/**`) and the client (data classes such as `BoardSection`, `BoardRegion`, `MapTile` and `ChatLine`).
 
 **Allowed in a model file:**
 - Auto-properties, optionally with a default value (`public int Width { get; set; } = 16;`)
@@ -124,7 +182,7 @@ public int Width { get; set; }
 A summary should say what the member does or means, including any limits and when it throws. Don't restate the name, and use real summaries rather than `<inheritdoc/>`.
 
 **How this is checked:**
-- **Server:** `KingsboardServer.csproj` treats a missing summary (CS1591) or a broken `cref`/`param` (CS1572–CS1574) as a build error.
+- **Server:** `KingsboardServer.csproj` reports a missing summary (CS1591) as a build warning, so check build output for CS1591 and fix any you introduce. A broken `cref`/`param` (CS1572–CS1574) is still a build error.
 - **Unity:** the editor doesn't run this check. Use the throwaway compile-check csproj with `<GenerateDocumentationFile>true</GenerateDocumentationFile>` and look for CS1591 under `Assets/`. Comments explain *why*.
 - Every class that manages gRPC communication is named `XxxGrpcHandler`: server endpoints in `KingsboardServer/Handlers/`, and client handlers in `Assets/Systems/<System>/`. There is no `Services/Grpc/`.
 - Work happens on the `prototype` branch; `master` is the main branch.

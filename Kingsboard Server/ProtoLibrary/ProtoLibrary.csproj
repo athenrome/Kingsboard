@@ -32,9 +32,8 @@
     <!--
       Every .proto under Protos/ is compiled automatically. Generated files are written to Generated/
       (mirroring any subfolders) and compiled by Grpc.Tools.
-      Pawns.proto is excluded until it's finished: it uses an undefined message type and doesn't import empty.proto.
     -->
-    <Protobuf Include="Protos\**\*.proto" Exclude="Protos\Pawns.proto" ProtoRoot="Protos" GrpcServices="Both" OutputDir="Generated" />
+    <Protobuf Include="Protos\**\*.proto" ProtoRoot="Protos" GrpcServices="Both" OutputDir="Generated" />
 
     <!-- Grpc.Tools already compiles its output; stop the SDK's *.cs glob from compiling Generated/ a second time -->
     <Compile Remove="Generated\**" />

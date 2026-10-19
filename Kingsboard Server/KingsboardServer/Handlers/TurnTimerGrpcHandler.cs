@@ -5,17 +5,19 @@ using GrpcTurnTimer;
 using KingsboardServer.Extensions;
 using KingsboardServer.Models;
 using KingsboardServer.Services.Interfaces;
+using ModelTurnPhase = KingsboardServer.Models.Enumerations.TurnPhase;
+using ProtoTurnPhase = GrpcTurnTimer.TurnPhase;
 
 namespace KingsboardServer.Handlers
 {
     /// <summary>
-    /// Handles turn timer requests from clients (gRPC). Broadcasts the global turn timer (turn started / turn ended) to every connected client.
+    /// Handles turn timer requests from clients (gRPC). Broadcasts the global turn timer (turn started, each phase started, turn ended) to every connected client.
     /// </summary>
     public class TurnTimerGrpcHandler : TurnTimerService.TurnTimerServiceBase
     {
         // Per-client buffer. If a client falls this far behind, its oldest events are dropped
         // rather than blocking the turn loop or other clients.
-        private const int OutboxCapacity = 16;
+        private const int OutboxCapacity = 32;
 
         private readonly ITurnService _turnService;
         private readonly TimeProvider _timeProvider;
@@ -58,6 +60,7 @@ namespace KingsboardServer.Handlers
             // and this call is the single writer to the client.
             void OnTurnStarted(object? sender, Turn turn) => outbox.Writer.TryWrite(CreateEvent(TurnEventType.Started, turn));
             void OnTurnEnded(object? sender, Turn turn) => outbox.Writer.TryWrite(CreateEvent(TurnEventType.Ended, turn));
+            void OnPhaseStarted(object? sender, Turn turn) => outbox.Writer.TryWrite(CreateEvent(TurnEventType.PhaseStarted, turn));
 
             // End the stream when the client disconnects or the server shuts down
             using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken, _lifetime.ApplicationStopping);
@@ -65,6 +68,7 @@ namespace KingsboardServer.Handlers
 
             _turnService.TurnStarted += OnTurnStarted;
             _turnService.TurnEnded += OnTurnEnded;
+            _turnService.PhaseStarted += OnPhaseStarted;
             _logger.Information("Client {Peer} joined the turn stream", context.Peer);
 
             try
@@ -90,6 +94,7 @@ namespace KingsboardServer.Handlers
             {
                 _turnService.TurnStarted -= OnTurnStarted;
                 _turnService.TurnEnded -= OnTurnEnded;
+                _turnService.PhaseStarted -= OnPhaseStarted;
                 outbox.Writer.TryComplete();
                 _logger.Information("Client {Peer} left the turn stream", context.Peer);
             }
@@ -112,8 +117,20 @@ namespace KingsboardServer.Handlers
                 StartedAt = Timestamp.FromDateTimeOffset(turn.StartedAt),
                 EndsAt = Timestamp.FromDateTimeOffset(turn.EndsAt),
                 TurnDurationMs = (int)turn.GetDuration().TotalMilliseconds,
-                TimeRemainingMs = (int)turn.GetTimeRemaining(_timeProvider.GetUtcNow()).TotalMilliseconds
+                TimeRemainingMs = (int)turn.GetTimeRemaining(_timeProvider.GetUtcNow()).TotalMilliseconds,
+                Phase = ToProto(turn.CurrentPhase)
             };
         }
+
+        private static ProtoTurnPhase ToProto(ModelTurnPhase phase) => phase switch
+        {
+            ModelTurnPhase.Start => ProtoTurnPhase.Start,
+            ModelTurnPhase.Upkeep => ProtoTurnPhase.Upkeep,
+            ModelTurnPhase.Planning => ProtoTurnPhase.Planning,
+            ModelTurnPhase.Player => ProtoTurnPhase.Player,
+            ModelTurnPhase.Resolution => ProtoTurnPhase.Resolution,
+            ModelTurnPhase.End => ProtoTurnPhase.End,
+            _ => ProtoTurnPhase.Unspecified
+        };
     }
 }

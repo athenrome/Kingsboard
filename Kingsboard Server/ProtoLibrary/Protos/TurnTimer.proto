@@ -20,6 +20,18 @@ enum TurnEventType {
   TURN_EVENT_TYPE_STARTED = 1; // A new turn has begun
   TURN_EVENT_TYPE_ENDED = 2;   // The turn has ended (resolution complete)
   TURN_EVENT_TYPE_SYNC = 3;    // Sent on join with the turn already in progress
+  TURN_EVENT_TYPE_PHASE_STARTED = 4; // The turn moved into a new phase (see TurnState.phase)
+}
+
+// The stages every turn moves through, in this order. Each phase finishes all its work before the next begins.
+enum TurnPhase {
+  TURN_PHASE_UNSPECIFIED = 0;
+  TURN_PHASE_START = 1;      // The turn has just begun
+  TURN_PHASE_UPKEEP = 2;     // Pawns are prepared for the turn
+  TURN_PHASE_PLANNING = 3;   // Pawns choose their actions (e.g. where to move)
+  TURN_PHASE_PLAYER = 4;     // Players choose cards for their pawns until the timer runs out
+  TURN_PHASE_RESOLUTION = 5; // The chosen actions are carried out (e.g. pawns move)
+  TURN_PHASE_END = 6;        // The turn is over
 }
 
 message TurnState {
@@ -30,6 +42,7 @@ message TurnState {
   // Time left in the turn when the server sent this message. Prefer this over
   // ends_at for countdowns so client/server clock differences don't matter.
   int32 time_remaining_ms = 5;
+  TurnPhase phase = 6; // The phase the turn is in
 }
 
 message TurnEvent {

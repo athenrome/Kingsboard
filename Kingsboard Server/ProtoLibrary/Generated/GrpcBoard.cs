@@ -26,31 +26,45 @@ namespace GrpcBoard {
           string.Concat(
             "Cg9HcnBjQm9hcmQucHJvdG8aG2dvb2dsZS9wcm90b2J1Zi9lbXB0eS5wcm90",
             "byIwCg1Cb2FyZFBvc2l0aW9uEgkKAXgYASABKAUSCQoBeRgCIAEoBRIJCgF6",
-            "GAMgASgFImUKBFRpbGUSIAoIcG9zaXRpb24YBiABKAsyDi5Cb2FyZFBvc2l0",
-            "aW9uEhcKBHR5cGUYAyABKA4yCS5UaWxlVHlwZRIQCghwYXNzYWJsZRgEIAEo",
-            "CEoECAEQAkoECAIQA0oECAUQBiJzCgpCb2FyZFN0YXRlEhAKCGJvYXJkX2lk",
-            "GAEgASgJEg8KB3ZlcnNpb24YAiABKAMSDQoFd2lkdGgYAyABKAUSDQoFZGVw",
-            "dGgYBCABKAUSDgoGaGVpZ2h0GAYgASgFEhQKBXRpbGVzGAUgAygLMgUuVGls",
-            "ZSJoCgxUaWxlc0NoYW5nZWQSEAoIYm9hcmRfaWQYASABKAkSDwoHdmVyc2lv",
-            "bhgCIAEoAxIUCgV0aWxlcxgDIAMoCzIFLlRpbGUSHwoHcmVtb3ZlZBgEIAMo",
-            "CzIOLkJvYXJkUG9zaXRpb24iXQoKQm9hcmRFdmVudBIcCgVib2FyZBgBIAEo",
-            "CzILLkJvYXJkU3RhdGVIABImCg10aWxlc19jaGFuZ2VkGAIgASgLMg0uVGls",
-            "ZXNDaGFuZ2VkSABCCQoHcGF5bG9hZCqoAQoIVGlsZVR5cGUSGQoVVElMRV9U",
-            "WVBFX1VOU1BFQ0lGSUVEEAASEwoPVElMRV9UWVBFX1dBVEVSEAESFAoQVElM",
-            "RV9UWVBFX1BMQUlOUxACEhQKEFRJTEVfVFlQRV9GT1JFU1QQAxITCg9USUxF",
-            "X1RZUEVfSElMTFMQBBIWChJUSUxFX1RZUEVfTU9VTlRBSU4QBRITCg9USUxF",
-            "X1RZUEVfU1RPTkUQBjJ5CgxCb2FyZFNlcnZpY2USOAoPSm9pbkJvYXJkU3Ry",
-            "ZWFtEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GgsuQm9hcmRFdmVudDABEi8K",
-            "CEdldEJvYXJkEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GgsuQm9hcmRTdGF0",
-            "ZUIMqgIJR3JwY0JvYXJkYgZwcm90bzM="));
+            "GAMgASgFIksKC0JvYXJkUmVnaW9uEh4KBm9yaWdpbhgBIAEoCzIOLkJvYXJk",
+            "UG9zaXRpb24SDQoFd2lkdGgYAiABKAUSDQoFZGVwdGgYAyABKAUiZQoEVGls",
+            "ZRIgCghwb3NpdGlvbhgGIAEoCzIOLkJvYXJkUG9zaXRpb24SFwoEdHlwZRgD",
+            "IAEoDjIJLlRpbGVUeXBlEhAKCHBhc3NhYmxlGAQgASgISgQIARACSgQIAhAD",
+            "SgQIBRAGIjYKFkpvaW5Cb2FyZFN0cmVhbVJlcXVlc3QSHAoGcmVnaW9uGAEg",
+            "ASgLMgwuQm9hcmRSZWdpb24iSgoWU2V0Qm9hcmRTZWN0aW9uUmVxdWVzdBIS",
+            "CgpzZXNzaW9uX2lkGAEgASgJEhwKBnJlZ2lvbhgCIAEoCzIMLkJvYXJkUmVn",
+            "aW9uIlkKC0JvYXJkSm9pbmVkEhIKCnNlc3Npb25faWQYASABKAkSGAoQbWF4",
+            "X3NlY3Rpb25fc2l6ZRgCIAEoBRIcChRkZWZhdWx0X3NlY3Rpb25fc2l6ZRgD",
+            "IAEoBSKlAQoMQm9hcmRTZWN0aW9uEhAKCGJvYXJkX2lkGAEgASgJEg8KB3Zl",
+            "cnNpb24YAiABKAMSEwoLYm9hcmRfd2lkdGgYAyABKAUSEwoLYm9hcmRfZGVw",
+            "dGgYBCABKAUSFAoMYm9hcmRfaGVpZ2h0GAUgASgFEhwKBnJlZ2lvbhgGIAEo",
+            "CzIMLkJvYXJkUmVnaW9uEhQKBXRpbGVzGAcgAygLMgUuVGlsZSJoCgxUaWxl",
+            "c0NoYW5nZWQSEAoIYm9hcmRfaWQYASABKAkSDwoHdmVyc2lvbhgCIAEoAxIU",
+            "CgV0aWxlcxgDIAMoCzIFLlRpbGUSHwoHcmVtb3ZlZBgEIAMoCzIOLkJvYXJk",
+            "UG9zaXRpb24ihwEKCkJvYXJkRXZlbnQSHgoGam9pbmVkGAMgASgLMgwuQm9h",
+            "cmRKb2luZWRIABIgCgdzZWN0aW9uGAQgASgLMg0uQm9hcmRTZWN0aW9uSAAS",
+            "JgoNdGlsZXNfY2hhbmdlZBgCIAEoCzINLlRpbGVzQ2hhbmdlZEgAQgkKB3Bh",
+            "eWxvYWRKBAgBEAIqqAEKCFRpbGVUeXBlEhkKFVRJTEVfVFlQRV9VTlNQRUNJ",
+            "RklFRBAAEhMKD1RJTEVfVFlQRV9XQVRFUhABEhQKEFRJTEVfVFlQRV9QTEFJ",
+            "TlMQAhIUChBUSUxFX1RZUEVfRk9SRVNUEAMSEwoPVElMRV9UWVBFX0hJTExT",
+            "EAQSFgoSVElMRV9UWVBFX01PVU5UQUlOEAUSEwoPVElMRV9UWVBFX1NUT05F",
+            "EAYyvQEKDEJvYXJkU2VydmljZRI5Cg9Kb2luQm9hcmRTdHJlYW0SFy5Kb2lu",
+            "Qm9hcmRTdHJlYW1SZXF1ZXN0GgsuQm9hcmRFdmVudDABEkIKD1NldEJvYXJk",
+            "U2VjdGlvbhIXLlNldEJvYXJkU2VjdGlvblJlcXVlc3QaFi5nb29nbGUucHJv",
+            "dG9idWYuRW1wdHkSLgoPR2V0Qm9hcmRTZWN0aW9uEgwuQm9hcmRSZWdpb24a",
+            "DS5Cb2FyZFNlY3Rpb25CDKoCCUdycGNCb2FyZGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GrpcBoard.TileType), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardPosition), global::GrpcBoard.BoardPosition.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardRegion), global::GrpcBoard.BoardRegion.Parser, new[]{ "Origin", "Width", "Depth" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.Tile), global::GrpcBoard.Tile.Parser, new[]{ "Position", "Type", "Passable" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardState), global::GrpcBoard.BoardState.Parser, new[]{ "BoardId", "Version", "Width", "Depth", "Height", "Tiles" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.JoinBoardStreamRequest), global::GrpcBoard.JoinBoardStreamRequest.Parser, new[]{ "Region" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.SetBoardSectionRequest), global::GrpcBoard.SetBoardSectionRequest.Parser, new[]{ "SessionId", "Region" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardJoined), global::GrpcBoard.BoardJoined.Parser, new[]{ "SessionId", "MaxSectionSize", "DefaultSectionSize" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardSection), global::GrpcBoard.BoardSection.Parser, new[]{ "BoardId", "Version", "BoardWidth", "BoardDepth", "BoardHeight", "Region", "Tiles" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.TilesChanged), global::GrpcBoard.TilesChanged.Parser, new[]{ "BoardId", "Version", "Tiles", "Removed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardEvent), global::GrpcBoard.BoardEvent.Parser, new[]{ "Board", "TilesChanged" }, new[]{ "Payload" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcBoard.BoardEvent), global::GrpcBoard.BoardEvent.Parser, new[]{ "Joined", "Section", "TilesChanged" }, new[]{ "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -354,6 +368,301 @@ namespace GrpcBoard {
 
   }
 
+  /// <summary>
+  /// A rectangle of columns on the board, covering every level.
+  /// The server moves a region that hangs over the edge of the board back onto it (keeping its size where it can),
+  /// so always use the region a `BoardSection` comes back with.
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class BoardRegion : pb::IMessage<BoardRegion>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<BoardRegion> _parser = new pb::MessageParser<BoardRegion>(() => new BoardRegion());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<BoardRegion> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardRegion() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardRegion(BoardRegion other) : this() {
+      origin_ = other.origin_ != null ? other.origin_.Clone() : null;
+      width_ = other.width_;
+      depth_ = other.depth_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardRegion Clone() {
+      return new BoardRegion(this);
+    }
+
+    /// <summary>Field number for the "origin" field.</summary>
+    public const int OriginFieldNumber = 1;
+    private global::GrpcBoard.BoardPosition origin_;
+    /// <summary>
+    /// Front-left column of the region (its z is ignored)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardPosition Origin {
+      get { return origin_; }
+      set {
+        origin_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "width" field.</summary>
+    public const int WidthFieldNumber = 2;
+    private int width_;
+    /// <summary>
+    /// Number of columns (x) in the region
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Width {
+      get { return width_; }
+      set {
+        width_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "depth" field.</summary>
+    public const int DepthFieldNumber = 3;
+    private int depth_;
+    /// <summary>
+    /// Number of rows (y) in the region
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Depth {
+      get { return depth_; }
+      set {
+        depth_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as BoardRegion);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(BoardRegion other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Origin, other.Origin)) return false;
+      if (Width != other.Width) return false;
+      if (Depth != other.Depth) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (origin_ != null) hash ^= Origin.GetHashCode();
+      if (Width != 0) hash ^= Width.GetHashCode();
+      if (Depth != 0) hash ^= Depth.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (origin_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Origin);
+      }
+      if (Width != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Width);
+      }
+      if (Depth != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Depth);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (origin_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Origin);
+      }
+      if (Width != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Width);
+      }
+      if (Depth != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Depth);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (origin_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Origin);
+      }
+      if (Width != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Width);
+      }
+      if (Depth != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Depth);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(BoardRegion other) {
+      if (other == null) {
+        return;
+      }
+      if (other.origin_ != null) {
+        if (origin_ == null) {
+          Origin = new global::GrpcBoard.BoardPosition();
+        }
+        Origin.MergeFrom(other.Origin);
+      }
+      if (other.Width != 0) {
+        Width = other.Width;
+      }
+      if (other.Depth != 0) {
+        Depth = other.Depth;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (origin_ == null) {
+              Origin = new global::GrpcBoard.BoardPosition();
+            }
+            input.ReadMessage(Origin);
+            break;
+          }
+          case 16: {
+            Width = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Depth = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (origin_ == null) {
+              Origin = new global::GrpcBoard.BoardPosition();
+            }
+            input.ReadMessage(Origin);
+            break;
+          }
+          case 16: {
+            Width = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Depth = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Tile : pb::IMessage<Tile>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -369,7 +678,7 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[1]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -639,21 +948,21 @@ namespace GrpcBoard {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class BoardState : pb::IMessage<BoardState>
+  public sealed partial class JoinBoardStreamRequest : pb::IMessage<JoinBoardStreamRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<BoardState> _parser = new pb::MessageParser<BoardState>(() => new BoardState());
+    private static readonly pb::MessageParser<JoinBoardStreamRequest> _parser = new pb::MessageParser<JoinBoardStreamRequest>(() => new JoinBoardStreamRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<BoardState> Parser { get { return _parser; } }
+    public static pb::MessageParser<JoinBoardStreamRequest> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[2]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -664,7 +973,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public BoardState() {
+    public JoinBoardStreamRequest() {
       OnConstruction();
     }
 
@@ -672,20 +981,762 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public BoardState(BoardState other) : this() {
+    public JoinBoardStreamRequest(JoinBoardStreamRequest other) : this() {
+      region_ = other.region_ != null ? other.region_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public JoinBoardStreamRequest Clone() {
+      return new JoinBoardStreamRequest(this);
+    }
+
+    /// <summary>Field number for the "region" field.</summary>
+    public const int RegionFieldNumber = 1;
+    private global::GrpcBoard.BoardRegion region_;
+    /// <summary>
+    /// The section to start with. Leave unset for the server's default section (at the board's front-left corner).
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardRegion Region {
+      get { return region_; }
+      set {
+        region_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as JoinBoardStreamRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(JoinBoardStreamRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Region, other.Region)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (region_ != null) hash ^= Region.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (region_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Region);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (region_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Region);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (region_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Region);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(JoinBoardStreamRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.region_ != null) {
+        if (region_ == null) {
+          Region = new global::GrpcBoard.BoardRegion();
+        }
+        Region.MergeFrom(other.Region);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (region_ == null) {
+              Region = new global::GrpcBoard.BoardRegion();
+            }
+            input.ReadMessage(Region);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (region_ == null) {
+              Region = new global::GrpcBoard.BoardRegion();
+            }
+            input.ReadMessage(Region);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class SetBoardSectionRequest : pb::IMessage<SetBoardSectionRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<SetBoardSectionRequest> _parser = new pb::MessageParser<SetBoardSectionRequest>(() => new SetBoardSectionRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<SetBoardSectionRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SetBoardSectionRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SetBoardSectionRequest(SetBoardSectionRequest other) : this() {
+      sessionId_ = other.sessionId_;
+      region_ = other.region_ != null ? other.region_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SetBoardSectionRequest Clone() {
+      return new SetBoardSectionRequest(this);
+    }
+
+    /// <summary>Field number for the "session_id" field.</summary>
+    public const int SessionIdFieldNumber = 1;
+    private string sessionId_ = "";
+    /// <summary>
+    /// From the `joined` event
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string SessionId {
+      get { return sessionId_; }
+      set {
+        sessionId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "region" field.</summary>
+    public const int RegionFieldNumber = 2;
+    private global::GrpcBoard.BoardRegion region_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardRegion Region {
+      get { return region_; }
+      set {
+        region_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as SetBoardSectionRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(SetBoardSectionRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (SessionId != other.SessionId) return false;
+      if (!object.Equals(Region, other.Region)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (SessionId.Length != 0) hash ^= SessionId.GetHashCode();
+      if (region_ != null) hash ^= Region.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (SessionId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionId);
+      }
+      if (region_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Region);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (SessionId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionId);
+      }
+      if (region_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Region);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (SessionId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(SessionId);
+      }
+      if (region_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Region);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(SetBoardSectionRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.SessionId.Length != 0) {
+        SessionId = other.SessionId;
+      }
+      if (other.region_ != null) {
+        if (region_ == null) {
+          Region = new global::GrpcBoard.BoardRegion();
+        }
+        Region.MergeFrom(other.Region);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            SessionId = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (region_ == null) {
+              Region = new global::GrpcBoard.BoardRegion();
+            }
+            input.ReadMessage(Region);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            SessionId = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (region_ == null) {
+              Region = new global::GrpcBoard.BoardRegion();
+            }
+            input.ReadMessage(Region);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class BoardJoined : pb::IMessage<BoardJoined>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<BoardJoined> _parser = new pb::MessageParser<BoardJoined>(() => new BoardJoined());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<BoardJoined> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[5]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardJoined() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardJoined(BoardJoined other) : this() {
+      sessionId_ = other.sessionId_;
+      maxSectionSize_ = other.maxSectionSize_;
+      defaultSectionSize_ = other.defaultSectionSize_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardJoined Clone() {
+      return new BoardJoined(this);
+    }
+
+    /// <summary>Field number for the "session_id" field.</summary>
+    public const int SessionIdFieldNumber = 1;
+    private string sessionId_ = "";
+    /// <summary>
+    /// Pass this to SetBoardSection
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string SessionId {
+      get { return sessionId_; }
+      set {
+        sessionId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "max_section_size" field.</summary>
+    public const int MaxSectionSizeFieldNumber = 2;
+    private int maxSectionSize_;
+    /// <summary>
+    /// Largest width or depth a region may have
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int MaxSectionSize {
+      get { return maxSectionSize_; }
+      set {
+        maxSectionSize_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "default_section_size" field.</summary>
+    public const int DefaultSectionSizeFieldNumber = 3;
+    private int defaultSectionSize_;
+    /// <summary>
+    /// Width and depth of the default section
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int DefaultSectionSize {
+      get { return defaultSectionSize_; }
+      set {
+        defaultSectionSize_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as BoardJoined);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(BoardJoined other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (SessionId != other.SessionId) return false;
+      if (MaxSectionSize != other.MaxSectionSize) return false;
+      if (DefaultSectionSize != other.DefaultSectionSize) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (SessionId.Length != 0) hash ^= SessionId.GetHashCode();
+      if (MaxSectionSize != 0) hash ^= MaxSectionSize.GetHashCode();
+      if (DefaultSectionSize != 0) hash ^= DefaultSectionSize.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (SessionId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionId);
+      }
+      if (MaxSectionSize != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(MaxSectionSize);
+      }
+      if (DefaultSectionSize != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(DefaultSectionSize);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (SessionId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionId);
+      }
+      if (MaxSectionSize != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(MaxSectionSize);
+      }
+      if (DefaultSectionSize != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(DefaultSectionSize);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (SessionId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(SessionId);
+      }
+      if (MaxSectionSize != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MaxSectionSize);
+      }
+      if (DefaultSectionSize != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(DefaultSectionSize);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(BoardJoined other) {
+      if (other == null) {
+        return;
+      }
+      if (other.SessionId.Length != 0) {
+        SessionId = other.SessionId;
+      }
+      if (other.MaxSectionSize != 0) {
+        MaxSectionSize = other.MaxSectionSize;
+      }
+      if (other.DefaultSectionSize != 0) {
+        DefaultSectionSize = other.DefaultSectionSize;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            SessionId = input.ReadString();
+            break;
+          }
+          case 16: {
+            MaxSectionSize = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            DefaultSectionSize = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            SessionId = input.ReadString();
+            break;
+          }
+          case 16: {
+            MaxSectionSize = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            DefaultSectionSize = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// A section of the board: every tile in a region of columns, plus the size of the whole board
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class BoardSection : pb::IMessage<BoardSection>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<BoardSection> _parser = new pb::MessageParser<BoardSection>(() => new BoardSection());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<BoardSection> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardSection() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public BoardSection(BoardSection other) : this() {
       boardId_ = other.boardId_;
       version_ = other.version_;
-      width_ = other.width_;
-      depth_ = other.depth_;
-      height_ = other.height_;
+      boardWidth_ = other.boardWidth_;
+      boardDepth_ = other.boardDepth_;
+      boardHeight_ = other.boardHeight_;
+      region_ = other.region_ != null ? other.region_.Clone() : null;
       tiles_ = other.tiles_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public BoardState Clone() {
-      return new BoardState(this);
+    public BoardSection Clone() {
+      return new BoardSection(this);
     }
 
     /// <summary>Field number for the "board_id" field.</summary>
@@ -707,7 +1758,7 @@ namespace GrpcBoard {
     public const int VersionFieldNumber = 2;
     private long version_;
     /// <summary>
-    /// Goes up by one with every change to the board
+    /// The board version this section was taken at
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -718,58 +1769,73 @@ namespace GrpcBoard {
       }
     }
 
-    /// <summary>Field number for the "width" field.</summary>
-    public const int WidthFieldNumber = 3;
-    private int width_;
+    /// <summary>Field number for the "board_width" field.</summary>
+    public const int BoardWidthFieldNumber = 3;
+    private int boardWidth_;
     /// <summary>
-    /// Number of columns (x)
+    /// Number of columns (x) on the whole board
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Width {
-      get { return width_; }
+    public int BoardWidth {
+      get { return boardWidth_; }
       set {
-        width_ = value;
+        boardWidth_ = value;
       }
     }
 
-    /// <summary>Field number for the "depth" field.</summary>
-    public const int DepthFieldNumber = 4;
-    private int depth_;
+    /// <summary>Field number for the "board_depth" field.</summary>
+    public const int BoardDepthFieldNumber = 4;
+    private int boardDepth_;
     /// <summary>
-    /// Number of rows (y)
+    /// Number of rows (y) on the whole board
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Depth {
-      get { return depth_; }
+    public int BoardDepth {
+      get { return boardDepth_; }
       set {
-        depth_ = value;
+        boardDepth_ = value;
       }
     }
 
-    /// <summary>Field number for the "height" field.</summary>
-    public const int HeightFieldNumber = 6;
-    private int height_;
+    /// <summary>Field number for the "board_height" field.</summary>
+    public const int BoardHeightFieldNumber = 5;
+    private int boardHeight_;
     /// <summary>
     /// Most tiles a stack can hold (z)
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Height {
-      get { return height_; }
+    public int BoardHeight {
+      get { return boardHeight_; }
       set {
-        height_ = value;
+        boardHeight_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "region" field.</summary>
+    public const int RegionFieldNumber = 6;
+    private global::GrpcBoard.BoardRegion region_;
+    /// <summary>
+    /// The region this section covers (after being moved onto the board)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardRegion Region {
+      get { return region_; }
+      set {
+        region_ = value;
       }
     }
 
     /// <summary>Field number for the "tiles" field.</summary>
-    public const int TilesFieldNumber = 5;
+    public const int TilesFieldNumber = 7;
     private static readonly pb::FieldCodec<global::GrpcBoard.Tile> _repeated_tiles_codec
-        = pb::FieldCodec.ForMessage(42, global::GrpcBoard.Tile.Parser);
+        = pb::FieldCodec.ForMessage(58, global::GrpcBoard.Tile.Parser);
     private readonly pbc::RepeatedField<global::GrpcBoard.Tile> tiles_ = new pbc::RepeatedField<global::GrpcBoard.Tile>();
     /// <summary>
-    /// Every tile on the board, in no particular order. Positions with no tile are empty space.
+    /// Every tile in the region, in no particular order. Positions with no tile are empty space.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -780,12 +1846,12 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as BoardState);
+      return Equals(other as BoardSection);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(BoardState other) {
+    public bool Equals(BoardSection other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -794,9 +1860,10 @@ namespace GrpcBoard {
       }
       if (BoardId != other.BoardId) return false;
       if (Version != other.Version) return false;
-      if (Width != other.Width) return false;
-      if (Depth != other.Depth) return false;
-      if (Height != other.Height) return false;
+      if (BoardWidth != other.BoardWidth) return false;
+      if (BoardDepth != other.BoardDepth) return false;
+      if (BoardHeight != other.BoardHeight) return false;
+      if (!object.Equals(Region, other.Region)) return false;
       if(!tiles_.Equals(other.tiles_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -807,9 +1874,10 @@ namespace GrpcBoard {
       int hash = 1;
       if (BoardId.Length != 0) hash ^= BoardId.GetHashCode();
       if (Version != 0L) hash ^= Version.GetHashCode();
-      if (Width != 0) hash ^= Width.GetHashCode();
-      if (Depth != 0) hash ^= Depth.GetHashCode();
-      if (Height != 0) hash ^= Height.GetHashCode();
+      if (BoardWidth != 0) hash ^= BoardWidth.GetHashCode();
+      if (BoardDepth != 0) hash ^= BoardDepth.GetHashCode();
+      if (BoardHeight != 0) hash ^= BoardHeight.GetHashCode();
+      if (region_ != null) hash ^= Region.GetHashCode();
       hash ^= tiles_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -837,19 +1905,23 @@ namespace GrpcBoard {
         output.WriteRawTag(16);
         output.WriteInt64(Version);
       }
-      if (Width != 0) {
+      if (BoardWidth != 0) {
         output.WriteRawTag(24);
-        output.WriteInt32(Width);
+        output.WriteInt32(BoardWidth);
       }
-      if (Depth != 0) {
+      if (BoardDepth != 0) {
         output.WriteRawTag(32);
-        output.WriteInt32(Depth);
+        output.WriteInt32(BoardDepth);
+      }
+      if (BoardHeight != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(BoardHeight);
+      }
+      if (region_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(Region);
       }
       tiles_.WriteTo(output, _repeated_tiles_codec);
-      if (Height != 0) {
-        output.WriteRawTag(48);
-        output.WriteInt32(Height);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -868,19 +1940,23 @@ namespace GrpcBoard {
         output.WriteRawTag(16);
         output.WriteInt64(Version);
       }
-      if (Width != 0) {
+      if (BoardWidth != 0) {
         output.WriteRawTag(24);
-        output.WriteInt32(Width);
+        output.WriteInt32(BoardWidth);
       }
-      if (Depth != 0) {
+      if (BoardDepth != 0) {
         output.WriteRawTag(32);
-        output.WriteInt32(Depth);
+        output.WriteInt32(BoardDepth);
+      }
+      if (BoardHeight != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(BoardHeight);
+      }
+      if (region_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(Region);
       }
       tiles_.WriteTo(ref output, _repeated_tiles_codec);
-      if (Height != 0) {
-        output.WriteRawTag(48);
-        output.WriteInt32(Height);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -897,14 +1973,17 @@ namespace GrpcBoard {
       if (Version != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Version);
       }
-      if (Width != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Width);
+      if (BoardWidth != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(BoardWidth);
       }
-      if (Depth != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Depth);
+      if (BoardDepth != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(BoardDepth);
       }
-      if (Height != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Height);
+      if (BoardHeight != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(BoardHeight);
+      }
+      if (region_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Region);
       }
       size += tiles_.CalculateSize(_repeated_tiles_codec);
       if (_unknownFields != null) {
@@ -915,7 +1994,7 @@ namespace GrpcBoard {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(BoardState other) {
+    public void MergeFrom(BoardSection other) {
       if (other == null) {
         return;
       }
@@ -925,14 +2004,20 @@ namespace GrpcBoard {
       if (other.Version != 0L) {
         Version = other.Version;
       }
-      if (other.Width != 0) {
-        Width = other.Width;
+      if (other.BoardWidth != 0) {
+        BoardWidth = other.BoardWidth;
       }
-      if (other.Depth != 0) {
-        Depth = other.Depth;
+      if (other.BoardDepth != 0) {
+        BoardDepth = other.BoardDepth;
       }
-      if (other.Height != 0) {
-        Height = other.Height;
+      if (other.BoardHeight != 0) {
+        BoardHeight = other.BoardHeight;
+      }
+      if (other.region_ != null) {
+        if (region_ == null) {
+          Region = new global::GrpcBoard.BoardRegion();
+        }
+        Region.MergeFrom(other.Region);
       }
       tiles_.Add(other.tiles_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -963,19 +2048,26 @@ namespace GrpcBoard {
             break;
           }
           case 24: {
-            Width = input.ReadInt32();
+            BoardWidth = input.ReadInt32();
             break;
           }
           case 32: {
-            Depth = input.ReadInt32();
+            BoardDepth = input.ReadInt32();
             break;
           }
-          case 42: {
+          case 40: {
+            BoardHeight = input.ReadInt32();
+            break;
+          }
+          case 50: {
+            if (region_ == null) {
+              Region = new global::GrpcBoard.BoardRegion();
+            }
+            input.ReadMessage(Region);
+            break;
+          }
+          case 58: {
             tiles_.AddEntriesFrom(input, _repeated_tiles_codec);
-            break;
-          }
-          case 48: {
-            Height = input.ReadInt32();
             break;
           }
         }
@@ -1006,19 +2098,26 @@ namespace GrpcBoard {
             break;
           }
           case 24: {
-            Width = input.ReadInt32();
+            BoardWidth = input.ReadInt32();
             break;
           }
           case 32: {
-            Depth = input.ReadInt32();
+            BoardDepth = input.ReadInt32();
             break;
           }
-          case 42: {
+          case 40: {
+            BoardHeight = input.ReadInt32();
+            break;
+          }
+          case 50: {
+            if (region_ == null) {
+              Region = new global::GrpcBoard.BoardRegion();
+            }
+            input.ReadMessage(Region);
+            break;
+          }
+          case 58: {
             tiles_.AddEntriesFrom(ref input, _repeated_tiles_codec);
-            break;
-          }
-          case 48: {
-            Height = input.ReadInt32();
             break;
           }
         }
@@ -1028,6 +2127,9 @@ namespace GrpcBoard {
 
   }
 
+  /// <summary>
+  /// Tiles that changed inside the client's current section
+  /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TilesChanged : pb::IMessage<TilesChanged>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1043,7 +2145,7 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[3]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1339,7 +2441,7 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[4]; }
+      get { return global::GrpcBoard.GrpcBoardReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1360,8 +2462,11 @@ namespace GrpcBoard {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public BoardEvent(BoardEvent other) : this() {
       switch (other.PayloadCase) {
-        case PayloadOneofCase.Board:
-          Board = other.Board.Clone();
+        case PayloadOneofCase.Joined:
+          Joined = other.Joined.Clone();
+          break;
+        case PayloadOneofCase.Section:
+          Section = other.Section.Clone();
           break;
         case PayloadOneofCase.TilesChanged:
           TilesChanged = other.TilesChanged.Clone();
@@ -1377,25 +2482,40 @@ namespace GrpcBoard {
       return new BoardEvent(this);
     }
 
-    /// <summary>Field number for the "board" field.</summary>
-    public const int BoardFieldNumber = 1;
+    /// <summary>Field number for the "joined" field.</summary>
+    public const int JoinedFieldNumber = 3;
     /// <summary>
-    /// Full snapshot: replace the whole board
+    /// Sent once, first
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GrpcBoard.BoardState Board {
-      get { return payloadCase_ == PayloadOneofCase.Board ? (global::GrpcBoard.BoardState) payload_ : null; }
+    public global::GrpcBoard.BoardJoined Joined {
+      get { return payloadCase_ == PayloadOneofCase.Joined ? (global::GrpcBoard.BoardJoined) payload_ : null; }
       set {
         payload_ = value;
-        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Board;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Joined;
+      }
+    }
+
+    /// <summary>Field number for the "section" field.</summary>
+    public const int SectionFieldNumber = 4;
+    /// <summary>
+    /// A full section: replace everything the client had
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardSection Section {
+      get { return payloadCase_ == PayloadOneofCase.Section ? (global::GrpcBoard.BoardSection) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Section;
       }
     }
 
     /// <summary>Field number for the "tiles_changed" field.</summary>
     public const int TilesChangedFieldNumber = 2;
     /// <summary>
-    /// Some tiles changed: apply just these
+    /// Some tiles in the section changed: apply just these
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1411,7 +2531,8 @@ namespace GrpcBoard {
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
       None = 0,
-      Board = 1,
+      Joined = 3,
+      Section = 4,
       TilesChanged = 2,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
@@ -1443,7 +2564,8 @@ namespace GrpcBoard {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (!object.Equals(Board, other.Board)) return false;
+      if (!object.Equals(Joined, other.Joined)) return false;
+      if (!object.Equals(Section, other.Section)) return false;
       if (!object.Equals(TilesChanged, other.TilesChanged)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1453,7 +2575,8 @@ namespace GrpcBoard {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (payloadCase_ == PayloadOneofCase.Board) hash ^= Board.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.Joined) hash ^= Joined.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.Section) hash ^= Section.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.TilesChanged) hash ^= TilesChanged.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
@@ -1474,13 +2597,17 @@ namespace GrpcBoard {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (payloadCase_ == PayloadOneofCase.Board) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Board);
-      }
       if (payloadCase_ == PayloadOneofCase.TilesChanged) {
         output.WriteRawTag(18);
         output.WriteMessage(TilesChanged);
+      }
+      if (payloadCase_ == PayloadOneofCase.Joined) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Joined);
+      }
+      if (payloadCase_ == PayloadOneofCase.Section) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Section);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1492,13 +2619,17 @@ namespace GrpcBoard {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (payloadCase_ == PayloadOneofCase.Board) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Board);
-      }
       if (payloadCase_ == PayloadOneofCase.TilesChanged) {
         output.WriteRawTag(18);
         output.WriteMessage(TilesChanged);
+      }
+      if (payloadCase_ == PayloadOneofCase.Joined) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Joined);
+      }
+      if (payloadCase_ == PayloadOneofCase.Section) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Section);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1510,8 +2641,11 @@ namespace GrpcBoard {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (payloadCase_ == PayloadOneofCase.Board) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Board);
+      if (payloadCase_ == PayloadOneofCase.Joined) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Joined);
+      }
+      if (payloadCase_ == PayloadOneofCase.Section) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Section);
       }
       if (payloadCase_ == PayloadOneofCase.TilesChanged) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TilesChanged);
@@ -1529,11 +2663,17 @@ namespace GrpcBoard {
         return;
       }
       switch (other.PayloadCase) {
-        case PayloadOneofCase.Board:
-          if (Board == null) {
-            Board = new global::GrpcBoard.BoardState();
+        case PayloadOneofCase.Joined:
+          if (Joined == null) {
+            Joined = new global::GrpcBoard.BoardJoined();
           }
-          Board.MergeFrom(other.Board);
+          Joined.MergeFrom(other.Joined);
+          break;
+        case PayloadOneofCase.Section:
+          if (Section == null) {
+            Section = new global::GrpcBoard.BoardSection();
+          }
+          Section.MergeFrom(other.Section);
           break;
         case PayloadOneofCase.TilesChanged:
           if (TilesChanged == null) {
@@ -1562,15 +2702,6 @@ namespace GrpcBoard {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
-          case 10: {
-            global::GrpcBoard.BoardState subBuilder = new global::GrpcBoard.BoardState();
-            if (payloadCase_ == PayloadOneofCase.Board) {
-              subBuilder.MergeFrom(Board);
-            }
-            input.ReadMessage(subBuilder);
-            Board = subBuilder;
-            break;
-          }
           case 18: {
             global::GrpcBoard.TilesChanged subBuilder = new global::GrpcBoard.TilesChanged();
             if (payloadCase_ == PayloadOneofCase.TilesChanged) {
@@ -1578,6 +2709,24 @@ namespace GrpcBoard {
             }
             input.ReadMessage(subBuilder);
             TilesChanged = subBuilder;
+            break;
+          }
+          case 26: {
+            global::GrpcBoard.BoardJoined subBuilder = new global::GrpcBoard.BoardJoined();
+            if (payloadCase_ == PayloadOneofCase.Joined) {
+              subBuilder.MergeFrom(Joined);
+            }
+            input.ReadMessage(subBuilder);
+            Joined = subBuilder;
+            break;
+          }
+          case 34: {
+            global::GrpcBoard.BoardSection subBuilder = new global::GrpcBoard.BoardSection();
+            if (payloadCase_ == PayloadOneofCase.Section) {
+              subBuilder.MergeFrom(Section);
+            }
+            input.ReadMessage(subBuilder);
+            Section = subBuilder;
             break;
           }
         }
@@ -1599,15 +2748,6 @@ namespace GrpcBoard {
           default:
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
-          case 10: {
-            global::GrpcBoard.BoardState subBuilder = new global::GrpcBoard.BoardState();
-            if (payloadCase_ == PayloadOneofCase.Board) {
-              subBuilder.MergeFrom(Board);
-            }
-            input.ReadMessage(subBuilder);
-            Board = subBuilder;
-            break;
-          }
           case 18: {
             global::GrpcBoard.TilesChanged subBuilder = new global::GrpcBoard.TilesChanged();
             if (payloadCase_ == PayloadOneofCase.TilesChanged) {
@@ -1615,6 +2755,24 @@ namespace GrpcBoard {
             }
             input.ReadMessage(subBuilder);
             TilesChanged = subBuilder;
+            break;
+          }
+          case 26: {
+            global::GrpcBoard.BoardJoined subBuilder = new global::GrpcBoard.BoardJoined();
+            if (payloadCase_ == PayloadOneofCase.Joined) {
+              subBuilder.MergeFrom(Joined);
+            }
+            input.ReadMessage(subBuilder);
+            Joined = subBuilder;
+            break;
+          }
+          case 34: {
+            global::GrpcBoard.BoardSection subBuilder = new global::GrpcBoard.BoardSection();
+            if (payloadCase_ == PayloadOneofCase.Section) {
+              subBuilder.MergeFrom(Section);
+            }
+            input.ReadMessage(subBuilder);
+            Section = subBuilder;
             break;
           }
         }

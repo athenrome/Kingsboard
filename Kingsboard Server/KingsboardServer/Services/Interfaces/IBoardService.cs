@@ -34,6 +34,23 @@ namespace KingsboardServer.Services.Interfaces
         GameBoard? GetBoard();
 
         /// <summary>
+        /// Gets a snapshot of one section of the board, or null if no board has been created yet.
+        /// A region hanging over the edge of the board is moved back onto it, keeping its size where the board is big enough;
+        /// the section's <see cref="BoardSection.Region"/> is the region actually used.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The region is smaller than 1 x 1</exception>
+        BoardSection? GetSection(BoardRegion region);
+
+        /// <summary>
+        /// Runs <paramref name="read"/> with a snapshot of a section (as <see cref="GetSection"/>) while no board change can happen.
+        /// <see cref="BoardCreated"/> and <see cref="TilesChanged"/> are raised under the same guarantee, so a caller that
+        /// starts listening for changes inside <paramref name="read"/> gets every change after the snapshot, and none before it.
+        /// <paramref name="read"/> must be quick and non-blocking.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The region is smaller than 1 x 1</exception>
+        void ReadSection(BoardRegion region, Action<BoardSection?> read);
+
+        /// <summary>
         /// Whether the position is inside the board's bounds (false if no board has been created yet)
         /// </summary>
         bool IsOnBoard(BoardPosition position);

@@ -14,8 +14,10 @@ namespace KingsboardServer.Services
     /// </summary>
     public class BoardService : IBoardService
     {
-        // Passes of neighbour-averaging applied to the random heightmap. More passes = larger, smoother regions.
-        private const int SmoothingPasses = 3;
+        // Terrain noise: the largest features (continents, mountain ranges) span about this many tiles,
+        // and each further octave adds detail at half the size and half the strength
+        private const double LargestFeatureSize = 32;
+        private const int NoiseOctaves = 4;
 
         // Heightmap values below this are water; everything above is land that rises with the heightmap
         private const double SeaLevel = 0.25;
@@ -89,6 +91,38 @@ namespace KingsboardServer.Services
             {
                 GameBoard? board = _repository.GetBoard();
                 return board is null ? null : Clone(board);
+            }
+        }
+
+        /// <summary>
+        /// Returns a snapshot of one section of the board, or null if no board has been created yet.
+        /// A region hanging over the edge is moved back onto the board, keeping its size where the board is big enough.
+        /// Throws if the region is smaller than 1 x 1.
+        /// </summary>
+        public BoardSection? GetSection(BoardRegion region)
+        {
+            RequireValidRegion(region);
+
+            lock (_lock)
+            {
+                GameBoard? board = _repository.GetBoard();
+                return board is null ? null : CutSection(board, region);
+            }
+        }
+
+        /// <summary>
+        /// Runs <paramref name="read"/> with a snapshot of a section while no board change can happen.
+        /// Changes and their events happen under the same lock, so a caller that starts listening inside
+        /// <paramref name="read"/> gets every change after the snapshot and none before it.
+        /// </summary>
+        public void ReadSection(BoardRegion region, Action<BoardSection?> read)
+        {
+            RequireValidRegion(region);
+
+            lock (_lock)
+            {
+                GameBoard? board = _repository.GetBoard();
+                read(board is null ? null : CutSection(board, region));
             }
         }
 
@@ -374,6 +408,51 @@ namespace KingsboardServer.Services
             return !Contains(board, above) || IsEmpty(board, above);
         }
 
+        private static void RequireValidRegion(BoardRegion region)
+        {
+            if (region.Width < 1 || region.Depth < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(region), $"A region must be at least 1 x 1, not {region.Width} x {region.Depth}");
+            }
+        }
+
+        /// <summary>
+        /// Moves a region that hangs over the edge back onto the board, keeping its size where the board is big enough
+        /// </summary>
+        private static BoardRegion FitToBoard(GameBoard board, BoardRegion region)
+        {
+            int width = Math.Min(region.Width, board.Width);
+            int depth = Math.Min(region.Depth, board.Depth);
+            int x = Math.Clamp(region.Origin.X, 0, board.Width - width);
+            int y = Math.Clamp(region.Origin.Y, 0, board.Depth - depth);
+            return new BoardRegion(new BoardPosition(x, y, 0), width, depth);
+        }
+
+        /// <summary>
+        /// Copies every tile in a region (fitted onto the board) into a section snapshot
+        /// </summary>
+        private static BoardSection CutSection(GameBoard board, BoardRegion region)
+        {
+            BoardRegion fitted = FitToBoard(board, region);
+
+            List<MapTile> tiles = new List<MapTile>();
+            for (int z = 0; z < board.Height; z++)
+            {
+                for (int y = fitted.Origin.Y; y < fitted.Origin.Y + fitted.Depth; y++)
+                {
+                    for (int x = fitted.Origin.X; x < fitted.Origin.X + fitted.Width; x++)
+                    {
+                        if (board.Tiles[IndexOf(board, new BoardPosition(x, y, z))] is MapTile tile)
+                        {
+                            tiles.Add(tile);
+                        }
+                    }
+                }
+            }
+
+            return new BoardSection(board.Id, board.Version, board.Width, board.Depth, board.Height, fitted, tiles);
+        }
+
         private static string Describe(BoardPosition position) => $"({position.X}, {position.Y}, {position.Z})";
 
         private static string Describe(GameBoard board) => $"{board.Width} x {board.Depth} x {board.Height}";
@@ -467,27 +546,23 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Builds terrain from a smoothed random heightmap. Each column becomes a stack: water at sea level,
+        /// Builds terrain from a value-noise heightmap. Each column becomes a stack: water at sea level,
         /// otherwise stone topped with a surface tile, taller and rockier the higher the ground.
         /// </summary>
         private static IEnumerable<MapTile> GenerateTiles(int width, int depth, int height, int seed)
         {
             Random random = new Random(seed);
             double[,] heights = new double[width, depth];
-            for (int x = 0; x < width; x++)
+
+            // Layer octaves of smooth noise: large features (continents, ranges) plus finer detail on top
+            for (int octave = 0; octave < NoiseOctaves; octave++)
             {
-                for (int y = 0; y < depth; y++)
-                {
-                    heights[x, y] = random.NextDouble();
-                }
+                double cellSize = Math.Max(2, LargestFeatureSize / Math.Pow(2, octave));
+                double weight = Math.Pow(0.5, octave);
+                AddNoise(heights, width, depth, cellSize, weight, random);
             }
 
-            for (int pass = 0; pass < SmoothingPasses; pass++)
-            {
-                heights = Smooth(heights, width, depth);
-            }
-
-            // Smoothing squashes values towards the middle, so stretch them back out to 0..1
+            // Stretch the heights out to 0..1, so every board has some sea and some peaks
             double min = double.MaxValue;
             double max = double.MinValue;
             foreach (double h in heights)
@@ -517,28 +592,44 @@ namespace KingsboardServer.Services
             }
         }
 
-        private static double[,] Smooth(double[,] heights, int width, int depth)
+        /// <summary>
+        /// Adds one octave of value noise: random values on a grid of <paramref name="cellSize"/> squares,
+        /// smoothly blended between grid points
+        /// </summary>
+        private static void AddNoise(double[,] heights, int width, int depth, double cellSize, double weight, Random random)
         {
-            double[,] result = new double[width, depth];
+            int cellsX = (int)Math.Ceiling(width / cellSize) + 1;
+            int cellsY = (int)Math.Ceiling(depth / cellSize) + 1;
+            double[,] lattice = new double[cellsX + 1, cellsY + 1];
+            for (int cx = 0; cx <= cellsX; cx++)
+            {
+                for (int cy = 0; cy <= cellsY; cy++)
+                {
+                    lattice[cx, cy] = random.NextDouble();
+                }
+            }
+
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < depth; y++)
                 {
-                    double total = 0;
-                    int count = 0;
-                    for (int nx = Math.Max(0, x - 1); nx <= Math.Min(width - 1, x + 1); nx++)
-                    {
-                        for (int ny = Math.Max(0, y - 1); ny <= Math.Min(depth - 1, y + 1); ny++)
-                        {
-                            total += heights[nx, ny];
-                            count++;
-                        }
-                    }
-                    result[x, y] = total / count;
+                    double gx = x / cellSize;
+                    double gy = y / cellSize;
+                    int cx = (int)gx;
+                    int cy = (int)gy;
+                    double tx = SmoothStep(gx - cx);
+                    double ty = SmoothStep(gy - cy);
+
+                    double front = Lerp(lattice[cx, cy], lattice[cx + 1, cy], tx);
+                    double back = Lerp(lattice[cx, cy + 1], lattice[cx + 1, cy + 1], tx);
+                    heights[x, y] += Lerp(front, back, ty) * weight;
                 }
             }
-            return result;
         }
+
+        private static double SmoothStep(double t) => t * t * (3 - 2 * t);
+
+        private static double Lerp(double a, double b, double t) => a + (b - a) * t;
 
         private static TileType ToTileType(double height) => height switch
         {

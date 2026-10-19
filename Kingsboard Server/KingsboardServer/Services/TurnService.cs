@@ -9,12 +9,19 @@ namespace KingsboardServer.Services
 {
     /// <summary>
     /// Runs the global turn timer: starts a turn every TurnSettings:TurnDurationSeconds and moves it through its phases
+    /// (Start, Upkeep, Planning, Player, Resolution, End). Each phase runs every <see cref="ITurnPhaseHandler"/> registered
+    /// for it and waits for them all to finish before the next phase begins.
     /// </summary>
     public class TurnService : ITurnService
     {
+        // The order every turn moves through its phases
+        private static readonly TurnPhase[] PhasesBeforePlayer = { TurnPhase.Upkeep, TurnPhase.Planning };
+        private static readonly TurnPhase[] PhasesAfterPlayer = { TurnPhase.Resolution, TurnPhase.End };
+
         private readonly Serilog.ILogger _logger;
         private readonly IOptionsMonitor<TurnSettings> _settings;
         private readonly TimeProvider _timeProvider;
+        private readonly IReadOnlyList<ITurnPhaseHandler> _phaseHandlers;
 
         private readonly object _turnLock = new();
         private Turn? _currentTurn;
@@ -31,13 +38,20 @@ namespace KingsboardServer.Services
         public event EventHandler<Turn>? TurnEnded;
 
         /// <summary>
-        /// Creates the service. No turns run until <see cref="RunTurnLoopAsync"/> is called.
+        /// Raised with a snapshot when the turn moves into a new phase, before that phase's work runs.
+        /// Handlers must be quick and non-blocking.
         /// </summary>
-        public TurnService(Serilog.ILogger logger, IOptionsMonitor<TurnSettings> settings, TimeProvider timeProvider)
+        public event EventHandler<Turn>? PhaseStarted;
+
+        /// <summary>
+        /// Creates the service with the handlers that do each phase's work. No turns run until <see cref="RunTurnLoopAsync"/> is called.
+        /// </summary>
+        public TurnService(Serilog.ILogger logger, IOptionsMonitor<TurnSettings> settings, TimeProvider timeProvider, IEnumerable<ITurnPhaseHandler> phaseHandlers)
         {
             _logger = logger;
             _settings = settings;
             _timeProvider = timeProvider;
+            _phaseHandlers = phaseHandlers.ToArray();
         }
 
         /// <summary>
@@ -73,12 +87,24 @@ namespace KingsboardServer.Services
                 }
 
                 Turn turn = BeginTurn(nextTurnStart, duration);
+                await RunPhaseAsync(TurnPhase.Start, cancellationToken);
+
+                foreach (TurnPhase phase in PhasesBeforePlayer)
+                {
+                    await RunPhaseAsync(phase, cancellationToken);
+                }
 
                 // Player phase: players choose cards for their pawns until the timer runs out
+                await RunPhaseAsync(TurnPhase.Player, cancellationToken);
                 TimeSpan wait = turn.EndsAt - _timeProvider.GetUtcNow();
                 if (wait > TimeSpan.Zero)
                 {
                     await Task.Delay(wait, _timeProvider, cancellationToken);
+                }
+
+                foreach (TurnPhase phase in PhasesAfterPlayer)
+                {
+                    await RunPhaseAsync(phase, cancellationToken);
                 }
 
                 EndTurn();
@@ -107,20 +133,44 @@ namespace KingsboardServer.Services
             _logger.Information("Turn {TurnId} started ({DurationSeconds}s)", snapshot.Id, duration.TotalSeconds);
             RaiseTurnEvent(TurnStarted, snapshot);
 
-            SetPhase(TurnPhase.Pawn);
-            // TODO: Pawn phase logic (e.g. deal pawn cards) goes here
-
-            SetPhase(TurnPhase.Player);
-
             return snapshot;
+        }
+
+        /// <summary>
+        /// Moves the turn into <paramref name="phase"/>, then runs every handler for it one after another,
+        /// returning only once they have all finished. A handler that throws is logged and the turn carries on,
+        /// so one broken system can't stop the game.
+        /// </summary>
+        private async Task RunPhaseAsync(TurnPhase phase, CancellationToken cancellationToken)
+        {
+            Turn snapshot = SetPhase(phase);
+            RaiseTurnEvent(PhaseStarted, snapshot);
+
+            foreach (ITurnPhaseHandler handler in _phaseHandlers)
+            {
+                if (!handler.Phases.Contains(phase))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    await handler.RunPhaseAsync(snapshot.Clone(), cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "{Handler} failed during the {Phase} phase of turn {TurnId}", handler.GetType().Name, phase, snapshot.Id);
+                }
+            }
         }
 
         private void EndTurn()
         {
-            SetPhase(TurnPhase.Resolution);
-            // TODO: Resolve the actions for each pawn's selected card here
-
-            Turn snapshot = SetPhase(TurnPhase.End);
+            Turn snapshot = GetCurrentTurn()!;
 
             _logger.Debug("Turn {TurnId} ended", snapshot.Id);
             RaiseTurnEvent(TurnEnded, snapshot);

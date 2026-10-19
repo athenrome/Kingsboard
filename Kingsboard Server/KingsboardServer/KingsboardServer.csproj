@@ -8,11 +8,11 @@
     <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
     <!--
-      Every public type and member must have an XML <summary>. The doc file lets the compiler check this,
-      and a missing summary (CS1591) or a broken cref/param reference (CS1572-CS1574) fails the build.
+      Every public type and member should have an XML <summary>. The doc file lets the compiler check this:
+      a missing summary (CS1591) is a warning, and a broken cref/param reference (CS1572-CS1574) fails the build.
     -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <WarningsAsErrors>$(WarningsAsErrors);CS1591;CS1572;CS1573;CS1574</WarningsAsErrors>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1574</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

@@ -25,23 +25,29 @@ namespace GrpcTurnTimer {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg9UdXJuVGltZXIucHJvdG8aG2dvb2dsZS9wcm90b2J1Zi9lbXB0eS5wcm90",
-            "bxofZ29vZ2xlL3Byb3RvYnVmL3RpbWVzdGFtcC5wcm90byKuAQoJVHVyblN0",
+            "bxofZ29vZ2xlL3Byb3RvYnVmL3RpbWVzdGFtcC5wcm90byLJAQoJVHVyblN0",
             "YXRlEg8KB3R1cm5faWQYASABKAUSLgoKc3RhcnRlZF9hdBgCIAEoCzIaLmdv",
             "b2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASKwoHZW5kc19hdBgDIAEoCzIaLmdv",
             "b2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGAoQdHVybl9kdXJhdGlvbl9tcxgE",
-            "IAEoBRIZChF0aW1lX3JlbWFpbmluZ19tcxgFIAEoBSJDCglUdXJuRXZlbnQS",
-            "HAoEdHlwZRgBIAEoDjIOLlR1cm5FdmVudFR5cGUSGAoEdHVybhgCIAEoCzIK",
-            "LlR1cm5TdGF0ZSqCAQoNVHVybkV2ZW50VHlwZRIfChtUVVJOX0VWRU5UX1RZ",
-            "UEVfVU5TUEVDSUZJRUQQABIbChdUVVJOX0VWRU5UX1RZUEVfU1RBUlRFRBAB",
-            "EhkKFVRVUk5fRVZFTlRfVFlQRV9FTkRFRBACEhgKFFRVUk5fRVZFTlRfVFlQ",
-            "RV9TWU5DEAMygAEKEFR1cm5UaW1lclNlcnZpY2USNgoOSm9pblR1cm5TdHJl",
-            "YW0SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaCi5UdXJuRXZlbnQwARI0Cg5H",
-            "ZXRDdXJyZW50VHVybhIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoKLlR1cm5T",
-            "dGF0ZUIQqgINR3JwY1R1cm5UaW1lcmIGcHJvdG8z"));
+            "IAEoBRIZChF0aW1lX3JlbWFpbmluZ19tcxgFIAEoBRIZCgVwaGFzZRgGIAEo",
+            "DjIKLlR1cm5QaGFzZSJDCglUdXJuRXZlbnQSHAoEdHlwZRgBIAEoDjIOLlR1",
+            "cm5FdmVudFR5cGUSGAoEdHVybhgCIAEoCzIKLlR1cm5TdGF0ZSqlAQoNVHVy",
+            "bkV2ZW50VHlwZRIfChtUVVJOX0VWRU5UX1RZUEVfVU5TUEVDSUZJRUQQABIb",
+            "ChdUVVJOX0VWRU5UX1RZUEVfU1RBUlRFRBABEhkKFVRVUk5fRVZFTlRfVFlQ",
+            "RV9FTkRFRBACEhgKFFRVUk5fRVZFTlRfVFlQRV9TWU5DEAMSIQodVFVSTl9F",
+            "VkVOVF9UWVBFX1BIQVNFX1NUQVJURUQQBCqzAQoJVHVyblBoYXNlEhoKFlRV",
+            "Uk5fUEhBU0VfVU5TUEVDSUZJRUQQABIUChBUVVJOX1BIQVNFX1NUQVJUEAES",
+            "FQoRVFVSTl9QSEFTRV9VUEtFRVAQAhIXChNUVVJOX1BIQVNFX1BMQU5OSU5H",
+            "EAMSFQoRVFVSTl9QSEFTRV9QTEFZRVIQBBIZChVUVVJOX1BIQVNFX1JFU09M",
+            "VVRJT04QBRISCg5UVVJOX1BIQVNFX0VORBAGMoABChBUdXJuVGltZXJTZXJ2",
+            "aWNlEjYKDkpvaW5UdXJuU3RyZWFtEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5",
+            "GgouVHVybkV2ZW50MAESNAoOR2V0Q3VycmVudFR1cm4SFi5nb29nbGUucHJv",
+            "dG9idWYuRW1wdHkaCi5UdXJuU3RhdGVCEKoCDUdycGNUdXJuVGltZXJiBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GrpcTurnTimer.TurnEventType), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcTurnTimer.TurnState), global::GrpcTurnTimer.TurnState.Parser, new[]{ "TurnId", "StartedAt", "EndsAt", "TurnDurationMs", "TimeRemainingMs" }, null, null, null, null),
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::GrpcTurnTimer.TurnEventType), typeof(global::GrpcTurnTimer.TurnPhase), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcTurnTimer.TurnState), global::GrpcTurnTimer.TurnState.Parser, new[]{ "TurnId", "StartedAt", "EndsAt", "TurnDurationMs", "TimeRemainingMs", "Phase" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcTurnTimer.TurnEvent), global::GrpcTurnTimer.TurnEvent.Parser, new[]{ "Type", "Turn" }, null, null, null, null)
           }));
     }
@@ -63,6 +69,41 @@ namespace GrpcTurnTimer {
     /// Sent on join with the turn already in progress
     /// </summary>
     [pbr::OriginalName("TURN_EVENT_TYPE_SYNC")] Sync = 3,
+    /// <summary>
+    /// The turn moved into a new phase (see TurnState.phase)
+    /// </summary>
+    [pbr::OriginalName("TURN_EVENT_TYPE_PHASE_STARTED")] PhaseStarted = 4,
+  }
+
+  /// <summary>
+  /// The stages every turn moves through, in this order. Each phase finishes all its work before the next begins.
+  /// </summary>
+  public enum TurnPhase {
+    [pbr::OriginalName("TURN_PHASE_UNSPECIFIED")] Unspecified = 0,
+    /// <summary>
+    /// The turn has just begun
+    /// </summary>
+    [pbr::OriginalName("TURN_PHASE_START")] Start = 1,
+    /// <summary>
+    /// Pawns are prepared for the turn
+    /// </summary>
+    [pbr::OriginalName("TURN_PHASE_UPKEEP")] Upkeep = 2,
+    /// <summary>
+    /// Pawns choose their actions (e.g. where to move)
+    /// </summary>
+    [pbr::OriginalName("TURN_PHASE_PLANNING")] Planning = 3,
+    /// <summary>
+    /// Players choose cards for their pawns until the timer runs out
+    /// </summary>
+    [pbr::OriginalName("TURN_PHASE_PLAYER")] Player = 4,
+    /// <summary>
+    /// The chosen actions are carried out (e.g. pawns move)
+    /// </summary>
+    [pbr::OriginalName("TURN_PHASE_RESOLUTION")] Resolution = 5,
+    /// <summary>
+    /// The turn is over
+    /// </summary>
+    [pbr::OriginalName("TURN_PHASE_END")] End = 6,
   }
 
   #endregion
@@ -108,6 +149,7 @@ namespace GrpcTurnTimer {
       endsAt_ = other.endsAt_ != null ? other.endsAt_.Clone() : null;
       turnDurationMs_ = other.turnDurationMs_;
       timeRemainingMs_ = other.timeRemainingMs_;
+      phase_ = other.phase_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -187,6 +229,21 @@ namespace GrpcTurnTimer {
       }
     }
 
+    /// <summary>Field number for the "phase" field.</summary>
+    public const int PhaseFieldNumber = 6;
+    private global::GrpcTurnTimer.TurnPhase phase_ = global::GrpcTurnTimer.TurnPhase.Unspecified;
+    /// <summary>
+    /// The phase the turn is in
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcTurnTimer.TurnPhase Phase {
+      get { return phase_; }
+      set {
+        phase_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -207,6 +264,7 @@ namespace GrpcTurnTimer {
       if (!object.Equals(EndsAt, other.EndsAt)) return false;
       if (TurnDurationMs != other.TurnDurationMs) return false;
       if (TimeRemainingMs != other.TimeRemainingMs) return false;
+      if (Phase != other.Phase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -219,6 +277,7 @@ namespace GrpcTurnTimer {
       if (endsAt_ != null) hash ^= EndsAt.GetHashCode();
       if (TurnDurationMs != 0) hash ^= TurnDurationMs.GetHashCode();
       if (TimeRemainingMs != 0) hash ^= TimeRemainingMs.GetHashCode();
+      if (Phase != global::GrpcTurnTimer.TurnPhase.Unspecified) hash ^= Phase.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -257,6 +316,10 @@ namespace GrpcTurnTimer {
         output.WriteRawTag(40);
         output.WriteInt32(TimeRemainingMs);
       }
+      if (Phase != global::GrpcTurnTimer.TurnPhase.Unspecified) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Phase);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -287,6 +350,10 @@ namespace GrpcTurnTimer {
         output.WriteRawTag(40);
         output.WriteInt32(TimeRemainingMs);
       }
+      if (Phase != global::GrpcTurnTimer.TurnPhase.Unspecified) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Phase);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -311,6 +378,9 @@ namespace GrpcTurnTimer {
       }
       if (TimeRemainingMs != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(TimeRemainingMs);
+      }
+      if (Phase != global::GrpcTurnTimer.TurnPhase.Unspecified) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Phase);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -344,6 +414,9 @@ namespace GrpcTurnTimer {
       }
       if (other.TimeRemainingMs != 0) {
         TimeRemainingMs = other.TimeRemainingMs;
+      }
+      if (other.Phase != global::GrpcTurnTimer.TurnPhase.Unspecified) {
+        Phase = other.Phase;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -390,6 +463,10 @@ namespace GrpcTurnTimer {
             TimeRemainingMs = input.ReadInt32();
             break;
           }
+          case 48: {
+            Phase = (global::GrpcTurnTimer.TurnPhase) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -433,6 +510,10 @@ namespace GrpcTurnTimer {
           }
           case 40: {
             TimeRemainingMs = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Phase = (global::GrpcTurnTimer.TurnPhase) input.ReadEnum();
             break;
           }
         }
