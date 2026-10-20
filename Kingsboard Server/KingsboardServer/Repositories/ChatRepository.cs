@@ -1,46 +1,33 @@
 using KingsboardServer.Models.Chat;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Repositories.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Repositories
 {
     /// <summary>
     /// Keeps chat messages in memory. Messages are lost when the server restarts.
+    /// Not thread-safe: <see cref="Services.ChatRoomService"/> calls it only under its own lock.
     /// </summary>
     public class ChatRepository : IChatRepository
     {
-        private readonly IOptionsMonitor<ChatSettings> _settings;
-        private readonly object _lock = new();
         private readonly List<ChatEntry> _messages = new();
-        private long _nextId = 1;
 
         /// <summary>
-        /// Creates an empty message store, capped by ChatSettings:MaxStoredMessages
+        /// Stores a message after the ones already stored
         /// </summary>
-        public ChatRepository(IOptionsMonitor<ChatSettings> settings)
+        public void Add(ChatEntry entry)
         {
-            _settings = settings;
+            _messages.Add(entry);
         }
 
         /// <summary>
-        /// Stores a new message with the next id, dropping the oldest messages once the store is full
+        /// Removes the oldest messages until at most <paramref name="maxCount"/> remain. A negative count is treated as 0.
         /// </summary>
-        public ChatEntry Add(ChatEntryType type, string username, string text, DateTimeOffset sentAt)
+        public void TrimTo(int maxCount)
         {
-            lock (_lock)
+            int excess = _messages.Count - Math.Max(0, maxCount);
+            if (excess > 0)
             {
-                ChatEntry entry = new ChatEntry(_nextId++, type, username, text, sentAt);
-                _messages.Add(entry);
-
-                // Drop the oldest messages once the store is full
-                int max = Math.Max(1, _settings.CurrentValue.MaxStoredMessages);
-                if (_messages.Count > max)
-                {
-                    _messages.RemoveRange(0, _messages.Count - max);
-                }
-
-                return entry;
+                _messages.RemoveRange(0, excess);
             }
         }
 
@@ -49,11 +36,8 @@ namespace KingsboardServer.Repositories
         /// </summary>
         public IReadOnlyList<ChatEntry> GetRecent(int count)
         {
-            lock (_lock)
-            {
-                int take = Math.Clamp(count, 0, _messages.Count);
-                return _messages.GetRange(_messages.Count - take, take);
-            }
+            int take = Math.Clamp(count, 0, _messages.Count);
+            return _messages.GetRange(_messages.Count - take, take);
         }
     }
 }

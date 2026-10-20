@@ -16,7 +16,7 @@
         Upkeep,
 
         /// <summary>
-        /// Pawns choose there actions
+        /// Pawns choose their actions
         /// </summary>
         Planning,
 

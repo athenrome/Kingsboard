@@ -35,6 +35,7 @@ namespace KingsboardServer.Services
         // so a joining player never misses or duplicates a message. Everything inside it is non-blocking.
         private readonly object _lock = new();
         private readonly Dictionary<Guid, Participant> _participants = new();
+        private long _nextMessageId = 1;
 
         /// <summary>
         /// Creates an empty chat room that stores its messages in <paramref name="repository"/>
@@ -158,11 +159,14 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Stores a message and queues it for every participant. Caller must hold <see cref="_lock"/>.
+        /// Stores a message with the next id, drops the oldest stored messages beyond ChatSettings:MaxStoredMessages,
+        /// and queues it for every participant. Caller must hold <see cref="_lock"/>.
         /// </summary>
         private void BroadcastLocked(ChatEntryType type, string username, string text)
         {
-            ChatEntry entry = _repository.Add(type, username, text, _timeProvider.GetUtcNow());
+            ChatEntry entry = new ChatEntry(_nextMessageId++, type, username, text, _timeProvider.GetUtcNow());
+            _repository.Add(entry);
+            _repository.TrimTo(Math.Max(1, _settings.CurrentValue.MaxStoredMessages));
 
             foreach (Participant participant in _participants.Values)
             {

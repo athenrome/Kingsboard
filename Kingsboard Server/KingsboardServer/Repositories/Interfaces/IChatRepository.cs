@@ -8,9 +8,14 @@ namespace KingsboardServer.Repositories.Interfaces
     public interface IChatRepository
     {
         /// <summary>
-        /// Stores a new message and returns it with its id assigned
+        /// Stores a message after the ones already stored
         /// </summary>
-        ChatEntry Add(ChatEntryType type, string username, string text, DateTimeOffset sentAt);
+        void Add(ChatEntry entry);
+
+        /// <summary>
+        /// Removes the oldest messages until at most <paramref name="maxCount"/> remain
+        /// </summary>
+        void TrimTo(int maxCount);
 
         /// <summary>
         /// Returns the most recent messages, oldest first

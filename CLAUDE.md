@@ -21,6 +21,7 @@ dotnet run --project "Kingsboard Server/KingsboardServer" --launch-profile https
 - The server has no MVC controllers. Visual Studio injects its Endpoints Explorer hosting startup (`Microsoft.WebTools.ApiEndpointDiscovery`), which uses MVC and logs "No action descriptors found". Every launch profile in `launchSettings.json` excludes it with `ASPNETCORE_HOSTINGSTARTUPEXCLUDEASSEMBLIES`; keep that when adding profiles.
 - If the server is already running, its `bin/` is locked and builds fail with MSB3021. Build to another folder with `-o <dir>` instead of killing the user's server.
 - The Unity client can't be compiled from the CLI. Check that its scripts compile with a throwaway `netstandard2.1` csproj that compiles `Assets/Systems/**/*.cs` and `ProtoLibrary/Generated/*.cs`, referencing `<Unity Editor>/Data/Managed/UnityEngine/*.dll` and `Assets/Plugins/Grpc/*.dll`.
+  - **⚠ REVIEW:** possibly obsolete. The prefab section below already uses the `unity` CLI (`unity command recompile`) against a live editor, so "can't be compiled from the CLI" only holds when the editor is closed. Say which to prefer when.
 - There are no automated tests yet. Verify server changes in two ways:
   - **Logic:** a throwaway console project in the scratchpad that references `KingsboardServer.csproj` and calls the services directly. Don't add it to the repo.
   - **End to end:** run the Unity client in Play mode against the server on `https://localhost:7116`. If the user's server isn't running, run a copy with `--urls https://localhost:7116`, then stop it afterwards.
@@ -44,6 +45,7 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
   - `GameService` runs the game loop: it creates the board and spawns the pawns, then runs the turn loop.
 - **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories hold no game rules. Thread-safety and handing out copies is the owning service's job (e.g. `BoardService` locks and clones around `BoardRepository`).
 - **`Models/`**: domain types, with subfolders `Chat/`, `Board/`, `Configuration/` and `Enumerations/`. See the model rule below.
+  - **⚠ REVIEW:** out of date. There is also `Models/Pawns/` (`Pawn`, `PawnMovement`), and `Turn.cs` sits at the `Models/` root.
 - **`Events/<Category>/`**: event objects, the payloads passed through C# events. They are grouped by category, each with its own namespace: `Events/Board/` (`KingsboardServer.Events.Board`: `TilesChangeEvent`, `BoardViewEvent`) and `Events/Pawns/` (`KingsboardServer.Events.Pawns`: `PawnsChangeEvent`). Add a new category folder for a new system. The model rule applies to these too.
 - **`Subscriptions/<Category>/`**: subscription objects, which a service returns when a client joins a stream (a session id plus the `ChannelReader` it reads from). They are grouped by category, each with its own namespace: `Subscriptions/Chat/` (`KingsboardServer.Subscriptions.Chat`: `ChatSubscription`) and `Subscriptions/Board/` (`KingsboardServer.Subscriptions.Board`: `BoardViewSubscription`). Name them `XxxSubscription`, keep one type per file, and apply the model rule to them too.
 - **No extension classes.** All logic for a model lives in the service that owns it: `BoardService` for boards, `TileService` for tiles, `TurnService` for turns (`GetDuration`, `GetTimeRemaining`, cloning), `PawnService` for pawns. Don't add `XxxExtensions` classes on the server.
@@ -56,7 +58,7 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
 - Each system has a pair of classes:
   - A **`XxxGrpcHandler`** (plain class, `IDisposable`) manages the gRPC communication with the server and is the only code that touches gRPC types. It runs a reconnect loop and raises C# events on the main thread using client-side model classes.
   - A **`XxxController`** (`MonoBehaviour`) owns state and visuals. It lives on its system's prefab (`Board`, `Pawns`, `Chat`), which is placed in the Main scene. Controllers never create themselves.
-- **Board (client):** the client holds one `BoardSection` (never the whole board). Tiles keep their whole-board positions, and the block at `BoardPosition` (x, y, z) is centred at local position (x, (z + 0.5) × `LevelHeight`, y): board y maps to world z and the level z to world y. Each `section` event rebuilds the view in full, and `tiles_changed` patches it (removals first, then placements). Updates are ignored if they belong to a different board id or have a version older than the current one. Load another section with `BoardController.RequestSection(region)` or `PanSection(dx, dy)`.
+- **Board (client):** the client holds one `BoardSection` (never the whole board). Tiles keep their whole-board positions, and the block at `BoardPosition` (x, y, z) is centred at local position (x, (z + 0.5) × `LevelHeight`, y): board y maps to world z and the level z to world y. Each `section` event rebuilds the view in full, and `tiles_changed` patches it (removals first, then placements). Updates are ignored if they belong to a different board id or have a version older than the current one. **⚠ REVIEW:** `BoardController` also ignores an update with the *same* version (`version <= Section.Version`); say "not newer than". Load another section with `BoardController.RequestSection(region)` or `PanSection(dx, dy)`.
 - Server rules, such as validation and limits, are enforced server-side only. Client copies of limits, such as `ChatController.MaxMessageLength`, are only for UX.
 
 ## Board model (3D)
@@ -93,6 +95,7 @@ The board, 128 × 128 × 8 by default, is too big to send whole. Each client vie
 Every turn runs Start → Upkeep → Planning → Player → Resolution → End. The Player phase lasts until the turn timer runs out.
 
 - **Phase handlers:** a service that has work in a phase implements `ITurnPhaseHandler` (`Phases` plus `RunPhaseAsync`) and is registered in `Program.cs` as an `ITurnPhaseHandler`. `TurnService` runs every handler for a phase and **awaits them all before the next phase begins**, so put a phase's work inside `RunPhaseAsync` and return once it's actually done.
+  - **⚠ REVIEW:** incomplete. `TurnService.RunPhaseAsync` awaits the handlers **one at a time**, in registration order, not concurrently, so a slow handler delays every handler after it. State that.
 - **Failures:** a handler that throws is logged, and the turn carries on.
 - **Events:** `ITurnService.PhaseStarted` fires as each phase begins. The turn timer stream sends it as `TURN_EVENT_TYPE_PHASE_STARTED`, and `TurnState.phase` carries the current phase.
 - **Client:** `TurnTimerController` (on the TurnTimer prefab) shows the turn number and phase at the top of the screen. During the Player phase it adds a countdown and a draining bar, which turn red in the last `warningSeconds`. The countdown runs locally from the server's `time_remaining_ms`, so it's smooth and unaffected by clock differences. The Player phase ends when the turn's time runs out, so turn time remaining is the Player time remaining.
@@ -126,8 +129,8 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 | `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under |
 | `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` capsule, a `Name` label, a nested `PawnPath` and a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`). Its pivot is at its feet. |
 | `Prefabs/Pawns/PawnPath.prefab` | `LineRenderer` for a planned path (`Materials/Pawns/PawnPath.mat`), nested in `Pawn`. It draws in world space, so it stays put while the pawn walks. |
-| `Prefabs/Chat/Chat.prefab` | `ChatController` |
-| `Prefabs/TurnTimer/TurnTimer.prefab` | `TurnTimerController` and its `UIDocument` |
+| `Prefabs/Chat/Chat.prefab` | `ChatController` and its `UIDocument` (`Prefabs/Chat/ChatPanelSettings.asset`) |
+| `Prefabs/TurnTimer/TurnTimer.prefab` | `TurnTimerController` and its `UIDocument` (`Prefabs/TurnTimer/TurnTimerPanelSettings.asset`) |
 
 **Making or changing prefabs:**
 - **Use the live editor.** When the Unity Editor is open, change prefabs and scenes through it (`unity command ...`, e.g. `eval_file` with fully-qualified type names, since `eval` code can't have `using` lines). Don't hand-edit `.prefab` or `.unity` YAML.
@@ -166,8 +169,7 @@ When you find logic in an existing model, move it to the owning service rather t
   - payloads passed through C# events, e.g. `TilesChangeEvent`, `PawnsChangeEvent` and `BoardViewEvent`. These live in `KingsboardServer/Events/<Category>/`, not `Models/`;
   - proto messages sent as stream events, e.g. `ChatEvent`, `BoardEvent`, `TilesChangedEvent`, `PawnsMovedEvent` and `BoardJoinedEvent`. These stay in their service's `.proto` file, alongside the service that streams them.
 
-  Domain objects that an event merely carries keep their own names: `Turn`, `GameBoard`, `ChatMessage`, and `BoardSection` (also an RPC response). C# `event` members are named for what happened, without the suffix (`TilesChanged`, `PawnsChanged`).
-
+  Domain objects that an event merely carries keep their own names: `Turn`, `GameBoard`, `ChatMessage`
 ## Documentation rule
 
 Every public type and member gets a descriptive `/// <summary>`. That covers:
@@ -179,17 +181,13 @@ Positional records also need a `<param>` for each property.
 
 Always put `<summary>` and `</summary>` on their own lines, never on the same line as the text, even for one-line summaries:
 
-```csharp
-/// <summary>
-/// Number of columns
-/// </summary>
-public int Width { get; set; }
-```
-
 A summary should say what the member does or means, including any limits and when it throws. Don't restate the name, and use real summaries rather than `<inheritdoc/>`.
 
 **How this is checked:**
 - **Server:** `KingsboardServer.csproj` reports a missing summary (CS1591) as a build warning, so check build output for CS1591 and fix any you introduce. A broken `cref`/`param` (CS1572–CS1574) is still a build error.
 - **Unity:** the editor doesn't run this check. Use the throwaway compile-check csproj with `<GenerateDocumentationFile>true</GenerateDocumentationFile>` and look for CS1591 under `Assets/`. Comments explain *why*.
+
+> **⚠ REVIEW:** misplaced. "Comments explain *why*" and the two bullets below are conventions, not part of "How this is checked". Move them to **Conventions**.
+
 - Every class that manages gRPC communication is named `XxxGrpcHandler`: server endpoints in `KingsboardServer/Handlers/`, and client handlers in `Assets/Systems/<System>/`. There is no `Services/Grpc/`.
 - Work happens on the `prototype` branch; `master` is the main branch.

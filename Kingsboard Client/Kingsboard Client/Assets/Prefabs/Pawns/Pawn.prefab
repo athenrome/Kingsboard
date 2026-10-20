@@ -252,13 +252,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77f8579d9355c76439945ce3cb7fa16c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Pawns.PawnView
-  body: {fileID: 6910759596136123196}
-  label: {fileID: 1283376797895447002}
-  plannedPath: {fileID: 1895351879025148110}
-  selectionIndicator: {fileID: 4733225782258073409}
-  secondsPerStep: 0.25
-  hopHeight: 0.15
-  showPlannedPath: 1
+  _body: {fileID: 6910759596136123196}
+  _label: {fileID: 1283376797895447002}
+  _plannedPath: {fileID: 1895351879025148110}
+  _selectionIndicator: {fileID: 4733225782258073409}
+  _secondsPerStep: 0.25
+  _hopHeight: 0.15
+  _showPlannedPath: 1
 --- !u!1 &6721984924399349926
 GameObject:
   m_ObjectHideFlags: 0

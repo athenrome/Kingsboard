@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace Kingsboard.TurnTimer
@@ -15,16 +16,18 @@ namespace Kingsboard.TurnTimer
     public class TurnTimerController : MonoBehaviour
     {
         [Tooltip("Seconds left in the Player phase at which the countdown turns to the warning colour")]
-        [SerializeField] private float warningSeconds = 1f;
+        [SerializeField, FormerlySerializedAs("warningSeconds")] private float _warningSeconds = 1f;
 
         [Tooltip("Colour of the countdown and bar while there's plenty of time")]
-        [SerializeField] private Color normalColour = new Color(0.55f, 0.85f, 1f);
+        [SerializeField, FormerlySerializedAs("normalColour")] private Color _normalColour = new Color(0.55f, 0.85f, 1f);
 
         [Tooltip("Colour of the countdown and bar once time is nearly up")]
-        [SerializeField] private Color warningColour = new Color(1f, 0.45f, 0.35f);
+        [SerializeField, FormerlySerializedAs("warningColour")] private Color _warningColour = new Color(1f, 0.45f, 0.35f);
+
+        [Tooltip("The UIDocument the timer is built in; its panel settings (theme, scaling) are set on the TurnTimer prefab")]
+        [SerializeField] private UIDocument _document;
 
         private TurnTimerGrpcHandler _handler;
-        private UIDocument _document;
         private Label _turnLabel;
         private Label _phaseLabel;
         private Label _countdownLabel;
@@ -52,25 +55,15 @@ namespace Kingsboard.TurnTimer
         /// </summary>
         public event Action<TurnInfo> TurnUpdated;
 
-        private void Awake()
-        {
-            // The panel and document are components set up here; this controller's GameObject comes from its prefab
-            PanelSettings panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-            panelSettings.themeStyleSheet = Resources.Load<ThemeStyleSheet>("TurnTimerTheme");
-            panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-            panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-            panelSettings.sortingOrder = 100;
-
-            _document = GetComponent<UIDocument>();
-            if (_document == null)
-            {
-                _document = gameObject.AddComponent<UIDocument>();
-            }
-            _document.panelSettings = panelSettings;
-        }
-
         private void Start()
         {
+            if (_document == null)
+            {
+                Debug.LogError("[TurnTimer] The TurnTimerController needs its UIDocument assigned. Use the TurnTimer prefab.", this);
+                enabled = false;
+                return;
+            }
+
             VisualElement root = _document.rootVisualElement;
             if (root == null)
             {
@@ -103,7 +96,7 @@ namespace Kingsboard.TurnTimer
             }
 
             float remaining = PlayerTimeRemaining;
-            Color colour = remaining <= warningSeconds ? warningColour : normalColour;
+            Color colour = remaining <= _warningSeconds ? _warningColour : _normalColour;
 
             _countdownLabel.text = FormatSeconds(remaining);
             _countdownLabel.style.color = colour;
@@ -182,7 +175,7 @@ namespace Kingsboard.TurnTimer
             _phaseLabel = CreateLabel(18, Color.white);
             window.Add(_phaseLabel);
 
-            _countdownLabel = CreateLabel(36, normalColour);
+            _countdownLabel = CreateLabel(36, _normalColour);
             _countdownLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             window.Add(_countdownLabel);
 
@@ -198,7 +191,7 @@ namespace Kingsboard.TurnTimer
             _barFill.pickingMode = PickingMode.Ignore;
             _barFill.style.height = Length.Percent(100);
             _barFill.style.width = Length.Percent(100);
-            _barFill.style.backgroundColor = normalColour;
+            _barFill.style.backgroundColor = _normalColour;
             _bar.Add(_barFill);
         }
 

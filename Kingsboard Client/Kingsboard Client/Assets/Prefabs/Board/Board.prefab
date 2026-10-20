@@ -45,10 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6807da91e65ef194eaa70e9048124ab1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Board.BoardController
-  frameCamera: 1
-  sectionSize: 0
-  tilePrefab: {fileID: 6405851513446139650, guid: 75291fdd13b178243891c6a67c3c790f, type: 3}
-  tileRoot: {fileID: 4665047524107290588}
+  _frameCamera: 1
+  _sectionSize: 0
+  _tilePrefab: {fileID: 6405851513446139650, guid: 75291fdd13b178243891c6a67c3c790f, type: 3}
+  _tileRoot: {fileID: 4665047524107290588}
 --- !u!1 &4870367139011200275
 GameObject:
   m_ObjectHideFlags: 0

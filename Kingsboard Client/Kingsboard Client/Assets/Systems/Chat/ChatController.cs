@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace Kingsboard.Chat
@@ -24,13 +25,15 @@ namespace Kingsboard.Chat
         public const int MaxLines = 200;
 
         [Tooltip("Name to join the chat with. The server may change it to keep names unique.")]
-        [SerializeField] private string username = "Player";
+        [SerializeField, FormerlySerializedAs("username")] private string _username = "Player";
+
+        [Tooltip("The UIDocument the chat window is built in; its panel settings (theme, scaling) are set on the Chat prefab")]
+        [SerializeField] private UIDocument _document;
 
         private static readonly Color PlayerColor = Color.white;
         private static readonly Color SystemColor = new Color(1f, 0.85f, 0.4f);
 
         private ChatGrpcHandler _handler;
-        private UIDocument _document;
         private Label _status;
         private ScrollView _messages;
         private TextField _input;
@@ -45,20 +48,15 @@ namespace Kingsboard.Chat
         /// </summary>
         public bool IsConnected { get; private set; }
 
-        private void Awake()
-        {
-            PanelSettings panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-            panelSettings.themeStyleSheet = Resources.Load<ThemeStyleSheet>("ChatTheme");
-            panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-            panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-            panelSettings.sortingOrder = 100;
-
-            _document = gameObject.AddComponent<UIDocument>();
-            _document.panelSettings = panelSettings;
-        }
-
         private void Start()
         {
+            if (_document == null)
+            {
+                Debug.LogError("[Chat] The ChatController needs its UIDocument assigned. Use the Chat prefab.", this);
+                enabled = false;
+                return;
+            }
+
             VisualElement root = _document.rootVisualElement;
             if (root == null)
             {
@@ -73,7 +71,7 @@ namespace Kingsboard.Chat
             _handler.Joined += OnJoined;
             _handler.MessageReceived += AddLine;
             _handler.Disconnected += OnDisconnected;
-            _handler.Connect(username);
+            _handler.Connect(_username);
         }
 
         private void OnDestroy()

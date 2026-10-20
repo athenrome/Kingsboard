@@ -45,10 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60cd15e065461124cbe109d53e3c9eb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Pawns.PawnController
-  pawnPrefab: {fileID: 835324419040637948, guid: dbfaa25437ef569489e8173f0f2d28c6, type: 3}
-  pawnRoot: {fileID: 115212509077786171}
-  clickToSelect: 1
-  maxClickDistance: 500
+  _pawnPrefab: {fileID: 835324419040637948, guid: dbfaa25437ef569489e8173f0f2d28c6, type: 3}
+  _pawnRoot: {fileID: 115212509077786171}
+  _clickToSelect: 1
+  _maxClickDistance: 500
 --- !u!1 &6987887288727711204
 GameObject:
   m_ObjectHideFlags: 0

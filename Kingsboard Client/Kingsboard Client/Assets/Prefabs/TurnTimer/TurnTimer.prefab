@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 0}
+  m_PanelSettings: {fileID: 11400000, guid: ae2339b1689207f46904de470bf8ecd8, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 0}
   m_SortingOrder: 0
@@ -68,6 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fa423fec5db9ab47b92e5636d181778, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.TurnTimer.TurnTimerController
-  warningSeconds: 1
-  normalColour: {r: 0.55, g: 0.85, b: 1, a: 1}
-  warningColour: {r: 1, g: 0.45, b: 0.35, a: 1}
+  _warningSeconds: 1
+  _normalColour: {r: 0.55, g: 0.85, b: 1, a: 1}
+  _warningColour: {r: 1, g: 0.45, b: 0.35, a: 1}
+  _document: {fileID: 1449649299028502952}

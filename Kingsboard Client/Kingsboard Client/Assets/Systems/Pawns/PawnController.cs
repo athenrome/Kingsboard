@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Kingsboard.Board;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Kingsboard.Pawns
 {
@@ -15,25 +16,25 @@ namespace Kingsboard.Pawns
     public class PawnController : MonoBehaviour
     {
         [Tooltip("The pawn's body; tinted with the pawn's colour")]
-        [SerializeField] private Renderer body;
+        [SerializeField, FormerlySerializedAs("body")] private Renderer _body;
 
         [Tooltip("Name label above the pawn; turned to face the camera every frame")]
-        [SerializeField] private TextMesh label;
+        [SerializeField, FormerlySerializedAs("label")] private TextMesh _label;
 
         [Tooltip("Line showing the pawn's planned path (the nested PawnPath prefab). Drawn in world space, so it stays put while the pawn walks.")]
-        [SerializeField] private LineRenderer plannedPath;
+        [SerializeField, FormerlySerializedAs("plannedPath")] private LineRenderer _plannedPath;
 
         [Tooltip("Shown while the pawn is selected")]
-        [SerializeField] private GameObject selectionIndicator;
+        [SerializeField, FormerlySerializedAs("selectionIndicator")] private GameObject _selectionIndicator;
 
         [Tooltip("Seconds the pawn takes to walk one step of its path")]
-        [SerializeField] private float secondsPerStep = 0.25f;
+        [SerializeField, FormerlySerializedAs("secondsPerStep")] private float _secondsPerStep = 0.25f;
 
         [Tooltip("How high the pawn hops on each step, in world units")]
-        [SerializeField] private float hopHeight = 0.15f;
+        [SerializeField, FormerlySerializedAs("hopHeight")] private float _hopHeight = 0.15f;
 
         [Tooltip("Show the pawn's planned path as a line")]
-        [SerializeField] private bool showPlannedPath = true;
+        [SerializeField, FormerlySerializedAs("showPlannedPath")] private bool _showPlannedPath = true;
 
         private BoardController _board;
         private Material _bodyMaterial;
@@ -101,9 +102,9 @@ namespace Kingsboard.Pawns
         public void Move(PawnMovement movement, Pawn pawn)
         {
             Pawn = pawn;
-            if (plannedPath != null)
+            if (_plannedPath != null)
             {
-                plannedPath.positionCount = 0;
+                _plannedPath.positionCount = 0;
             }
 
             if (_walk != null)
@@ -159,9 +160,9 @@ namespace Kingsboard.Pawns
         {
             // Keep the name label facing the camera
             Camera camera = Camera.main;
-            if (label != null && camera != null)
+            if (_label != null && camera != null)
             {
-                label.transform.rotation = camera.transform.rotation;
+                _label.transform.rotation = camera.transform.rotation;
             }
         }
 
@@ -192,10 +193,10 @@ namespace Kingsboard.Pawns
             {
                 Vector3 from = transform.position;
                 Vector3 to = StandingPointOf(step);
-                for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, secondsPerStep))
+                for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, _secondsPerStep))
                 {
                     // A small hop on each step, so movement between levels reads clearly
-                    transform.position = Vector3.Lerp(from, to, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * hopHeight;
+                    transform.position = Vector3.Lerp(from, to, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * _hopHeight;
                     yield return null;
                 }
 
@@ -218,23 +219,23 @@ namespace Kingsboard.Pawns
 
         private void ShowPlan()
         {
-            if (plannedPath == null)
+            if (_plannedPath == null)
             {
                 return;
             }
 
-            if (!showPlannedPath || Pawn == null || Pawn.PlannedPath.Count == 0)
+            if (!_showPlannedPath || Pawn == null || Pawn.PlannedPath.Count == 0)
             {
-                plannedPath.positionCount = 0;
+                _plannedPath.positionCount = 0;
                 return;
             }
 
             Vector3 lift = Vector3.up * 0.05f;
-            plannedPath.positionCount = Pawn.PlannedPath.Count + 1;
-            plannedPath.SetPosition(0, StandingPointOf(Pawn.Position) + lift);
+            _plannedPath.positionCount = Pawn.PlannedPath.Count + 1;
+            _plannedPath.SetPosition(0, StandingPointOf(Pawn.Position) + lift);
             for (int i = 0; i < Pawn.PlannedPath.Count; i++)
             {
-                plannedPath.SetPosition(i + 1, StandingPointOf(Pawn.PlannedPath[i]) + lift);
+                _plannedPath.SetPosition(i + 1, StandingPointOf(Pawn.PlannedPath[i]) + lift);
             }
         }
 
@@ -245,40 +246,40 @@ namespace Kingsboard.Pawns
         {
             gameObject.name = $"Pawn {pawn.Name}";
 
-            if (body != null)
+            if (_body != null)
             {
                 if (_bodyMaterial == null)
                 {
-                    _bodyMaterial = new Material(body.sharedMaterial);
-                    body.sharedMaterial = _bodyMaterial;
+                    _bodyMaterial = new Material(_body.sharedMaterial);
+                    _body.sharedMaterial = _bodyMaterial;
                 }
                 _bodyMaterial.color = pawn.Colour;
             }
 
-            if (label != null)
+            if (_label != null)
             {
-                label.text = pawn.Name;
-                label.color = pawn.Colour;
+                _label.text = pawn.Name;
+                _label.color = pawn.Colour;
             }
 
-            if (plannedPath != null)
+            if (_plannedPath != null)
             {
                 if (_pathMaterial == null)
                 {
-                    _pathMaterial = new Material(plannedPath.sharedMaterial);
-                    plannedPath.sharedMaterial = _pathMaterial;
+                    _pathMaterial = new Material(_plannedPath.sharedMaterial);
+                    _plannedPath.sharedMaterial = _pathMaterial;
                 }
                 _pathMaterial.color = pawn.Colour;
-                plannedPath.positionCount = 0;
+                _plannedPath.positionCount = 0;
             }
         }
 
         private void SetSelected(bool selected)
         {
             IsSelected = selected;
-            if (selectionIndicator != null)
+            if (_selectionIndicator != null)
             {
-                selectionIndicator.SetActive(selected);
+                _selectionIndicator.SetActive(selected);
             }
         }
 

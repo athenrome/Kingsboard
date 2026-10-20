@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Kingsboard.Board
 {
@@ -27,16 +28,16 @@ namespace Kingsboard.Board
         public const float TileGap = 0.04f;
 
         [Tooltip("Move the main camera to look at the section whenever a new section arrives")]
-        [SerializeField] private bool frameCamera = true;
+        [SerializeField, FormerlySerializedAs("frameCamera")] private bool _frameCamera = true;
 
         [Tooltip("Width and depth of the first section to load. 0 uses the server's default size.")]
-        [SerializeField] private int sectionSize = 0;
+        [SerializeField, FormerlySerializedAs("sectionSize")] private int _sectionSize = 0;
 
         [Tooltip("Prefab drawn for every tile (Assets/Prefabs/Board/BoardTile.prefab). Needs a Renderer; it is coloured and scaled per tile.")]
-        [SerializeField] private GameObject tilePrefab;
+        [SerializeField, FormerlySerializedAs("tilePrefab")] private GameObject _tilePrefab;
 
         [Tooltip("Where tile blocks are created (the Tiles child of the Board prefab)")]
-        [SerializeField] private Transform tileRoot;
+        [SerializeField, FormerlySerializedAs("tileRoot")] private Transform _tileRoot;
 
         private BoardGrpcHandler _handler;
         private readonly Dictionary<TileType, Material> _materials = new Dictionary<TileType, Material>();
@@ -127,15 +128,11 @@ namespace Kingsboard.Board
 
         private void Start()
         {
-            if (tilePrefab == null)
+            if (_tilePrefab == null || _tileRoot == null)
             {
-                Debug.LogError("[Board] No tile prefab is assigned to the BoardController, so the board can't be drawn. Use the Board prefab.", this);
+                Debug.LogError("[Board] The BoardController needs its tile prefab and Tiles root assigned, so the board can't be drawn. Use the Board prefab.", this);
                 enabled = false;
                 return;
-            }
-            if (tileRoot == null)
-            {
-                tileRoot = transform;
             }
 
             _handler = new BoardGrpcHandler();
@@ -144,9 +141,9 @@ namespace Kingsboard.Board
             _handler.Disconnected += OnDisconnected;
 
             BoardRegion? firstRegion = null;
-            if (sectionSize > 0)
+            if (_sectionSize > 0)
             {
-                firstRegion = new BoardRegion() { Origin = new BoardPosition(), Width = sectionSize, Depth = sectionSize };
+                firstRegion = new BoardRegion() { Origin = new BoardPosition(), Width = _sectionSize, Depth = _sectionSize };
             }
             _handler.Connect(firstRegion);
         }
@@ -174,7 +171,7 @@ namespace Kingsboard.Board
             Section = section;
             RebuildTiles();
 
-            if (frameCamera)
+            if (_frameCamera)
             {
                 FrameCamera();
             }
@@ -254,7 +251,7 @@ namespace Kingsboard.Board
 
             if (tileObject == null)
             {
-                tileObject = Instantiate(tilePrefab, tileRoot, false);
+                tileObject = Instantiate(_tilePrefab, _tileRoot, false);
                 _tileObjects[index] = tileObject;
             }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kingsboard.Board;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
 
 namespace Kingsboard.Pawns
@@ -18,16 +19,16 @@ namespace Kingsboard.Pawns
     public class PawnManager : MonoBehaviour
     {
         [Tooltip("Prefab spawned for every pawn (Assets/Prefabs/Pawns/Pawn.prefab)")]
-        [SerializeField] private PawnController pawnPrefab;
+        [SerializeField, FormerlySerializedAs("pawnPrefab")] private PawnController _pawnPrefab;
 
         [Tooltip("Where pawns are spawned (the Pawn Views child of the Pawns prefab)")]
-        [SerializeField] private Transform pawnRoot;
+        [SerializeField, FormerlySerializedAs("pawnRoot")] private Transform _pawnRoot;
 
         [Tooltip("Select pawns by clicking them with the left mouse button")]
-        [SerializeField] private bool clickToSelect = true;
+        [SerializeField, FormerlySerializedAs("clickToSelect")] private bool _clickToSelect = true;
 
         [Tooltip("Furthest a click can reach into the scene, in world units")]
-        [SerializeField] private float maxClickDistance = 500f;
+        [SerializeField, FormerlySerializedAs("maxClickDistance")] private float _maxClickDistance = 500f;
 
         private PawnGrpcHandler _handler;
         private BoardController _board;
@@ -79,15 +80,11 @@ namespace Kingsboard.Pawns
 
         private void Start()
         {
-            if (pawnPrefab == null)
+            if (_pawnPrefab == null || _pawnRoot == null)
             {
-                Debug.LogError("[Pawns] The PawnManager needs its Pawn prefab assigned to spawn pawns. Use the Pawns prefab.", this);
+                Debug.LogError("[Pawns] The PawnManager needs its Pawn prefab and Pawn Views root assigned to spawn pawns. Use the Pawns prefab.", this);
                 enabled = false;
                 return;
-            }
-            if (pawnRoot == null)
-            {
-                pawnRoot = transform;
             }
 
             _handler = new PawnGrpcHandler();
@@ -100,7 +97,7 @@ namespace Kingsboard.Pawns
 
         private void Update()
         {
-            if (clickToSelect && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            if (_clickToSelect && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
                 SelectUnderPointer(Mouse.current.position.ReadValue());
             }
@@ -188,7 +185,7 @@ namespace Kingsboard.Pawns
 
         private void Spawn(Pawn pawn, BoardController board)
         {
-            PawnController controller = Instantiate(pawnPrefab, pawnRoot, false);
+            PawnController controller = Instantiate(_pawnPrefab, _pawnRoot, false);
             controller.Initialise(pawn, board);
             controller.Selected += OnPawnSelected;
             controller.Deselected += OnPawnDeselected;
@@ -254,7 +251,7 @@ namespace Kingsboard.Pawns
 
             Ray ray = camera.ScreenPointToRay(screenPoint);
             PawnController hit = null;
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, maxClickDistance))
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, _maxClickDistance))
             {
                 hit = hitInfo.collider.GetComponentInParent<PawnController>();
             }
