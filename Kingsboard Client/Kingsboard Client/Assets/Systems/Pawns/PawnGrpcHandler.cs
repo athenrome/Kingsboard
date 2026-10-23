@@ -10,6 +10,7 @@ using Kingsboard.Networking;
 using UnityEngine;
 using BoardPosition = Kingsboard.Board.BoardPosition;
 using Pawn = Kingsboard.Pawns.Pawn;
+using PawnAttributes = Kingsboard.Pawns.PawnAttributes;
 using PawnMovement = Kingsboard.Pawns.PawnMovement;
 
 namespace Kingsboard.Pawns
@@ -22,6 +23,7 @@ namespace Kingsboard.Pawns
     public class PawnGrpcHandler : IDisposable
     {
         private const double ReconnectDelaySeconds = 2;
+        private const double RequestTimeoutSeconds = 10;
 
         private readonly CancellationTokenSource _shutdown = new CancellationTokenSource();
         private bool _connected;
@@ -125,6 +127,33 @@ namespace Kingsboard.Pawns
         }
 
         /// <summary>
+        /// Asks the server for all of one pawn's details. Returns null if no pawn has that id or the request fails
+        /// (failures other than "not found" are logged). Continues on the main thread.
+        /// </summary>
+        public async Task<Pawn> GetPawnByIdAsync(string id)
+        {
+            GrpcPawn.PawnService.PawnServiceClient client = new GrpcPawn.PawnService.PawnServiceClient(GrpcConnection.Channel);
+            try
+            {
+                GetPawnByIdRequest request = new GetPawnByIdRequest() { Id = id ?? string.Empty };
+                GrpcPawn.Pawn pawn = await client.GetPawnByIdAsync(request, deadline: DateTime.UtcNow.AddSeconds(RequestTimeoutSeconds), cancellationToken: _shutdown.Token);
+                return ToPawn(pawn);
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (RpcException ex)
+            {
+                if (!_shutdown.IsCancellationRequested)
+                {
+                    Debug.LogWarning($"[Pawns] Could not get pawn {id}: {ex.Status.Detail}");
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Stops listening (closing the stream is what tells the server we've gone)
         /// </summary>
         public void Dispose()
@@ -140,7 +169,29 @@ namespace Kingsboard.Pawns
                 Name = pawn.Name,
                 Colour = ColorUtility.TryParseHtmlString(pawn.Colour, out Color colour) ? colour : Color.white,
                 Position = ToBoardPosition(pawn.Position),
-                PlannedPath = pawn.PlannedPath.Select(ToBoardPosition).ToList()
+                PlannedPath = pawn.PlannedPath.Select(ToBoardPosition).ToList(),
+                Attributes = ToPawnAttributes(pawn.Attributes),
+                Health = pawn.Health,
+                MaxHealth = pawn.MaxHealth
+            };
+        }
+
+        private static PawnAttributes ToPawnAttributes(GrpcPawn.PawnAttributes attributes)
+        {
+            // A missing message field arrives as null; proto3 treats that as all-zero
+            if (attributes == null)
+            {
+                return new PawnAttributes();
+            }
+
+            return new PawnAttributes()
+            {
+                Strength = attributes.Strength,
+                Dexterity = attributes.Dexterity,
+                Intelligence = attributes.Intelligence,
+                Wisdom = attributes.Wisdom,
+                Constitution = attributes.Constitution,
+                Physique = attributes.Physique
             };
         }
 

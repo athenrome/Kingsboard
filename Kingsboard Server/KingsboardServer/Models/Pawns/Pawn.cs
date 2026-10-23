@@ -28,6 +28,16 @@ namespace KingsboardServer.Models.Pawns
         public BoardPosition Position { get; set; }
 
         /// <summary>
+        /// The pawn's core attributes (Strength, Dexterity and so on), rolled when it is spawned
+        /// </summary>
+        public PawnAttributes Attributes { get; set; } = new PawnAttributes();
+
+        /// <summary>
+        /// Current health, a whole number. Starts at the pawn's max health (its Physique), which IPawnService.GetMaxHealth gives.
+        /// </summary>
+        public int Health { get; set; }
+
+        /// <summary>
         /// The path the pawn plans to walk this turn, each step in order and ending at its intended destination.
         /// Chosen in the Planning phase and walked (then cleared) in the Resolution phase. Empty when it has no plan.
         /// </summary>

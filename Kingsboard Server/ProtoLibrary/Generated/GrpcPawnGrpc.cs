@@ -60,6 +60,10 @@ namespace GrpcPawn {
     static readonly grpc::Marshaller<global::GrpcPawn.PawnEvent> __Marshaller_PawnEvent = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.PawnEvent.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::GrpcPawn.PawnList> __Marshaller_PawnList = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.PawnList.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::GrpcPawn.GetPawnByIdRequest> __Marshaller_GetPawnByIdRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.GetPawnByIdRequest.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::GrpcPawn.Pawn> __Marshaller_Pawn = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.Pawn.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnEvent> __Method_JoinPawnStream = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnEvent>(
@@ -76,6 +80,14 @@ namespace GrpcPawn {
         "GetPawns",
         __Marshaller_google_protobuf_Empty,
         __Marshaller_PawnList);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::GrpcPawn.GetPawnByIdRequest, global::GrpcPawn.Pawn> __Method_GetPawnById = new grpc::Method<global::GrpcPawn.GetPawnByIdRequest, global::GrpcPawn.Pawn>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetPawnById",
+        __Marshaller_GetPawnByIdRequest,
+        __Marshaller_Pawn);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -109,6 +121,19 @@ namespace GrpcPawn {
       /// <returns>The response to send back to the client (wrapped by a task).</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       public virtual global::System.Threading.Tasks.Task<global::GrpcPawn.PawnList> GetPawns(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      /// <summary>
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
+      /// </summary>
+      /// <param name="request">The request received from the client.</param>
+      /// <param name="context">The context of the server-side call handler being invoked.</param>
+      /// <returns>The response to send back to the client (wrapped by a task).</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::GrpcPawn.Pawn> GetPawnById(global::GrpcPawn.GetPawnByIdRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -216,6 +241,58 @@ namespace GrpcPawn {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetPawns, null, options, request);
       }
+      /// <summary>
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::GrpcPawn.Pawn GetPawnById(global::GrpcPawn.GetPawnByIdRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetPawnById(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::GrpcPawn.Pawn GetPawnById(global::GrpcPawn.GetPawnByIdRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetPawnById, null, options, request);
+      }
+      /// <summary>
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::GrpcPawn.Pawn> GetPawnByIdAsync(global::GrpcPawn.GetPawnByIdRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetPawnByIdAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::GrpcPawn.Pawn> GetPawnByIdAsync(global::GrpcPawn.GetPawnByIdRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetPawnById, null, options, request);
+      }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       protected override PawnServiceClient NewInstance(ClientBaseConfiguration configuration)
@@ -231,7 +308,8 @@ namespace GrpcPawn {
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_JoinPawnStream, serviceImpl.JoinPawnStream)
-          .AddMethod(__Method_GetPawns, serviceImpl.GetPawns).Build();
+          .AddMethod(__Method_GetPawns, serviceImpl.GetPawns)
+          .AddMethod(__Method_GetPawnById, serviceImpl.GetPawnById).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -243,6 +321,7 @@ namespace GrpcPawn {
     {
       serviceBinder.AddMethod(__Method_JoinPawnStream, serviceImpl == null ? null : new grpc::ServerStreamingServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnEvent>(serviceImpl.JoinPawnStream));
       serviceBinder.AddMethod(__Method_GetPawns, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnList>(serviceImpl.GetPawns));
+      serviceBinder.AddMethod(__Method_GetPawnById, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcPawn.GetPawnByIdRequest, global::GrpcPawn.Pawn>(serviceImpl.GetPawnById));
     }
 
   }

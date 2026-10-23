@@ -18,6 +18,14 @@ service PawnService {
 
   // One-off query for every pawn
   rpc GetPawns(google.protobuf.Empty) returns (PawnList);
+
+  // One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+  // Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
+  rpc GetPawnById(GetPawnByIdRequest) returns (Pawn);
+}
+
+message GetPawnByIdRequest {
+  string id = 1; // The pawn's id, as sent in Pawn.id
 }
 
 message Pawn {
@@ -28,6 +36,20 @@ message Pawn {
   // The path the pawn plans to walk this turn: each step in order, ending at its intended destination.
   // Empty when it has no plan (before Planning, after Resolution, or when it chose to stay put).
   repeated BoardPosition planned_path = 5;
+  PawnAttributes attributes = 6;        // Core attributes (each a whole number from 1 to 10) and Physique
+  reserved 7;                           // Was physique; now PawnAttributes.physique
+  int32 health = 8;                     // Current health
+  int32 max_health = 9;                 // Most health the pawn can have (equal to its physique)
+}
+
+// A pawn's core attributes, rolled when it is spawned, and the Physique stat derived from them
+message PawnAttributes {
+  int32 strength = 1;
+  int32 dexterity = 2;
+  int32 intelligence = 3;
+  int32 wisdom = 4;
+  int32 constitution = 5;
+  int32 physique = 6;                   // Dexterity + (Strength * 2)
 }
 
 message PawnList {

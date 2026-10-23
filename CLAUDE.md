@@ -102,7 +102,11 @@ Every turn runs Start → Upkeep → Planning → Player → Resolution → End.
 
 ## Pawns
 
-Pawns are characters that move around the board on their own. All pawn logic is on the server in `PawnService`; the Unity client (`PawnManager` and a `PawnController` per pawn) only displays it. A pawn has an id, a name, a colour (`#RRGGBB`) and a `Position`.
+Pawns are characters that move around the board on their own. All pawn logic is on the server in `PawnService`; the Unity client (`PawnManager` and a `PawnController` per pawn) only displays it. A pawn has an id, a name, a colour (`#RRGGBB`), a `Position`, `Attributes` and `Health`.
+
+- **Attributes:** Strength, Dexterity, Intelligence, Wisdom and Constitution (`PawnAttributes`), each a random whole number from 1 to 10, rolled at spawn.
+- **Stats:** Physique = Dexterity + Strength × 2. `PawnService` works it out when it rolls the attributes and stores it as `PawnAttributes.Physique` (also `PawnAttributes.physique` in the proto). Max health equals Physique (`GetMaxHealth`, sent as `max_health`), and pawns spawn at full health.
+- **Creating pawns:** `PawnService.CreatePawn` builds one pawn (name, colour, attributes, starting health). `SpawnPawns` only picks spawn positions and calls it.
 
 - **Position:** the empty space directly above its stack's top tile.
 - **Spawning:** `GameService` spawns `PawnSettings:Count` pawns on passable ground near the board's front-left corner, inside `SpawnAreaSize`. That's where the default board section is.
@@ -112,8 +116,8 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 - **Resolution phase:** each pawn walks its path step by step and re-checks every step against the current board and the other pawns, because tiles may have changed. It stops at the first step it can't take (`Blocked`), then its plan is cleared.
 - **One instance:** `PawnService` is both `IPawnService` and the `ITurnPhaseHandler` for Planning and Resolution.
 - **Ordering:** `PawnsChanged` is raised under the pawn lock, and `ReadPawns(callback)` subscribes and takes a snapshot together, the same pattern as `BoardService.ReadSection`. Lock order is pawn, then board; the board never calls into pawns.
-- **gRPC:** `JoinPawnStream` sends a `snapshot`, then `spawned`, `planned` and `moved` events. Every pawn is sent; the client shows only those inside its loaded board section.
-- **Client:** `PawnManager` (on the Pawns prefab) handles pawns as a group. It receives them from the server, spawns a `Pawn` prefab per new pawn and despawns pawns that are gone, passes each pawn its own plans and moves, and keeps one pawn selected (click a pawn to select it, click empty space to deselect). Each pawn has its own `PawnController` (on the Pawn prefab) that drives its client actions: name and colour, showing its planned path, walking the path when moves resolve, hiding outside the loaded section, and being selected (`Select`/`Deselect`, which shows its `SelectionRing`). Put per-pawn behaviour in `PawnController` and group behaviour in `PawnManager`.
+- **gRPC:** `JoinPawnStream` sends a `snapshot`, then `spawned`, `planned` and `moved` events. Every pawn is sent; the client shows only those inside its loaded board section. `GetPawnById(id)` returns all of one pawn's details in one call (`INVALID_ARGUMENT` for a malformed id, `NOT_FOUND` for an unknown one); on the client it's `PawnManager.GetPawnById`.
+- **Client:** `PawnManager` (on the Pawns prefab) handles pawns as a group. It receives them from the server, spawns a `Pawn` prefab per new pawn and despawns pawns that are gone, passes each pawn its own plans and moves, and keeps one pawn selected (click a pawn to select it, click empty space to deselect). Each pawn has its own `PawnController` (on the Pawn prefab) that drives its client actions: name and colour, showing its planned path, walking the path when moves resolve, hiding outside the loaded section, and being selected (`Select`/`Deselect`, which shows its `SelectionRing`). Put per-pawn behaviour in `PawnController` and group behaviour in `PawnManager`. `PawnDetailsController` (the PawnDetails prefab, nested in Pawns) shows the selected pawn's name, health, Physique and attributes at the top right, and hides when nothing is selected. It loads a newly selected pawn through `GetPawnById`, then follows streamed updates.
 
 ## Prefab rule (Unity): every GameObject comes from a prefab
 
@@ -126,7 +130,8 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 |---|---|
 | `Prefabs/Board/Board.prefab` | `BoardController`, with a `Tiles` child that tile blocks are created under |
 | `Prefabs/Board/BoardTile.prefab` | One tile block (a cube) |
-| `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under |
+| `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under and a nested `PawnDetails` |
+| `Prefabs/Pawns/PawnDetails.prefab` | `PawnDetailsController` and its `UIDocument` (`Prefabs/Pawns/PawnDetailsPanelSettings.asset`), the selected-pawn panel |
 | `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` capsule, a `Name` label, a nested `PawnPath` and a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`). Its pivot is at its feet. |
 | `Prefabs/Pawns/PawnPath.prefab` | `LineRenderer` for a planned path (`Materials/Pawns/PawnPath.mat`), nested in `Pawn`. It draws in world space, so it stays put while the pawn walks. |
 | `Prefabs/Chat/Chat.prefab` | `ChatController` and its `UIDocument` (`Prefabs/Chat/ChatPanelSettings.asset`) |

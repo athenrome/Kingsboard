@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Kingsboard.Board;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -76,6 +77,19 @@ namespace Kingsboard.Pawns
 
             // The pawn raises Selected, and OnPawnSelected does the bookkeeping
             pawn.Select();
+        }
+
+        /// <summary>
+        /// Asks the server for all of one pawn's details (see <see cref="PawnGrpcHandler.GetPawnByIdAsync"/>).
+        /// Returns null if no pawn has that id, the request fails, or the pawns aren't connected.
+        /// </summary>
+        public Task<Pawn> GetPawnById(string id)
+        {
+            if (_handler == null)
+            {
+                return Task.FromResult<Pawn>(null);
+            }
+            return _handler.GetPawnByIdAsync(id);
         }
 
         private void Start()
