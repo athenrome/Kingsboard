@@ -25,35 +25,38 @@ namespace GrpcPawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5HcnBjUGF3bi5wcm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3Rv",
-            "Gg9HcnBjQm9hcmQucHJvdG8i0wEKBFBhd24SCgoCaWQYASABKAkSDAoEbmFt",
-            "ZRgCIAEoCRIOCgZjb2xvdXIYAyABKAkSIAoIcG9zaXRpb24YBCABKAsyDi5C",
-            "b2FyZFBvc2l0aW9uEiQKDHBsYW5uZWRfcGF0aBgFIAMoCzIOLkJvYXJkUG9z",
-            "aXRpb24SIwoKYXR0cmlidXRlcxgGIAEoCzIPLlBhd25BdHRyaWJ1dGVzEhAK",
-            "CHBoeXNpcXVlGAcgASgFEg4KBmhlYWx0aBgIIAEoBRISCgptYXhfaGVhbHRo",
-            "GAkgASgFInEKDlBhd25BdHRyaWJ1dGVzEhAKCHN0cmVuZ3RoGAEgASgFEhEK",
-            "CWRleHRlcml0eRgCIAEoBRIUCgxpbnRlbGxpZ2VuY2UYAyABKAUSDgoGd2lz",
-            "ZG9tGAQgASgFEhQKDGNvbnN0aXR1dGlvbhgFIAEoBSIgCghQYXduTGlzdBIU",
-            "CgVwYXducxgBIAMoCzIFLlBhd24icAoMUGF3bk1vdmVtZW50Eg8KB3Bhd25f",
-            "aWQYASABKAkSHAoEcGF0aBgCIAMoCzIOLkJvYXJkUG9zaXRpb24SIAoIcG9z",
-            "aXRpb24YAyABKAsyDi5Cb2FyZFBvc2l0aW9uEg8KB2Jsb2NrZWQYBCABKAgi",
-            "KgoSUGF3bnNTbmFwc2hvdEV2ZW50EhQKBXBhd25zGAEgAygLMgUuUGF3biIp",
-            "ChFQYXduc1NwYXduZWRFdmVudBIUCgVwYXducxgBIAMoCzIFLlBhd24iOgoR",
-            "UGF3bnNQbGFubmVkRXZlbnQSDwoHdHVybl9pZBgBIAEoBRIUCgVwYXducxgC",
-            "IAMoCzIFLlBhd24iWgoPUGF3bnNNb3ZlZEV2ZW50Eg8KB3R1cm5faWQYASAB",
-            "KAUSIAoJbW92ZW1lbnRzGAIgAygLMg0uUGF3bk1vdmVtZW50EhQKBXBhd25z",
-            "GAMgAygLMgUuUGF3biKwAQoJUGF3bkV2ZW50EicKCHNuYXBzaG90GAEgASgL",
-            "MhMuUGF3bnNTbmFwc2hvdEV2ZW50SAASJQoHc3Bhd25lZBgCIAEoCzISLlBh",
-            "d25zU3Bhd25lZEV2ZW50SAASJQoHcGxhbm5lZBgDIAEoCzISLlBhd25zUGxh",
-            "bm5lZEV2ZW50SAASIQoFbW92ZWQYBCABKAsyEC5QYXduc01vdmVkRXZlbnRI",
-            "AEIJCgdwYXlsb2FkMnQKC1Bhd25TZXJ2aWNlEjYKDkpvaW5QYXduU3RyZWFt",
-            "EhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GgouUGF3bkV2ZW50MAESLQoIR2V0",
-            "UGF3bnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaCS5QYXduTGlzdEILqgII",
-            "R3JwY1Bhd25iBnByb3RvMw=="));
+            "Gg9HcnBjQm9hcmQucHJvdG8iIAoSR2V0UGF3bkJ5SWRSZXF1ZXN0EgoKAmlk",
+            "GAEgASgJIscBCgRQYXduEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDgoG",
+            "Y29sb3VyGAMgASgJEiAKCHBvc2l0aW9uGAQgASgLMg4uQm9hcmRQb3NpdGlv",
+            "bhIkCgxwbGFubmVkX3BhdGgYBSADKAsyDi5Cb2FyZFBvc2l0aW9uEiMKCmF0",
+            "dHJpYnV0ZXMYBiABKAsyDy5QYXduQXR0cmlidXRlcxIOCgZoZWFsdGgYCCAB",
+            "KAUSEgoKbWF4X2hlYWx0aBgJIAEoBUoECAcQCCKDAQoOUGF3bkF0dHJpYnV0",
+            "ZXMSEAoIc3RyZW5ndGgYASABKAUSEQoJZGV4dGVyaXR5GAIgASgFEhQKDGlu",
+            "dGVsbGlnZW5jZRgDIAEoBRIOCgZ3aXNkb20YBCABKAUSFAoMY29uc3RpdHV0",
+            "aW9uGAUgASgFEhAKCHBoeXNpcXVlGAYgASgFIiAKCFBhd25MaXN0EhQKBXBh",
+            "d25zGAEgAygLMgUuUGF3biJwCgxQYXduTW92ZW1lbnQSDwoHcGF3bl9pZBgB",
+            "IAEoCRIcCgRwYXRoGAIgAygLMg4uQm9hcmRQb3NpdGlvbhIgCghwb3NpdGlv",
+            "bhgDIAEoCzIOLkJvYXJkUG9zaXRpb24SDwoHYmxvY2tlZBgEIAEoCCIqChJQ",
+            "YXduc1NuYXBzaG90RXZlbnQSFAoFcGF3bnMYASADKAsyBS5QYXduIikKEVBh",
+            "d25zU3Bhd25lZEV2ZW50EhQKBXBhd25zGAEgAygLMgUuUGF3biI6ChFQYXdu",
+            "c1BsYW5uZWRFdmVudBIPCgd0dXJuX2lkGAEgASgFEhQKBXBhd25zGAIgAygL",
+            "MgUuUGF3biJaCg9QYXduc01vdmVkRXZlbnQSDwoHdHVybl9pZBgBIAEoBRIg",
+            "Cgltb3ZlbWVudHMYAiADKAsyDS5QYXduTW92ZW1lbnQSFAoFcGF3bnMYAyAD",
+            "KAsyBS5QYXduIrABCglQYXduRXZlbnQSJwoIc25hcHNob3QYASABKAsyEy5Q",
+            "YXduc1NuYXBzaG90RXZlbnRIABIlCgdzcGF3bmVkGAIgASgLMhIuUGF3bnNT",
+            "cGF3bmVkRXZlbnRIABIlCgdwbGFubmVkGAMgASgLMhIuUGF3bnNQbGFubmVk",
+            "RXZlbnRIABIhCgVtb3ZlZBgEIAEoCzIQLlBhd25zTW92ZWRFdmVudEgAQgkK",
+            "B3BheWxvYWQynwEKC1Bhd25TZXJ2aWNlEjYKDkpvaW5QYXduU3RyZWFtEhYu",
+            "Z29vZ2xlLnByb3RvYnVmLkVtcHR5GgouUGF3bkV2ZW50MAESLQoIR2V0UGF3",
+            "bnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaCS5QYXduTGlzdBIpCgtHZXRQ",
+            "YXduQnlJZBITLkdldFBhd25CeUlkUmVxdWVzdBoFLlBhd25CC6oCCEdycGNQ",
+            "YXduYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::GrpcBoard.GrpcBoardReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.Pawn), global::GrpcPawn.Pawn.Parser, new[]{ "Id", "Name", "Colour", "Position", "PlannedPath", "Attributes", "Physique", "Health", "MaxHealth" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnAttributes), global::GrpcPawn.PawnAttributes.Parser, new[]{ "Strength", "Dexterity", "Intelligence", "Wisdom", "Constitution" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.GetPawnByIdRequest), global::GrpcPawn.GetPawnByIdRequest.Parser, new[]{ "Id" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.Pawn), global::GrpcPawn.Pawn.Parser, new[]{ "Id", "Name", "Colour", "Position", "PlannedPath", "Attributes", "Health", "MaxHealth" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnAttributes), global::GrpcPawn.PawnAttributes.Parser, new[]{ "Strength", "Dexterity", "Intelligence", "Wisdom", "Constitution", "Physique" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnList), global::GrpcPawn.PawnList.Parser, new[]{ "Pawns" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnMovement), global::GrpcPawn.PawnMovement.Parser, new[]{ "PawnId", "Path", "Position", "Blocked" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsSnapshotEvent), global::GrpcPawn.PawnsSnapshotEvent.Parser, new[]{ "Pawns" }, null, null, null, null),
@@ -67,6 +70,207 @@ namespace GrpcPawn {
 
   }
   #region Messages
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class GetPawnByIdRequest : pb::IMessage<GetPawnByIdRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<GetPawnByIdRequest> _parser = new pb::MessageParser<GetPawnByIdRequest>(() => new GetPawnByIdRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<GetPawnByIdRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public GetPawnByIdRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public GetPawnByIdRequest(GetPawnByIdRequest other) : this() {
+      id_ = other.id_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public GetPawnByIdRequest Clone() {
+      return new GetPawnByIdRequest(this);
+    }
+
+    /// <summary>Field number for the "id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private string id_ = "";
+    /// <summary>
+    /// The pawn's id, as sent in Pawn.id
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Id {
+      get { return id_; }
+      set {
+        id_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as GetPawnByIdRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(GetPawnByIdRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id.Length != 0) hash ^= Id.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Id.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Id);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Id.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Id);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Id);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(GetPawnByIdRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id.Length != 0) {
+        Id = other.Id;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Id = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Id = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Pawn : pb::IMessage<Pawn>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -82,7 +286,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[0]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -108,7 +312,6 @@ namespace GrpcPawn {
       position_ = other.position_ != null ? other.position_.Clone() : null;
       plannedPath_ = other.plannedPath_.Clone();
       attributes_ = other.attributes_ != null ? other.attributes_.Clone() : null;
-      physique_ = other.physique_;
       health_ = other.health_;
       maxHealth_ = other.maxHealth_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -193,7 +396,7 @@ namespace GrpcPawn {
     public const int AttributesFieldNumber = 6;
     private global::GrpcPawn.PawnAttributes attributes_;
     /// <summary>
-    /// Core attributes, each a whole number from 1 to 10
+    /// Core attributes (each a whole number from 1 to 10) and Physique
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -201,21 +404,6 @@ namespace GrpcPawn {
       get { return attributes_; }
       set {
         attributes_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "physique" field.</summary>
-    public const int PhysiqueFieldNumber = 7;
-    private int physique_;
-    /// <summary>
-    /// Dexterity + (Strength * 2)
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Physique {
-      get { return physique_; }
-      set {
-        physique_ = value;
       }
     }
 
@@ -270,7 +458,6 @@ namespace GrpcPawn {
       if (!object.Equals(Position, other.Position)) return false;
       if(!plannedPath_.Equals(other.plannedPath_)) return false;
       if (!object.Equals(Attributes, other.Attributes)) return false;
-      if (Physique != other.Physique) return false;
       if (Health != other.Health) return false;
       if (MaxHealth != other.MaxHealth) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -286,7 +473,6 @@ namespace GrpcPawn {
       if (position_ != null) hash ^= Position.GetHashCode();
       hash ^= plannedPath_.GetHashCode();
       if (attributes_ != null) hash ^= Attributes.GetHashCode();
-      if (Physique != 0) hash ^= Physique.GetHashCode();
       if (Health != 0) hash ^= Health.GetHashCode();
       if (MaxHealth != 0) hash ^= MaxHealth.GetHashCode();
       if (_unknownFields != null) {
@@ -328,10 +514,6 @@ namespace GrpcPawn {
         output.WriteRawTag(50);
         output.WriteMessage(Attributes);
       }
-      if (Physique != 0) {
-        output.WriteRawTag(56);
-        output.WriteInt32(Physique);
-      }
       if (Health != 0) {
         output.WriteRawTag(64);
         output.WriteInt32(Health);
@@ -371,10 +553,6 @@ namespace GrpcPawn {
         output.WriteRawTag(50);
         output.WriteMessage(Attributes);
       }
-      if (Physique != 0) {
-        output.WriteRawTag(56);
-        output.WriteInt32(Physique);
-      }
       if (Health != 0) {
         output.WriteRawTag(64);
         output.WriteInt32(Health);
@@ -408,9 +586,6 @@ namespace GrpcPawn {
       size += plannedPath_.CalculateSize(_repeated_plannedPath_codec);
       if (attributes_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Attributes);
-      }
-      if (Physique != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Physique);
       }
       if (Health != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Health);
@@ -451,9 +626,6 @@ namespace GrpcPawn {
           Attributes = new global::GrpcPawn.PawnAttributes();
         }
         Attributes.MergeFrom(other.Attributes);
-      }
-      if (other.Physique != 0) {
-        Physique = other.Physique;
       }
       if (other.Health != 0) {
         Health = other.Health;
@@ -508,10 +680,6 @@ namespace GrpcPawn {
               Attributes = new global::GrpcPawn.PawnAttributes();
             }
             input.ReadMessage(Attributes);
-            break;
-          }
-          case 56: {
-            Physique = input.ReadInt32();
             break;
           }
           case 64: {
@@ -571,10 +739,6 @@ namespace GrpcPawn {
             input.ReadMessage(Attributes);
             break;
           }
-          case 56: {
-            Physique = input.ReadInt32();
-            break;
-          }
           case 64: {
             Health = input.ReadInt32();
             break;
@@ -591,7 +755,7 @@ namespace GrpcPawn {
   }
 
   /// <summary>
-  /// A pawn's core attributes, rolled when it is spawned
+  /// A pawn's core attributes, rolled when it is spawned, and the Physique stat derived from them
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class PawnAttributes : pb::IMessage<PawnAttributes>
@@ -608,7 +772,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[1]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -633,6 +797,7 @@ namespace GrpcPawn {
       intelligence_ = other.intelligence_;
       wisdom_ = other.wisdom_;
       constitution_ = other.constitution_;
+      physique_ = other.physique_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -702,6 +867,21 @@ namespace GrpcPawn {
       }
     }
 
+    /// <summary>Field number for the "physique" field.</summary>
+    public const int PhysiqueFieldNumber = 6;
+    private int physique_;
+    /// <summary>
+    /// Dexterity + (Strength * 2)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Physique {
+      get { return physique_; }
+      set {
+        physique_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -722,6 +902,7 @@ namespace GrpcPawn {
       if (Intelligence != other.Intelligence) return false;
       if (Wisdom != other.Wisdom) return false;
       if (Constitution != other.Constitution) return false;
+      if (Physique != other.Physique) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -734,6 +915,7 @@ namespace GrpcPawn {
       if (Intelligence != 0) hash ^= Intelligence.GetHashCode();
       if (Wisdom != 0) hash ^= Wisdom.GetHashCode();
       if (Constitution != 0) hash ^= Constitution.GetHashCode();
+      if (Physique != 0) hash ^= Physique.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -772,6 +954,10 @@ namespace GrpcPawn {
         output.WriteRawTag(40);
         output.WriteInt32(Constitution);
       }
+      if (Physique != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Physique);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -802,6 +988,10 @@ namespace GrpcPawn {
         output.WriteRawTag(40);
         output.WriteInt32(Constitution);
       }
+      if (Physique != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Physique);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -826,6 +1016,9 @@ namespace GrpcPawn {
       }
       if (Constitution != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Constitution);
+      }
+      if (Physique != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Physique);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -853,6 +1046,9 @@ namespace GrpcPawn {
       }
       if (other.Constitution != 0) {
         Constitution = other.Constitution;
+      }
+      if (other.Physique != 0) {
+        Physique = other.Physique;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -891,6 +1087,10 @@ namespace GrpcPawn {
           }
           case 40: {
             Constitution = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Physique = input.ReadInt32();
             break;
           }
         }
@@ -932,6 +1132,10 @@ namespace GrpcPawn {
             Constitution = input.ReadInt32();
             break;
           }
+          case 48: {
+            Physique = input.ReadInt32();
+            break;
+          }
         }
       }
     }
@@ -954,7 +1158,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[2]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1144,7 +1348,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[3]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1460,7 +1664,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[4]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1647,7 +1851,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[5]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1837,7 +2041,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[6]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2064,7 +2268,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[7]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2320,7 +2524,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[8]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

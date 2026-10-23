@@ -5,8 +5,9 @@ namespace Kingsboard.Pawns
 {
     /// <summary>
     /// Shows the selected pawn's details in a panel at the top right of the screen (built with UI Toolkit): its name,
-    /// health, Physique and attributes. The panel is hidden while no pawn is selected, and follows the selected pawn as
-    /// the server sends new state for it.
+    /// health, Physique and attributes. When a pawn is selected its details are fetched in one call (GetPawnById, through
+    /// <see cref="PawnManager.GetPawnById"/>); after that the panel follows the pawn as the server streams new state for it.
+    /// The panel is hidden while no pawn is selected.
     /// Lives on the PawnDetails prefab (Assets/Prefabs/Pawns/PawnDetails.prefab), nested in the Pawns prefab so its
     /// <see cref="PawnManager"/> reference is set there.
     /// </summary>
@@ -30,8 +31,10 @@ namespace Kingsboard.Pawns
         private Label _wisdomValue;
         private Label _constitutionValue;
 
-        // The pawn state last drawn, so the panel only redraws when the server sends something new
-        private Pawn _shown;
+        // The pawn whose details are on show, and the streamed state of it seen last (to spot new updates from the server)
+        private PawnController _selected;
+        private Pawn _streamed;
+        private bool _shownSinceSelected;
 
         private void Start()
         {
@@ -56,13 +59,44 @@ namespace Kingsboard.Pawns
 
         private void LateUpdate()
         {
-            // The PawnManager replaces a pawn's state object whenever the server sends an update, so a new reference means new data
             PawnController selected = _pawnManager.SelectedPawn;
-            Pawn pawn = selected != null ? selected.Pawn : null;
-            if (pawn != _shown)
+            if (selected != _selected)
             {
-                Show(pawn);
+                // A new selection: fetch the pawn's full details from the server in one call
+                _selected = selected;
+                _streamed = selected != null ? selected.Pawn : null;
+                _shownSinceSelected = false;
+                Show(null);
+                if (selected != null)
+                {
+                    LoadDetails(selected);
+                }
+                return;
             }
+
+            // The PawnManager replaces a pawn's state object whenever the server sends an update, so a new reference means new data
+            if (selected != null && selected.Pawn != _streamed)
+            {
+                _streamed = selected.Pawn;
+                Show(_streamed);
+            }
+        }
+
+        /// <summary>
+        /// Gets <paramref name="pawn"/>'s details with GetPawnById and shows them, unless the selection has moved on or a
+        /// newer streamed update was shown while waiting. Falls back to the streamed state if the request fails.
+        /// </summary>
+        private async void LoadDetails(PawnController pawn)
+        {
+            string id = pawn.Pawn != null ? pawn.Pawn.Id : null;
+            Pawn details = await _pawnManager.GetPawnById(id);
+
+            // The panel may have been destroyed or the selection changed while waiting
+            if (this == null || pawn == null || _selected != pawn || _shownSinceSelected)
+            {
+                return;
+            }
+            Show(details ?? pawn.Pawn);
         }
 
         /// <summary>
@@ -70,7 +104,7 @@ namespace Kingsboard.Pawns
         /// </summary>
         private void Show(Pawn pawn)
         {
-            _shown = pawn;
+            _shownSinceSelected = pawn != null;
             if (pawn == null)
             {
                 _window.style.display = DisplayStyle.None;
@@ -85,7 +119,7 @@ namespace Kingsboard.Pawns
             float fraction = pawn.MaxHealth > 0 ? Mathf.Clamp01((float)pawn.Health / pawn.MaxHealth) : 0f;
             _healthFill.style.width = Length.Percent(fraction * 100f);
 
-            _physiqueValue.text = pawn.Physique.ToString();
+            _physiqueValue.text = pawn.Attributes.Physique.ToString();
             _strengthValue.text = pawn.Attributes.Strength.ToString();
             _dexterityValue.text = pawn.Attributes.Dexterity.ToString();
             _intelligenceValue.text = pawn.Attributes.Intelligence.ToString();

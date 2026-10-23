@@ -38,14 +38,9 @@ namespace Kingsboard.Pawns
         public IReadOnlyList<BoardPosition> PlannedPath { get; set; } = Array.Empty<BoardPosition>();
 
         /// <summary>
-        /// The pawn's core attributes, each a whole number from 1 to 10
+        /// The pawn's core attributes (each a whole number from 1 to 10) and its Physique
         /// </summary>
         public PawnAttributes Attributes { get; set; } = new PawnAttributes();
-
-        /// <summary>
-        /// The pawn's Physique stat (Dexterity + Strength × 2), as worked out by the server
-        /// </summary>
-        public int Physique { get; set; }
 
         /// <summary>
         /// Current health
@@ -59,10 +54,15 @@ namespace Kingsboard.Pawns
     }
 
     /// <summary>
-    /// A pawn's core attributes, rolled by the server when the pawn is spawned
+    /// A pawn's core attributes, rolled by the server when the pawn is spawned, and the Physique stat derived from them
     /// </summary>
     public class PawnAttributes
     {
+        /// <summary>
+        /// Physique stat (Dexterity + Strength × 2), as worked out by the server. Also the pawn's max health.
+        /// </summary>
+        public int Physique { get; set; }
+
         /// <summary>
         /// Physical power
         /// </summary>

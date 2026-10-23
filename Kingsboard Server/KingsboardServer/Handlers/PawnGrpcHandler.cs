@@ -51,6 +51,20 @@ namespace KingsboardServer.Handlers
         }
 
         /// <summary>
+        /// Returns all of one pawn's details. Throws InvalidArgument if the id isn't a valid pawn id, and NotFound if no pawn has it.
+        /// </summary>
+        public override Task<ProtoPawn> GetPawnById(GetPawnByIdRequest request, ServerCallContext context)
+        {
+            if (!Guid.TryParse(request.Id, out Guid id))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "A valid pawn id is required"));
+            }
+
+            Pawn pawn = _pawnService.GetPawnById(id) ?? throw new RpcException(new Status(StatusCode.NotFound, $"No pawn has id {id}"));
+            return Task.FromResult(ToProto(pawn));
+        }
+
+        /// <summary>
         /// Streams the pawns to one client: a snapshot first, then every spawn, plan and move, until the client disconnects
         /// </summary>
         public override async Task JoinPawnStream(Empty request, IServerStreamWriter<PawnEvent> responseStream, ServerCallContext context)
@@ -147,7 +161,6 @@ namespace KingsboardServer.Handlers
                 Colour = pawn.Colour,
                 Position = ToProto(pawn.Position),
                 Attributes = ToProto(pawn.Attributes),
-                Physique = _pawnService.GetPhysique(pawn),
                 Health = pawn.Health,
                 MaxHealth = _pawnService.GetMaxHealth(pawn)
             };
@@ -163,7 +176,8 @@ namespace KingsboardServer.Handlers
                 Dexterity = attributes.Dexterity,
                 Intelligence = attributes.Intelligence,
                 Wisdom = attributes.Wisdom,
-                Constitution = attributes.Constitution
+                Constitution = attributes.Constitution,
+                Physique = attributes.Physique
             };
         }
 
