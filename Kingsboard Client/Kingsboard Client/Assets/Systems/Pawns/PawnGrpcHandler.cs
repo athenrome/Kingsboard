@@ -10,6 +10,7 @@ using Kingsboard.Networking;
 using UnityEngine;
 using BoardPosition = Kingsboard.Board.BoardPosition;
 using Pawn = Kingsboard.Pawns.Pawn;
+using PawnAttributes = Kingsboard.Pawns.PawnAttributes;
 using PawnMovement = Kingsboard.Pawns.PawnMovement;
 
 namespace Kingsboard.Pawns
@@ -140,7 +141,29 @@ namespace Kingsboard.Pawns
                 Name = pawn.Name,
                 Colour = ColorUtility.TryParseHtmlString(pawn.Colour, out Color colour) ? colour : Color.white,
                 Position = ToBoardPosition(pawn.Position),
-                PlannedPath = pawn.PlannedPath.Select(ToBoardPosition).ToList()
+                PlannedPath = pawn.PlannedPath.Select(ToBoardPosition).ToList(),
+                Attributes = ToPawnAttributes(pawn.Attributes),
+                Physique = pawn.Physique,
+                Health = pawn.Health,
+                MaxHealth = pawn.MaxHealth
+            };
+        }
+
+        private static PawnAttributes ToPawnAttributes(GrpcPawn.PawnAttributes attributes)
+        {
+            // A missing message field arrives as null; proto3 treats that as all-zero
+            if (attributes == null)
+            {
+                return new PawnAttributes();
+            }
+
+            return new PawnAttributes()
+            {
+                Strength = attributes.Strength,
+                Dexterity = attributes.Dexterity,
+                Intelligence = attributes.Intelligence,
+                Wisdom = attributes.Wisdom,
+                Constitution = attributes.Constitution
             };
         }
 

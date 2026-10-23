@@ -34,5 +34,15 @@ namespace KingsboardServer.Services.Interfaces
         /// </summary>
         /// <exception cref="InvalidOperationException">No board has been created yet</exception>
         IReadOnlyList<Pawn> SpawnPawns();
+
+        /// <summary>
+        /// The pawn's Physique stat: its Dexterity plus twice its Strength
+        /// </summary>
+        int GetPhysique(Pawn pawn);
+
+        /// <summary>
+        /// The most health the pawn can have, which is its Physique. Pawns are spawned with this much health.
+        /// </summary>
+        int GetMaxHealth(Pawn pawn);
     }
 }

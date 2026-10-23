@@ -34,6 +34,10 @@ namespace KingsboardServer.Services
 
         private static readonly TurnPhase[] HandledPhases = { TurnPhase.Planning, TurnPhase.Resolution };
 
+        // Every attribute is rolled as a whole number in this range, inclusive
+        private const int MinAttribute = 1;
+        private const int MaxAttribute = 10;
+
         private readonly Serilog.ILogger _logger;
         private readonly IOptionsMonitor<PawnSettings> _settings;
         private readonly IPawnRepository _repository;
@@ -124,13 +128,16 @@ namespace KingsboardServer.Services
                 List<Pawn> pawns = new List<Pawn>(count);
                 for (int i = 0; i < count; i++)
                 {
-                    pawns.Add(new Pawn()
+                    Pawn pawn = new Pawn()
                     {
                         Id = Guid.NewGuid(),
                         Name = i < Names.Length ? Names[i] : $"{Names[i % Names.Length]} {i / Names.Length + 1}",
                         Colour = Colours[i % Colours.Length],
-                        Position = candidates[i]
-                    });
+                        Position = candidates[i],
+                        Attributes = RollAttributes()
+                    };
+                    pawn.Health = GetMaxHealth(pawn);
+                    pawns.Add(pawn);
                 }
 
                 if (count < settings.Count)
@@ -144,6 +151,22 @@ namespace KingsboardServer.Services
                 _logger.Information("Spawned {Count} pawns", count);
                 return CloneAll(pawns);
             }
+        }
+
+        /// <summary>
+        /// The pawn's Physique stat: its Dexterity plus twice its Strength
+        /// </summary>
+        public int GetPhysique(Pawn pawn)
+        {
+            return pawn.Attributes.Dexterity + pawn.Attributes.Strength * 2;
+        }
+
+        /// <summary>
+        /// The most health the pawn can have, which is its Physique
+        /// </summary>
+        public int GetMaxHealth(Pawn pawn)
+        {
+            return GetPhysique(pawn);
         }
 
         /// <summary>
@@ -335,6 +358,22 @@ namespace KingsboardServer.Services
 
         private static BoardPosition Column(BoardPosition position) => position with { Z = 0 };
 
+        /// <summary>
+        /// Rolls every attribute as a random whole number from <see cref="MinAttribute"/> to <see cref="MaxAttribute"/>.
+        /// Caller must hold <see cref="_lock"/>, since it uses the shared random.
+        /// </summary>
+        private PawnAttributes RollAttributes()
+        {
+            return new PawnAttributes()
+            {
+                Strength = _random.Next(MinAttribute, MaxAttribute + 1),
+                Dexterity = _random.Next(MinAttribute, MaxAttribute + 1),
+                Intelligence = _random.Next(MinAttribute, MaxAttribute + 1),
+                Wisdom = _random.Next(MinAttribute, MaxAttribute + 1),
+                Constitution = _random.Next(MinAttribute, MaxAttribute + 1)
+            };
+        }
+
         private void Shuffle<T>(List<T> items)
         {
             for (int i = items.Count - 1; i > 0; i--)
@@ -363,6 +402,15 @@ namespace KingsboardServer.Services
                 Name = p.Name,
                 Colour = p.Colour,
                 Position = p.Position,
+                Attributes = new PawnAttributes()
+                {
+                    Strength = p.Attributes.Strength,
+                    Dexterity = p.Attributes.Dexterity,
+                    Intelligence = p.Attributes.Intelligence,
+                    Wisdom = p.Attributes.Wisdom,
+                    Constitution = p.Attributes.Constitution
+                },
+                Health = p.Health,
                 PlannedPath = p.PlannedPath.ToArray()
             }).ToArray();
         }

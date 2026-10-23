@@ -28,6 +28,19 @@ message Pawn {
   // The path the pawn plans to walk this turn: each step in order, ending at its intended destination.
   // Empty when it has no plan (before Planning, after Resolution, or when it chose to stay put).
   repeated BoardPosition planned_path = 5;
+  PawnAttributes attributes = 6;        // Core attributes, each a whole number from 1 to 10
+  int32 physique = 7;                   // Dexterity + (Strength * 2)
+  int32 health = 8;                     // Current health
+  int32 max_health = 9;                 // Most health the pawn can have (equal to its physique)
+}
+
+// A pawn's core attributes, rolled when it is spawned
+message PawnAttributes {
+  int32 strength = 1;
+  int32 dexterity = 2;
+  int32 intelligence = 3;
+  int32 wisdom = 4;
+  int32 constitution = 5;
 }
 
 message PawnList {

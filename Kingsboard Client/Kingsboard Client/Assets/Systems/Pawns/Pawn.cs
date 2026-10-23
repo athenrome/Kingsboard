@@ -36,6 +36,57 @@ namespace Kingsboard.Pawns
         /// Empty when it has no plan.
         /// </summary>
         public IReadOnlyList<BoardPosition> PlannedPath { get; set; } = Array.Empty<BoardPosition>();
+
+        /// <summary>
+        /// The pawn's core attributes, each a whole number from 1 to 10
+        /// </summary>
+        public PawnAttributes Attributes { get; set; } = new PawnAttributes();
+
+        /// <summary>
+        /// The pawn's Physique stat (Dexterity + Strength × 2), as worked out by the server
+        /// </summary>
+        public int Physique { get; set; }
+
+        /// <summary>
+        /// Current health
+        /// </summary>
+        public int Health { get; set; }
+
+        /// <summary>
+        /// Most health the pawn can have (equal to its Physique)
+        /// </summary>
+        public int MaxHealth { get; set; }
+    }
+
+    /// <summary>
+    /// A pawn's core attributes, rolled by the server when the pawn is spawned
+    /// </summary>
+    public class PawnAttributes
+    {
+        /// <summary>
+        /// Physical power
+        /// </summary>
+        public int Strength { get; set; }
+
+        /// <summary>
+        /// Agility and coordination
+        /// </summary>
+        public int Dexterity { get; set; }
+
+        /// <summary>
+        /// Reasoning and learning
+        /// </summary>
+        public int Intelligence { get; set; }
+
+        /// <summary>
+        /// Awareness and judgement
+        /// </summary>
+        public int Wisdom { get; set; }
+
+        /// <summary>
+        /// Toughness and endurance
+        /// </summary>
+        public int Constitution { get; set; }
     }
 
     /// <summary>

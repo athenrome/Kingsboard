@@ -10,7 +10,9 @@ using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
 using Pawn = KingsboardServer.Models.Pawns.Pawn;
 using PawnMovement = KingsboardServer.Models.Pawns.PawnMovement;
 using ProtoBoardPosition = GrpcBoard.BoardPosition;
+using PawnAttributes = KingsboardServer.Models.Pawns.PawnAttributes;
 using ProtoPawn = GrpcPawn.Pawn;
+using ProtoPawnAttributes = GrpcPawn.PawnAttributes;
 using ProtoPawnMovement = GrpcPawn.PawnMovement;
 
 namespace KingsboardServer.Handlers
@@ -107,14 +109,14 @@ namespace KingsboardServer.Handlers
             }
         }
 
-        private static PawnEvent ToSnapshot(IReadOnlyList<Pawn> pawns)
+        private PawnEvent ToSnapshot(IReadOnlyList<Pawn> pawns)
         {
             PawnsSnapshotEvent snapshot = new PawnsSnapshotEvent();
             snapshot.Pawns.AddRange(pawns.Select(ToProto));
             return new PawnEvent() { Snapshot = snapshot };
         }
 
-        private static PawnEvent ToEvent(PawnsChangeEvent change)
+        private PawnEvent ToEvent(PawnsChangeEvent change)
         {
             switch (change.Reason)
             {
@@ -136,17 +138,33 @@ namespace KingsboardServer.Handlers
             }
         }
 
-        private static ProtoPawn ToProto(Pawn pawn)
+        private ProtoPawn ToProto(Pawn pawn)
         {
             ProtoPawn message = new ProtoPawn()
             {
                 Id = pawn.Id.ToString(),
                 Name = pawn.Name,
                 Colour = pawn.Colour,
-                Position = ToProto(pawn.Position)
+                Position = ToProto(pawn.Position),
+                Attributes = ToProto(pawn.Attributes),
+                Physique = _pawnService.GetPhysique(pawn),
+                Health = pawn.Health,
+                MaxHealth = _pawnService.GetMaxHealth(pawn)
             };
             message.PlannedPath.AddRange(pawn.PlannedPath.Select(ToProto));
             return message;
+        }
+
+        private static ProtoPawnAttributes ToProto(PawnAttributes attributes)
+        {
+            return new ProtoPawnAttributes()
+            {
+                Strength = attributes.Strength,
+                Dexterity = attributes.Dexterity,
+                Intelligence = attributes.Intelligence,
+                Wisdom = attributes.Wisdom,
+                Constitution = attributes.Constitution
+            };
         }
 
         private static ProtoPawnMovement ToProto(PawnMovement movement)
