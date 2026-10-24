@@ -146,6 +146,7 @@ Pawns act by playing action cards. All card logic is on the server.
 - Each player gets up to `PlayerSettings:PawnsPerPlayer` (2) pawns no one controls, in join order; a leaver's pawns go back to no one and are given to players who are short. A pawn's owner is `Pawn.OwnerId`/`OwnerName`/`OwnerColour` (null/empty means it acts on its own). The client shows a controlled pawn in its owner's colour instead of its own (`PawnService.GetColour`). Owned pawns still choose a card in Planning; the owner can override it.
 - Requests that act as a player send the secret `session_id`. Only the public `player_id` ever goes out in pawn data.
 - **Client:** `PlayerController` (the Player prefab, placed in the Main scene) joins with its prefab name, or `--name=` from the command line, and exposes `Player`/`IsMe`.
+- **Client state:** `PlayerController.State` is a `PlayerStateTracker` for what the local player is doing: `Connection` (`PlayerConnectionState`) and `Actions` (`PlayerAction` flags: `TypingInChat`, `TargetingCard`). `ChatController` and `PawnManager` report their actions with `Begin`/`End`. `CameraController` ignores keys while `BlocksCameraMovement` is true (any `TextEntryActions` in progress). `PawnManager` doesn't cancel aiming on Esc while text is being entered, and `ChatController` handles Esc in `LateUpdate` for that reason.
 
 ## Prefab rule (Unity): every GameObject comes from a prefab
 
@@ -167,6 +168,7 @@ Pawns act by playing action cards. All card logic is on the server.
 | `Prefabs/Chat/Chat.prefab` | `ChatController` and its `UIDocument` (`Prefabs/Chat/ChatPanelSettings.asset`) |
 | `Prefabs/TurnTimer/TurnTimer.prefab` | `TurnTimerController` and its `UIDocument` (`Prefabs/TurnTimer/TurnTimerPanelSettings.asset`) |
 | `Prefabs/Players/Player.prefab` | `PlayerController`: this client's player |
+| `Prefabs/Camera/Camera.prefab` | The main camera (tagged `MainCamera`) with its `CameraController`: WASD/arrows pan (Shift is faster), the mouse wheel zooms, and it frames each new section the focus point isn't in |
 
 **Making or changing prefabs:**
 - **Use the live editor.** When the Unity Editor is open, change prefabs and scenes through it (`unity command ...`, e.g. `eval_file` with fully-qualified type names, since `eval` code can't have `using` lines). Don't hand-edit `.prefab` or `.unity` YAML.

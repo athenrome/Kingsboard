@@ -29,9 +29,6 @@ namespace Kingsboard.Board
         /// </summary>
         public const float TileGap = 0.04f;
 
-        [Tooltip("Move the main camera to look at the section whenever a new section arrives")]
-        [SerializeField, FormerlySerializedAs("frameCamera")] private bool _frameCamera = true;
-
         [Tooltip("Width and depth of the first section to load. 0 uses the server's default size.")]
         [SerializeField, FormerlySerializedAs("sectionSize")] private int _sectionSize = 0;
 
@@ -168,11 +165,6 @@ namespace Kingsboard.Board
             Section = section;
             RebuildTiles();
 
-            if (_frameCamera)
-            {
-                FrameCamera();
-            }
-
             BoardRegion region = section.Region;
             Debug.Log($"[Board] Loaded a {region.Width} x {region.Depth} section at ({region.Origin.X}, {region.Origin.Y}) of the {section.BoardWidth} x {section.BoardDepth} x {section.BoardHeight} board");
             SectionLoaded?.Invoke(section);
@@ -282,28 +274,6 @@ namespace Kingsboard.Board
                 _materials[type] = material;
             }
             return material;
-        }
-
-        /// <summary>
-        /// Points the main camera at the middle of the loaded section, far enough back to see all of it
-        /// </summary>
-        private void FrameCamera()
-        {
-            Camera camera = Camera.main;
-            if (camera == null)
-            {
-                return;
-            }
-
-            BoardRegion region = Section.Region;
-            float halfHeight = Section.BoardHeight * LevelHeight / 2f;
-            Vector3 centre = transform.TransformPoint(new Vector3(
-                region.Origin.X + (region.Width - 1) / 2f,
-                halfHeight,
-                region.Origin.Y + (region.Depth - 1) / 2f));
-            float size = Mathf.Max(region.Width, region.Depth);
-            camera.transform.position = centre + new Vector3(0f, size * 0.8f + halfHeight, -size * 0.8f);
-            camera.transform.LookAt(centre);
         }
 
         private static Color GetColor(TileType type)
