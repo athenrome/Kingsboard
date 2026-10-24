@@ -25,45 +25,69 @@ namespace GrpcPawn {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5HcnBjUGF3bi5wcm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3Rv",
-            "Gg9HcnBjQm9hcmQucHJvdG8iIAoSR2V0UGF3bkJ5SWRSZXF1ZXN0EgoKAmlk",
-            "GAEgASgJIscBCgRQYXduEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDgoG",
-            "Y29sb3VyGAMgASgJEiAKCHBvc2l0aW9uGAQgASgLMg4uQm9hcmRQb3NpdGlv",
-            "bhIkCgxwbGFubmVkX3BhdGgYBSADKAsyDi5Cb2FyZFBvc2l0aW9uEiMKCmF0",
-            "dHJpYnV0ZXMYBiABKAsyDy5QYXduQXR0cmlidXRlcxIOCgZoZWFsdGgYCCAB",
-            "KAUSEgoKbWF4X2hlYWx0aBgJIAEoBUoECAcQCCKDAQoOUGF3bkF0dHJpYnV0",
-            "ZXMSEAoIc3RyZW5ndGgYASABKAUSEQoJZGV4dGVyaXR5GAIgASgFEhQKDGlu",
-            "dGVsbGlnZW5jZRgDIAEoBRIOCgZ3aXNkb20YBCABKAUSFAoMY29uc3RpdHV0",
-            "aW9uGAUgASgFEhAKCHBoeXNpcXVlGAYgASgFIiAKCFBhd25MaXN0EhQKBXBh",
-            "d25zGAEgAygLMgUuUGF3biJwCgxQYXduTW92ZW1lbnQSDwoHcGF3bl9pZBgB",
-            "IAEoCRIcCgRwYXRoGAIgAygLMg4uQm9hcmRQb3NpdGlvbhIgCghwb3NpdGlv",
-            "bhgDIAEoCzIOLkJvYXJkUG9zaXRpb24SDwoHYmxvY2tlZBgEIAEoCCIqChJQ",
-            "YXduc1NuYXBzaG90RXZlbnQSFAoFcGF3bnMYASADKAsyBS5QYXduIikKEVBh",
-            "d25zU3Bhd25lZEV2ZW50EhQKBXBhd25zGAEgAygLMgUuUGF3biI6ChFQYXdu",
-            "c1BsYW5uZWRFdmVudBIPCgd0dXJuX2lkGAEgASgFEhQKBXBhd25zGAIgAygL",
-            "MgUuUGF3biJaCg9QYXduc01vdmVkRXZlbnQSDwoHdHVybl9pZBgBIAEoBRIg",
-            "Cgltb3ZlbWVudHMYAiADKAsyDS5QYXduTW92ZW1lbnQSFAoFcGF3bnMYAyAD",
-            "KAsyBS5QYXduIrABCglQYXduRXZlbnQSJwoIc25hcHNob3QYASABKAsyEy5Q",
-            "YXduc1NuYXBzaG90RXZlbnRIABIlCgdzcGF3bmVkGAIgASgLMhIuUGF3bnNT",
-            "cGF3bmVkRXZlbnRIABIlCgdwbGFubmVkGAMgASgLMhIuUGF3bnNQbGFubmVk",
-            "RXZlbnRIABIhCgVtb3ZlZBgEIAEoCzIQLlBhd25zTW92ZWRFdmVudEgAQgkK",
-            "B3BheWxvYWQynwEKC1Bhd25TZXJ2aWNlEjYKDkpvaW5QYXduU3RyZWFtEhYu",
-            "Z29vZ2xlLnByb3RvYnVmLkVtcHR5GgouUGF3bkV2ZW50MAESLQoIR2V0UGF3",
-            "bnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaCS5QYXduTGlzdBIpCgtHZXRQ",
-            "YXduQnlJZBITLkdldFBhd25CeUlkUmVxdWVzdBoFLlBhd25CC6oCCEdycGNQ",
-            "YXduYgZwcm90bzM="));
+            "Gg9HcnBjQm9hcmQucHJvdG8aDkdycGNDYXJkLnByb3RvIiAKEkdldFBhd25C",
+            "eUlkUmVxdWVzdBIKCgJpZBgBIAEoCSJpChFTZWxlY3RDYXJkUmVxdWVzdBIS",
+            "CgpzZXNzaW9uX2lkGAEgASgJEg8KB3Bhd25faWQYAiABKAkSDwoHY2FyZF9p",
+            "ZBgDIAEoCRIeCgZ0YXJnZXQYBCABKAsyDi5Cb2FyZFBvc2l0aW9uIr4CCgRQ",
+            "YXduEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDgoGY29sb3VyGAMgASgJ",
+            "EiAKCHBvc2l0aW9uGAQgASgLMg4uQm9hcmRQb3NpdGlvbhIkCgxwbGFubmVk",
+            "X3BhdGgYBSADKAsyDi5Cb2FyZFBvc2l0aW9uEiMKCmF0dHJpYnV0ZXMYBiAB",
+            "KAsyDy5QYXduQXR0cmlidXRlcxIOCgZoZWFsdGgYCCABKAUSEgoKbWF4X2hl",
+            "YWx0aBgJIAEoBRITCgRkZWNrGAogAygLMgUuQ2FyZBITCgRoYW5kGAsgAygL",
+            "MgUuQ2FyZBIlCg1zZWxlY3RlZF9jYXJkGAwgASgLMg4uQ2FyZFNlbGVjdGlv",
+            "bhIQCghvd25lcl9pZBgNIAEoCRISCgpvd25lcl9uYW1lGA4gASgJSgQIBxAI",
+            "IoMBCg5QYXduQXR0cmlidXRlcxIQCghzdHJlbmd0aBgBIAEoBRIRCglkZXh0",
+            "ZXJpdHkYAiABKAUSFAoMaW50ZWxsaWdlbmNlGAMgASgFEg4KBndpc2RvbRgE",
+            "IAEoBRIUCgxjb25zdGl0dXRpb24YBSABKAUSEAoIcGh5c2lxdWUYBiABKAUi",
+            "IAoIUGF3bkxpc3QSFAoFcGF3bnMYASADKAsyBS5QYXduInAKDFBhd25Nb3Zl",
+            "bWVudBIPCgdwYXduX2lkGAEgASgJEhwKBHBhdGgYAiADKAsyDi5Cb2FyZFBv",
+            "c2l0aW9uEiAKCHBvc2l0aW9uGAMgASgLMg4uQm9hcmRQb3NpdGlvbhIPCgdi",
+            "bG9ja2VkGAQgASgIIisKClBhd25TcGVlY2gSDwoHcGF3bl9pZBgBIAEoCRIM",
+            "CgR0ZXh0GAIgASgJIioKElBhd25zU25hcHNob3RFdmVudBIUCgVwYXducxgB",
+            "IAMoCzIFLlBhd24iKQoRUGF3bnNTcGF3bmVkRXZlbnQSFAoFcGF3bnMYASAD",
+            "KAsyBS5QYXduIj0KFFBhd25zQ2FyZHNEcmF3bkV2ZW50Eg8KB3R1cm5faWQY",
+            "ASABKAUSFAoFcGF3bnMYAiADKAsyBS5QYXduIjoKEVBhd25zUGxhbm5lZEV2",
+            "ZW50Eg8KB3R1cm5faWQYASABKAUSFAoFcGF3bnMYAiADKAsyBS5QYXduIj0K",
+            "FVBhd25DYXJkU2VsZWN0ZWRFdmVudBIPCgd0dXJuX2lkGAEgASgFEhMKBHBh",
+            "d24YAiABKAsyBS5QYXduInwKElBhd25zUmVzb2x2ZWRFdmVudBIPCgd0dXJu",
+            "X2lkGAEgASgFEiAKCW1vdmVtZW50cxgCIAMoCzINLlBhd25Nb3ZlbWVudBId",
+            "CghzcGVlY2hlcxgDIAMoCzILLlBhd25TcGVlY2gSFAoFcGF3bnMYBCADKAsy",
+            "BS5QYXduIkAKF1Bhd25zQ2FyZHNSZXR1cm5lZEV2ZW50Eg8KB3R1cm5faWQY",
+            "ASABKAUSFAoFcGF3bnMYAiADKAsyBS5QYXduIi8KF1Bhd25zT3duZXJzQ2hh",
+            "bmdlZEV2ZW50EhQKBXBhd25zGAEgAygLMgUuUGF3biKDAwoJUGF3bkV2ZW50",
+            "EicKCHNuYXBzaG90GAEgASgLMhMuUGF3bnNTbmFwc2hvdEV2ZW50SAASJQoH",
+            "c3Bhd25lZBgCIAEoCzISLlBhd25zU3Bhd25lZEV2ZW50SAASJQoHcGxhbm5l",
+            "ZBgDIAEoCzISLlBhd25zUGxhbm5lZEV2ZW50SAASLAoLY2FyZHNfZHJhd24Y",
+            "BSABKAsyFS5QYXduc0NhcmRzRHJhd25FdmVudEgAEi8KDWNhcmRfc2VsZWN0",
+            "ZWQYBiABKAsyFi5QYXduQ2FyZFNlbGVjdGVkRXZlbnRIABInCghyZXNvbHZl",
+            "ZBgHIAEoCzITLlBhd25zUmVzb2x2ZWRFdmVudEgAEjIKDmNhcmRzX3JldHVy",
+            "bmVkGAggASgLMhguUGF3bnNDYXJkc1JldHVybmVkRXZlbnRIABIyCg5vd25l",
+            "cnNfY2hhbmdlZBgJIAEoCzIYLlBhd25zT3duZXJzQ2hhbmdlZEV2ZW50SABC",
+            "CQoHcGF5bG9hZEoECAQQBTLZAQoLUGF3blNlcnZpY2USNgoOSm9pblBhd25T",
+            "dHJlYW0SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaCi5QYXduRXZlbnQwARIt",
+            "CghHZXRQYXducxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoJLlBhd25MaXN0",
+            "EikKC0dldFBhd25CeUlkEhMuR2V0UGF3bkJ5SWRSZXF1ZXN0GgUuUGF3bhI4",
+            "CgpTZWxlY3RDYXJkEhIuU2VsZWN0Q2FyZFJlcXVlc3QaFi5nb29nbGUucHJv",
+            "dG9idWYuRW1wdHlCC6oCCEdycGNQYXduYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::GrpcBoard.GrpcBoardReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::GrpcBoard.GrpcBoardReflection.Descriptor, global::GrpcCard.GrpcCardReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.GetPawnByIdRequest), global::GrpcPawn.GetPawnByIdRequest.Parser, new[]{ "Id" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.Pawn), global::GrpcPawn.Pawn.Parser, new[]{ "Id", "Name", "Colour", "Position", "PlannedPath", "Attributes", "Health", "MaxHealth" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.SelectCardRequest), global::GrpcPawn.SelectCardRequest.Parser, new[]{ "SessionId", "PawnId", "CardId", "Target" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.Pawn), global::GrpcPawn.Pawn.Parser, new[]{ "Id", "Name", "Colour", "Position", "PlannedPath", "Attributes", "Health", "MaxHealth", "Deck", "Hand", "SelectedCard", "OwnerId", "OwnerName" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnAttributes), global::GrpcPawn.PawnAttributes.Parser, new[]{ "Strength", "Dexterity", "Intelligence", "Wisdom", "Constitution", "Physique" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnList), global::GrpcPawn.PawnList.Parser, new[]{ "Pawns" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnMovement), global::GrpcPawn.PawnMovement.Parser, new[]{ "PawnId", "Path", "Position", "Blocked" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnSpeech), global::GrpcPawn.PawnSpeech.Parser, new[]{ "PawnId", "Text" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsSnapshotEvent), global::GrpcPawn.PawnsSnapshotEvent.Parser, new[]{ "Pawns" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsSpawnedEvent), global::GrpcPawn.PawnsSpawnedEvent.Parser, new[]{ "Pawns" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsCardsDrawnEvent), global::GrpcPawn.PawnsCardsDrawnEvent.Parser, new[]{ "TurnId", "Pawns" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsPlannedEvent), global::GrpcPawn.PawnsPlannedEvent.Parser, new[]{ "TurnId", "Pawns" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsMovedEvent), global::GrpcPawn.PawnsMovedEvent.Parser, new[]{ "TurnId", "Movements", "Pawns" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnEvent), global::GrpcPawn.PawnEvent.Parser, new[]{ "Snapshot", "Spawned", "Planned", "Moved" }, new[]{ "Payload" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnCardSelectedEvent), global::GrpcPawn.PawnCardSelectedEvent.Parser, new[]{ "TurnId", "Pawn" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsResolvedEvent), global::GrpcPawn.PawnsResolvedEvent.Parser, new[]{ "TurnId", "Movements", "Speeches", "Pawns" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsCardsReturnedEvent), global::GrpcPawn.PawnsCardsReturnedEvent.Parser, new[]{ "TurnId", "Pawns" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnsOwnersChangedEvent), global::GrpcPawn.PawnsOwnersChangedEvent.Parser, new[]{ "Pawns" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnEvent), global::GrpcPawn.PawnEvent.Parser, new[]{ "Snapshot", "Spawned", "Planned", "CardsDrawn", "CardSelected", "Resolved", "CardsReturned", "OwnersChanged" }, new[]{ "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -272,6 +296,333 @@ namespace GrpcPawn {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class SelectCardRequest : pb::IMessage<SelectCardRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<SelectCardRequest> _parser = new pb::MessageParser<SelectCardRequest>(() => new SelectCardRequest());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<SelectCardRequest> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SelectCardRequest() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SelectCardRequest(SelectCardRequest other) : this() {
+      sessionId_ = other.sessionId_;
+      pawnId_ = other.pawnId_;
+      cardId_ = other.cardId_;
+      target_ = other.target_ != null ? other.target_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public SelectCardRequest Clone() {
+      return new SelectCardRequest(this);
+    }
+
+    /// <summary>Field number for the "session_id" field.</summary>
+    public const int SessionIdFieldNumber = 1;
+    private string sessionId_ = "";
+    /// <summary>
+    /// From PlayerService's `joined` event
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string SessionId {
+      get { return sessionId_; }
+      set {
+        sessionId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "pawn_id" field.</summary>
+    public const int PawnIdFieldNumber = 2;
+    private string pawnId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PawnId {
+      get { return pawnId_; }
+      set {
+        pawnId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "card_id" field.</summary>
+    public const int CardIdFieldNumber = 3;
+    private string cardId_ = "";
+    /// <summary>
+    /// A card in the pawn's hand
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string CardId {
+      get { return cardId_; }
+      set {
+        cardId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "target" field.</summary>
+    public const int TargetFieldNumber = 4;
+    private global::GrpcBoard.BoardPosition target_;
+    /// <summary>
+    /// Required for cards with CARD_TARGET_TYPE_TILE; ignored otherwise
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcBoard.BoardPosition Target {
+      get { return target_; }
+      set {
+        target_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as SelectCardRequest);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(SelectCardRequest other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (SessionId != other.SessionId) return false;
+      if (PawnId != other.PawnId) return false;
+      if (CardId != other.CardId) return false;
+      if (!object.Equals(Target, other.Target)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (SessionId.Length != 0) hash ^= SessionId.GetHashCode();
+      if (PawnId.Length != 0) hash ^= PawnId.GetHashCode();
+      if (CardId.Length != 0) hash ^= CardId.GetHashCode();
+      if (target_ != null) hash ^= Target.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (SessionId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionId);
+      }
+      if (PawnId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(PawnId);
+      }
+      if (CardId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(CardId);
+      }
+      if (target_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Target);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (SessionId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionId);
+      }
+      if (PawnId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(PawnId);
+      }
+      if (CardId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(CardId);
+      }
+      if (target_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Target);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (SessionId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(SessionId);
+      }
+      if (PawnId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PawnId);
+      }
+      if (CardId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(CardId);
+      }
+      if (target_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Target);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(SelectCardRequest other) {
+      if (other == null) {
+        return;
+      }
+      if (other.SessionId.Length != 0) {
+        SessionId = other.SessionId;
+      }
+      if (other.PawnId.Length != 0) {
+        PawnId = other.PawnId;
+      }
+      if (other.CardId.Length != 0) {
+        CardId = other.CardId;
+      }
+      if (other.target_ != null) {
+        if (target_ == null) {
+          Target = new global::GrpcBoard.BoardPosition();
+        }
+        Target.MergeFrom(other.Target);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            SessionId = input.ReadString();
+            break;
+          }
+          case 18: {
+            PawnId = input.ReadString();
+            break;
+          }
+          case 26: {
+            CardId = input.ReadString();
+            break;
+          }
+          case 34: {
+            if (target_ == null) {
+              Target = new global::GrpcBoard.BoardPosition();
+            }
+            input.ReadMessage(Target);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            SessionId = input.ReadString();
+            break;
+          }
+          case 18: {
+            PawnId = input.ReadString();
+            break;
+          }
+          case 26: {
+            CardId = input.ReadString();
+            break;
+          }
+          case 34: {
+            if (target_ == null) {
+              Target = new global::GrpcBoard.BoardPosition();
+            }
+            input.ReadMessage(Target);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Pawn : pb::IMessage<Pawn>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -286,7 +637,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[1]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -314,6 +665,11 @@ namespace GrpcPawn {
       attributes_ = other.attributes_ != null ? other.attributes_.Clone() : null;
       health_ = other.health_;
       maxHealth_ = other.maxHealth_;
+      deck_ = other.deck_.Clone();
+      hand_ = other.hand_.Clone();
+      selectedCard_ = other.selectedCard_ != null ? other.selectedCard_.Clone() : null;
+      ownerId_ = other.ownerId_;
+      ownerName_ = other.ownerName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -383,8 +739,8 @@ namespace GrpcPawn {
         = pb::FieldCodec.ForMessage(42, global::GrpcBoard.BoardPosition.Parser);
     private readonly pbc::RepeatedField<global::GrpcBoard.BoardPosition> plannedPath_ = new pbc::RepeatedField<global::GrpcBoard.BoardPosition>();
     /// <summary>
-    /// The path the pawn plans to walk this turn: each step in order, ending at its intended destination.
-    /// Empty when it has no plan (before Planning, after Resolution, or when it chose to stay put).
+    /// The path the pawn expects to walk this turn if its chosen card moves it: each step in order, ending where it
+    /// expects to stop. Empty when its card doesn't move it or it has no card chosen.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -437,6 +793,79 @@ namespace GrpcPawn {
       }
     }
 
+    /// <summary>Field number for the "deck" field.</summary>
+    public const int DeckFieldNumber = 10;
+    private static readonly pb::FieldCodec<global::GrpcCard.Card> _repeated_deck_codec
+        = pb::FieldCodec.ForMessage(82, global::GrpcCard.Card.Parser);
+    private readonly pbc::RepeatedField<global::GrpcCard.Card> deck_ = new pbc::RepeatedField<global::GrpcCard.Card>();
+    /// <summary>
+    /// Cards it draws from, in draw order (cards in hand aren't here)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcCard.Card> Deck {
+      get { return deck_; }
+    }
+
+    /// <summary>Field number for the "hand" field.</summary>
+    public const int HandFieldNumber = 11;
+    private static readonly pb::FieldCodec<global::GrpcCard.Card> _repeated_hand_codec
+        = pb::FieldCodec.ForMessage(90, global::GrpcCard.Card.Parser);
+    private readonly pbc::RepeatedField<global::GrpcCard.Card> hand_ = new pbc::RepeatedField<global::GrpcCard.Card>();
+    /// <summary>
+    /// Cards it can play this turn
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcCard.Card> Hand {
+      get { return hand_; }
+    }
+
+    /// <summary>Field number for the "selected_card" field.</summary>
+    public const int SelectedCardFieldNumber = 12;
+    private global::GrpcCard.CardSelection selectedCard_;
+    /// <summary>
+    /// The card it will play this turn; absent when none is chosen
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcCard.CardSelection SelectedCard {
+      get { return selectedCard_; }
+      set {
+        selectedCard_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "owner_id" field.</summary>
+    public const int OwnerIdFieldNumber = 13;
+    private string ownerId_ = "";
+    /// <summary>
+    /// Player id of the player who controls it; empty when it acts on its own
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string OwnerId {
+      get { return ownerId_; }
+      set {
+        ownerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "owner_name" field.</summary>
+    public const int OwnerNameFieldNumber = 14;
+    private string ownerName_ = "";
+    /// <summary>
+    /// That player's name; empty when it acts on its own
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string OwnerName {
+      get { return ownerName_; }
+      set {
+        ownerName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -460,6 +889,11 @@ namespace GrpcPawn {
       if (!object.Equals(Attributes, other.Attributes)) return false;
       if (Health != other.Health) return false;
       if (MaxHealth != other.MaxHealth) return false;
+      if(!deck_.Equals(other.deck_)) return false;
+      if(!hand_.Equals(other.hand_)) return false;
+      if (!object.Equals(SelectedCard, other.SelectedCard)) return false;
+      if (OwnerId != other.OwnerId) return false;
+      if (OwnerName != other.OwnerName) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -475,6 +909,11 @@ namespace GrpcPawn {
       if (attributes_ != null) hash ^= Attributes.GetHashCode();
       if (Health != 0) hash ^= Health.GetHashCode();
       if (MaxHealth != 0) hash ^= MaxHealth.GetHashCode();
+      hash ^= deck_.GetHashCode();
+      hash ^= hand_.GetHashCode();
+      if (selectedCard_ != null) hash ^= SelectedCard.GetHashCode();
+      if (OwnerId.Length != 0) hash ^= OwnerId.GetHashCode();
+      if (OwnerName.Length != 0) hash ^= OwnerName.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -522,6 +961,20 @@ namespace GrpcPawn {
         output.WriteRawTag(72);
         output.WriteInt32(MaxHealth);
       }
+      deck_.WriteTo(output, _repeated_deck_codec);
+      hand_.WriteTo(output, _repeated_hand_codec);
+      if (selectedCard_ != null) {
+        output.WriteRawTag(98);
+        output.WriteMessage(SelectedCard);
+      }
+      if (OwnerId.Length != 0) {
+        output.WriteRawTag(106);
+        output.WriteString(OwnerId);
+      }
+      if (OwnerName.Length != 0) {
+        output.WriteRawTag(114);
+        output.WriteString(OwnerName);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -561,6 +1014,20 @@ namespace GrpcPawn {
         output.WriteRawTag(72);
         output.WriteInt32(MaxHealth);
       }
+      deck_.WriteTo(ref output, _repeated_deck_codec);
+      hand_.WriteTo(ref output, _repeated_hand_codec);
+      if (selectedCard_ != null) {
+        output.WriteRawTag(98);
+        output.WriteMessage(SelectedCard);
+      }
+      if (OwnerId.Length != 0) {
+        output.WriteRawTag(106);
+        output.WriteString(OwnerId);
+      }
+      if (OwnerName.Length != 0) {
+        output.WriteRawTag(114);
+        output.WriteString(OwnerName);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -592,6 +1059,17 @@ namespace GrpcPawn {
       }
       if (MaxHealth != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(MaxHealth);
+      }
+      size += deck_.CalculateSize(_repeated_deck_codec);
+      size += hand_.CalculateSize(_repeated_hand_codec);
+      if (selectedCard_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(SelectedCard);
+      }
+      if (OwnerId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OwnerId);
+      }
+      if (OwnerName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OwnerName);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -632,6 +1110,20 @@ namespace GrpcPawn {
       }
       if (other.MaxHealth != 0) {
         MaxHealth = other.MaxHealth;
+      }
+      deck_.Add(other.deck_);
+      hand_.Add(other.hand_);
+      if (other.selectedCard_ != null) {
+        if (selectedCard_ == null) {
+          SelectedCard = new global::GrpcCard.CardSelection();
+        }
+        SelectedCard.MergeFrom(other.SelectedCard);
+      }
+      if (other.OwnerId.Length != 0) {
+        OwnerId = other.OwnerId;
+      }
+      if (other.OwnerName.Length != 0) {
+        OwnerName = other.OwnerName;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -688,6 +1180,29 @@ namespace GrpcPawn {
           }
           case 72: {
             MaxHealth = input.ReadInt32();
+            break;
+          }
+          case 82: {
+            deck_.AddEntriesFrom(input, _repeated_deck_codec);
+            break;
+          }
+          case 90: {
+            hand_.AddEntriesFrom(input, _repeated_hand_codec);
+            break;
+          }
+          case 98: {
+            if (selectedCard_ == null) {
+              SelectedCard = new global::GrpcCard.CardSelection();
+            }
+            input.ReadMessage(SelectedCard);
+            break;
+          }
+          case 106: {
+            OwnerId = input.ReadString();
+            break;
+          }
+          case 114: {
+            OwnerName = input.ReadString();
             break;
           }
         }
@@ -747,6 +1262,29 @@ namespace GrpcPawn {
             MaxHealth = input.ReadInt32();
             break;
           }
+          case 82: {
+            deck_.AddEntriesFrom(ref input, _repeated_deck_codec);
+            break;
+          }
+          case 90: {
+            hand_.AddEntriesFrom(ref input, _repeated_hand_codec);
+            break;
+          }
+          case 98: {
+            if (selectedCard_ == null) {
+              SelectedCard = new global::GrpcCard.CardSelection();
+            }
+            input.ReadMessage(SelectedCard);
+            break;
+          }
+          case 106: {
+            OwnerId = input.ReadString();
+            break;
+          }
+          case 114: {
+            OwnerName = input.ReadString();
+            break;
+          }
         }
       }
     }
@@ -772,7 +1310,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[2]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -822,6 +1360,9 @@ namespace GrpcPawn {
     /// <summary>Field number for the "dexterity" field.</summary>
     public const int DexterityFieldNumber = 2;
     private int dexterity_;
+    /// <summary>
+    /// Also how many steps a Move card takes it
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Dexterity {
@@ -1158,7 +1699,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[3]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1348,7 +1889,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[4]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1426,7 +1967,7 @@ namespace GrpcPawn {
     public const int BlockedFieldNumber = 4;
     private bool blocked_;
     /// <summary>
-    /// True if it stopped short of its planned destination
+    /// True if it stopped short of its target
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1649,6 +2190,244 @@ namespace GrpcPawn {
 
   }
 
+  /// <summary>
+  /// Something a pawn said during Resolution, because its card made it talk
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PawnSpeech : pb::IMessage<PawnSpeech>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PawnSpeech> _parser = new pb::MessageParser<PawnSpeech>(() => new PawnSpeech());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PawnSpeech> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnSpeech() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnSpeech(PawnSpeech other) : this() {
+      pawnId_ = other.pawnId_;
+      text_ = other.text_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnSpeech Clone() {
+      return new PawnSpeech(this);
+    }
+
+    /// <summary>Field number for the "pawn_id" field.</summary>
+    public const int PawnIdFieldNumber = 1;
+    private string pawnId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PawnId {
+      get { return pawnId_; }
+      set {
+        pawnId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "text" field.</summary>
+    public const int TextFieldNumber = 2;
+    private string text_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Text {
+      get { return text_; }
+      set {
+        text_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PawnSpeech);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PawnSpeech other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (PawnId != other.PawnId) return false;
+      if (Text != other.Text) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (PawnId.Length != 0) hash ^= PawnId.GetHashCode();
+      if (Text.Length != 0) hash ^= Text.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (PawnId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PawnId);
+      }
+      if (Text.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Text);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (PawnId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PawnId);
+      }
+      if (Text.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Text);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (PawnId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PawnId);
+      }
+      if (Text.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Text);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PawnSpeech other) {
+      if (other == null) {
+        return;
+      }
+      if (other.PawnId.Length != 0) {
+        PawnId = other.PawnId;
+      }
+      if (other.Text.Length != 0) {
+        Text = other.Text;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            PawnId = input.ReadString();
+            break;
+          }
+          case 18: {
+            Text = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            PawnId = input.ReadString();
+            break;
+          }
+          case 18: {
+            Text = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class PawnsSnapshotEvent : pb::IMessage<PawnsSnapshotEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1664,7 +2443,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[5]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1851,7 +2630,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[6]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2027,6 +2806,233 @@ namespace GrpcPawn {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PawnsCardsDrawnEvent : pb::IMessage<PawnsCardsDrawnEvent>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PawnsCardsDrawnEvent> _parser = new pb::MessageParser<PawnsCardsDrawnEvent>(() => new PawnsCardsDrawnEvent());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PawnsCardsDrawnEvent> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[9]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsCardsDrawnEvent() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsCardsDrawnEvent(PawnsCardsDrawnEvent other) : this() {
+      turnId_ = other.turnId_;
+      pawns_ = other.pawns_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsCardsDrawnEvent Clone() {
+      return new PawnsCardsDrawnEvent(this);
+    }
+
+    /// <summary>Field number for the "turn_id" field.</summary>
+    public const int TurnIdFieldNumber = 1;
+    private int turnId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int TurnId {
+      get { return turnId_; }
+      set {
+        turnId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "pawns" field.</summary>
+    public const int PawnsFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::GrpcPawn.Pawn> _repeated_pawns_codec
+        = pb::FieldCodec.ForMessage(18, global::GrpcPawn.Pawn.Parser);
+    private readonly pbc::RepeatedField<global::GrpcPawn.Pawn> pawns_ = new pbc::RepeatedField<global::GrpcPawn.Pawn>();
+    /// <summary>
+    /// Every pawn, with its new hand
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcPawn.Pawn> Pawns {
+      get { return pawns_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PawnsCardsDrawnEvent);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PawnsCardsDrawnEvent other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (TurnId != other.TurnId) return false;
+      if(!pawns_.Equals(other.pawns_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (TurnId != 0) hash ^= TurnId.GetHashCode();
+      hash ^= pawns_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (TurnId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TurnId);
+      }
+      pawns_.WriteTo(output, _repeated_pawns_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (TurnId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TurnId);
+      }
+      pawns_.WriteTo(ref output, _repeated_pawns_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (TurnId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(TurnId);
+      }
+      size += pawns_.CalculateSize(_repeated_pawns_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PawnsCardsDrawnEvent other) {
+      if (other == null) {
+        return;
+      }
+      if (other.TurnId != 0) {
+        TurnId = other.TurnId;
+      }
+      pawns_.Add(other.pawns_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            TurnId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            pawns_.AddEntriesFrom(input, _repeated_pawns_codec);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            TurnId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            pawns_.AddEntriesFrom(ref input, _repeated_pawns_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class PawnsPlannedEvent : pb::IMessage<PawnsPlannedEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
@@ -2041,7 +3047,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[7]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2090,7 +3096,7 @@ namespace GrpcPawn {
         = pb::FieldCodec.ForMessage(18, global::GrpcPawn.Pawn.Parser);
     private readonly pbc::RepeatedField<global::GrpcPawn.Pawn> pawns_ = new pbc::RepeatedField<global::GrpcPawn.Pawn>();
     /// <summary>
-    /// Every pawn, with its planned_path for this turn
+    /// Every pawn, with the card it chose and its planned_path
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2254,21 +3260,21 @@ namespace GrpcPawn {
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class PawnsMovedEvent : pb::IMessage<PawnsMovedEvent>
+  public sealed partial class PawnCardSelectedEvent : pb::IMessage<PawnCardSelectedEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<PawnsMovedEvent> _parser = new pb::MessageParser<PawnsMovedEvent>(() => new PawnsMovedEvent());
+    private static readonly pb::MessageParser<PawnCardSelectedEvent> _parser = new pb::MessageParser<PawnCardSelectedEvent>(() => new PawnCardSelectedEvent());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<PawnsMovedEvent> Parser { get { return _parser; } }
+    public static pb::MessageParser<PawnCardSelectedEvent> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[8]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2279,7 +3285,7 @@ namespace GrpcPawn {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PawnsMovedEvent() {
+    public PawnCardSelectedEvent() {
       OnConstruction();
     }
 
@@ -2287,17 +3293,265 @@ namespace GrpcPawn {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PawnsMovedEvent(PawnsMovedEvent other) : this() {
+    public PawnCardSelectedEvent(PawnCardSelectedEvent other) : this() {
+      turnId_ = other.turnId_;
+      pawn_ = other.pawn_ != null ? other.pawn_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnCardSelectedEvent Clone() {
+      return new PawnCardSelectedEvent(this);
+    }
+
+    /// <summary>Field number for the "turn_id" field.</summary>
+    public const int TurnIdFieldNumber = 1;
+    private int turnId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int TurnId {
+      get { return turnId_; }
+      set {
+        turnId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "pawn" field.</summary>
+    public const int PawnFieldNumber = 2;
+    private global::GrpcPawn.Pawn pawn_;
+    /// <summary>
+    /// The pawn whose owner changed its card, with its new choice and planned_path
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcPawn.Pawn Pawn {
+      get { return pawn_; }
+      set {
+        pawn_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PawnCardSelectedEvent);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PawnCardSelectedEvent other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (TurnId != other.TurnId) return false;
+      if (!object.Equals(Pawn, other.Pawn)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (TurnId != 0) hash ^= TurnId.GetHashCode();
+      if (pawn_ != null) hash ^= Pawn.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (TurnId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TurnId);
+      }
+      if (pawn_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Pawn);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (TurnId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TurnId);
+      }
+      if (pawn_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Pawn);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (TurnId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(TurnId);
+      }
+      if (pawn_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Pawn);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PawnCardSelectedEvent other) {
+      if (other == null) {
+        return;
+      }
+      if (other.TurnId != 0) {
+        TurnId = other.TurnId;
+      }
+      if (other.pawn_ != null) {
+        if (pawn_ == null) {
+          Pawn = new global::GrpcPawn.Pawn();
+        }
+        Pawn.MergeFrom(other.Pawn);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            TurnId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            if (pawn_ == null) {
+              Pawn = new global::GrpcPawn.Pawn();
+            }
+            input.ReadMessage(Pawn);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            TurnId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            if (pawn_ == null) {
+              Pawn = new global::GrpcPawn.Pawn();
+            }
+            input.ReadMessage(Pawn);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PawnsResolvedEvent : pb::IMessage<PawnsResolvedEvent>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PawnsResolvedEvent> _parser = new pb::MessageParser<PawnsResolvedEvent>(() => new PawnsResolvedEvent());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PawnsResolvedEvent> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[12]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsResolvedEvent() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsResolvedEvent(PawnsResolvedEvent other) : this() {
       turnId_ = other.turnId_;
       movements_ = other.movements_.Clone();
+      speeches_ = other.speeches_.Clone();
       pawns_ = other.pawns_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PawnsMovedEvent Clone() {
-      return new PawnsMovedEvent(this);
+    public PawnsResolvedEvent Clone() {
+      return new PawnsResolvedEvent(this);
     }
 
     /// <summary>Field number for the "turn_id" field.</summary>
@@ -2318,7 +3572,7 @@ namespace GrpcPawn {
         = pb::FieldCodec.ForMessage(18, global::GrpcPawn.PawnMovement.Parser);
     private readonly pbc::RepeatedField<global::GrpcPawn.PawnMovement> movements_ = new pbc::RepeatedField<global::GrpcPawn.PawnMovement>();
     /// <summary>
-    /// How each pawn moved, for animating
+    /// How each pawn that moved got there, for animating (in the order they moved)
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2326,13 +3580,27 @@ namespace GrpcPawn {
       get { return movements_; }
     }
 
+    /// <summary>Field number for the "speeches" field.</summary>
+    public const int SpeechesFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::GrpcPawn.PawnSpeech> _repeated_speeches_codec
+        = pb::FieldCodec.ForMessage(26, global::GrpcPawn.PawnSpeech.Parser);
+    private readonly pbc::RepeatedField<global::GrpcPawn.PawnSpeech> speeches_ = new pbc::RepeatedField<global::GrpcPawn.PawnSpeech>();
+    /// <summary>
+    /// What pawns said (in the order they spoke)
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcPawn.PawnSpeech> Speeches {
+      get { return speeches_; }
+    }
+
     /// <summary>Field number for the "pawns" field.</summary>
-    public const int PawnsFieldNumber = 3;
+    public const int PawnsFieldNumber = 4;
     private static readonly pb::FieldCodec<global::GrpcPawn.Pawn> _repeated_pawns_codec
-        = pb::FieldCodec.ForMessage(26, global::GrpcPawn.Pawn.Parser);
+        = pb::FieldCodec.ForMessage(34, global::GrpcPawn.Pawn.Parser);
     private readonly pbc::RepeatedField<global::GrpcPawn.Pawn> pawns_ = new pbc::RepeatedField<global::GrpcPawn.Pawn>();
     /// <summary>
-    /// Every pawn after moving (plans cleared)
+    /// Every pawn after resolving (choices and plans cleared)
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2343,12 +3611,12 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as PawnsMovedEvent);
+      return Equals(other as PawnsResolvedEvent);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(PawnsMovedEvent other) {
+    public bool Equals(PawnsResolvedEvent other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2357,6 +3625,7 @@ namespace GrpcPawn {
       }
       if (TurnId != other.TurnId) return false;
       if(!movements_.Equals(other.movements_)) return false;
+      if(!speeches_.Equals(other.speeches_)) return false;
       if(!pawns_.Equals(other.pawns_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -2367,6 +3636,7 @@ namespace GrpcPawn {
       int hash = 1;
       if (TurnId != 0) hash ^= TurnId.GetHashCode();
       hash ^= movements_.GetHashCode();
+      hash ^= speeches_.GetHashCode();
       hash ^= pawns_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -2391,6 +3661,7 @@ namespace GrpcPawn {
         output.WriteInt32(TurnId);
       }
       movements_.WriteTo(output, _repeated_movements_codec);
+      speeches_.WriteTo(output, _repeated_speeches_codec);
       pawns_.WriteTo(output, _repeated_pawns_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -2407,6 +3678,7 @@ namespace GrpcPawn {
         output.WriteInt32(TurnId);
       }
       movements_.WriteTo(ref output, _repeated_movements_codec);
+      speeches_.WriteTo(ref output, _repeated_speeches_codec);
       pawns_.WriteTo(ref output, _repeated_pawns_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -2422,6 +3694,7 @@ namespace GrpcPawn {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(TurnId);
       }
       size += movements_.CalculateSize(_repeated_movements_codec);
+      size += speeches_.CalculateSize(_repeated_speeches_codec);
       size += pawns_.CalculateSize(_repeated_pawns_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2431,7 +3704,7 @@ namespace GrpcPawn {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(PawnsMovedEvent other) {
+    public void MergeFrom(PawnsResolvedEvent other) {
       if (other == null) {
         return;
       }
@@ -2439,6 +3712,7 @@ namespace GrpcPawn {
         TurnId = other.TurnId;
       }
       movements_.Add(other.movements_);
+      speeches_.Add(other.speeches_);
       pawns_.Add(other.pawns_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2468,6 +3742,10 @@ namespace GrpcPawn {
             break;
           }
           case 26: {
+            speeches_.AddEntriesFrom(input, _repeated_speeches_codec);
+            break;
+          }
+          case 34: {
             pawns_.AddEntriesFrom(input, _repeated_pawns_codec);
             break;
           }
@@ -2499,6 +3777,427 @@ namespace GrpcPawn {
             break;
           }
           case 26: {
+            speeches_.AddEntriesFrom(ref input, _repeated_speeches_codec);
+            break;
+          }
+          case 34: {
+            pawns_.AddEntriesFrom(ref input, _repeated_pawns_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PawnsCardsReturnedEvent : pb::IMessage<PawnsCardsReturnedEvent>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PawnsCardsReturnedEvent> _parser = new pb::MessageParser<PawnsCardsReturnedEvent>(() => new PawnsCardsReturnedEvent());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PawnsCardsReturnedEvent> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[13]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsCardsReturnedEvent() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsCardsReturnedEvent(PawnsCardsReturnedEvent other) : this() {
+      turnId_ = other.turnId_;
+      pawns_ = other.pawns_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsCardsReturnedEvent Clone() {
+      return new PawnsCardsReturnedEvent(this);
+    }
+
+    /// <summary>Field number for the "turn_id" field.</summary>
+    public const int TurnIdFieldNumber = 1;
+    private int turnId_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int TurnId {
+      get { return turnId_; }
+      set {
+        turnId_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "pawns" field.</summary>
+    public const int PawnsFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::GrpcPawn.Pawn> _repeated_pawns_codec
+        = pb::FieldCodec.ForMessage(18, global::GrpcPawn.Pawn.Parser);
+    private readonly pbc::RepeatedField<global::GrpcPawn.Pawn> pawns_ = new pbc::RepeatedField<global::GrpcPawn.Pawn>();
+    /// <summary>
+    /// Every pawn, with its hand shuffled back into its deck
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcPawn.Pawn> Pawns {
+      get { return pawns_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PawnsCardsReturnedEvent);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PawnsCardsReturnedEvent other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (TurnId != other.TurnId) return false;
+      if(!pawns_.Equals(other.pawns_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (TurnId != 0) hash ^= TurnId.GetHashCode();
+      hash ^= pawns_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (TurnId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TurnId);
+      }
+      pawns_.WriteTo(output, _repeated_pawns_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (TurnId != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(TurnId);
+      }
+      pawns_.WriteTo(ref output, _repeated_pawns_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (TurnId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(TurnId);
+      }
+      size += pawns_.CalculateSize(_repeated_pawns_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PawnsCardsReturnedEvent other) {
+      if (other == null) {
+        return;
+      }
+      if (other.TurnId != 0) {
+        TurnId = other.TurnId;
+      }
+      pawns_.Add(other.pawns_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            TurnId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            pawns_.AddEntriesFrom(input, _repeated_pawns_codec);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            TurnId = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            pawns_.AddEntriesFrom(ref input, _repeated_pawns_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PawnsOwnersChangedEvent : pb::IMessage<PawnsOwnersChangedEvent>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PawnsOwnersChangedEvent> _parser = new pb::MessageParser<PawnsOwnersChangedEvent>(() => new PawnsOwnersChangedEvent());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PawnsOwnersChangedEvent> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[14]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsOwnersChangedEvent() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsOwnersChangedEvent(PawnsOwnersChangedEvent other) : this() {
+      pawns_ = other.pawns_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PawnsOwnersChangedEvent Clone() {
+      return new PawnsOwnersChangedEvent(this);
+    }
+
+    /// <summary>Field number for the "pawns" field.</summary>
+    public const int PawnsFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::GrpcPawn.Pawn> _repeated_pawns_codec
+        = pb::FieldCodec.ForMessage(10, global::GrpcPawn.Pawn.Parser);
+    private readonly pbc::RepeatedField<global::GrpcPawn.Pawn> pawns_ = new pbc::RepeatedField<global::GrpcPawn.Pawn>();
+    /// <summary>
+    /// Every pawn, with its owner
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::GrpcPawn.Pawn> Pawns {
+      get { return pawns_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PawnsOwnersChangedEvent);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PawnsOwnersChangedEvent other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!pawns_.Equals(other.pawns_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= pawns_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      pawns_.WriteTo(output, _repeated_pawns_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      pawns_.WriteTo(ref output, _repeated_pawns_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      size += pawns_.CalculateSize(_repeated_pawns_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PawnsOwnersChangedEvent other) {
+      if (other == null) {
+        return;
+      }
+      pawns_.Add(other.pawns_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            pawns_.AddEntriesFrom(input, _repeated_pawns_codec);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
             pawns_.AddEntriesFrom(ref input, _repeated_pawns_codec);
             break;
           }
@@ -2524,7 +4223,7 @@ namespace GrpcPawn {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[9]; }
+      get { return global::GrpcPawn.GrpcPawnReflection.Descriptor.MessageTypes[15]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2554,8 +4253,20 @@ namespace GrpcPawn {
         case PayloadOneofCase.Planned:
           Planned = other.Planned.Clone();
           break;
-        case PayloadOneofCase.Moved:
-          Moved = other.Moved.Clone();
+        case PayloadOneofCase.CardsDrawn:
+          CardsDrawn = other.CardsDrawn.Clone();
+          break;
+        case PayloadOneofCase.CardSelected:
+          CardSelected = other.CardSelected.Clone();
+          break;
+        case PayloadOneofCase.Resolved:
+          Resolved = other.Resolved.Clone();
+          break;
+        case PayloadOneofCase.CardsReturned:
+          CardsReturned = other.CardsReturned.Clone();
+          break;
+        case PayloadOneofCase.OwnersChanged:
+          OwnersChanged = other.OwnersChanged.Clone();
           break;
       }
 
@@ -2607,15 +4318,63 @@ namespace GrpcPawn {
       }
     }
 
-    /// <summary>Field number for the "moved" field.</summary>
-    public const int MovedFieldNumber = 4;
+    /// <summary>Field number for the "cards_drawn" field.</summary>
+    public const int CardsDrawnFieldNumber = 5;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::GrpcPawn.PawnsMovedEvent Moved {
-      get { return payloadCase_ == PayloadOneofCase.Moved ? (global::GrpcPawn.PawnsMovedEvent) payload_ : null; }
+    public global::GrpcPawn.PawnsCardsDrawnEvent CardsDrawn {
+      get { return payloadCase_ == PayloadOneofCase.CardsDrawn ? (global::GrpcPawn.PawnsCardsDrawnEvent) payload_ : null; }
       set {
         payload_ = value;
-        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Moved;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.CardsDrawn;
+      }
+    }
+
+    /// <summary>Field number for the "card_selected" field.</summary>
+    public const int CardSelectedFieldNumber = 6;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcPawn.PawnCardSelectedEvent CardSelected {
+      get { return payloadCase_ == PayloadOneofCase.CardSelected ? (global::GrpcPawn.PawnCardSelectedEvent) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.CardSelected;
+      }
+    }
+
+    /// <summary>Field number for the "resolved" field.</summary>
+    public const int ResolvedFieldNumber = 7;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcPawn.PawnsResolvedEvent Resolved {
+      get { return payloadCase_ == PayloadOneofCase.Resolved ? (global::GrpcPawn.PawnsResolvedEvent) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.Resolved;
+      }
+    }
+
+    /// <summary>Field number for the "cards_returned" field.</summary>
+    public const int CardsReturnedFieldNumber = 8;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcPawn.PawnsCardsReturnedEvent CardsReturned {
+      get { return payloadCase_ == PayloadOneofCase.CardsReturned ? (global::GrpcPawn.PawnsCardsReturnedEvent) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.CardsReturned;
+      }
+    }
+
+    /// <summary>Field number for the "owners_changed" field.</summary>
+    public const int OwnersChangedFieldNumber = 9;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::GrpcPawn.PawnsOwnersChangedEvent OwnersChanged {
+      get { return payloadCase_ == PayloadOneofCase.OwnersChanged ? (global::GrpcPawn.PawnsOwnersChangedEvent) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.OwnersChanged;
       }
     }
 
@@ -2626,7 +4385,11 @@ namespace GrpcPawn {
       Snapshot = 1,
       Spawned = 2,
       Planned = 3,
-      Moved = 4,
+      CardsDrawn = 5,
+      CardSelected = 6,
+      Resolved = 7,
+      CardsReturned = 8,
+      OwnersChanged = 9,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2660,7 +4423,11 @@ namespace GrpcPawn {
       if (!object.Equals(Snapshot, other.Snapshot)) return false;
       if (!object.Equals(Spawned, other.Spawned)) return false;
       if (!object.Equals(Planned, other.Planned)) return false;
-      if (!object.Equals(Moved, other.Moved)) return false;
+      if (!object.Equals(CardsDrawn, other.CardsDrawn)) return false;
+      if (!object.Equals(CardSelected, other.CardSelected)) return false;
+      if (!object.Equals(Resolved, other.Resolved)) return false;
+      if (!object.Equals(CardsReturned, other.CardsReturned)) return false;
+      if (!object.Equals(OwnersChanged, other.OwnersChanged)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -2672,7 +4439,11 @@ namespace GrpcPawn {
       if (payloadCase_ == PayloadOneofCase.Snapshot) hash ^= Snapshot.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Spawned) hash ^= Spawned.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Planned) hash ^= Planned.GetHashCode();
-      if (payloadCase_ == PayloadOneofCase.Moved) hash ^= Moved.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.CardsDrawn) hash ^= CardsDrawn.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.CardSelected) hash ^= CardSelected.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.Resolved) hash ^= Resolved.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.CardsReturned) hash ^= CardsReturned.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.OwnersChanged) hash ^= OwnersChanged.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -2704,9 +4475,25 @@ namespace GrpcPawn {
         output.WriteRawTag(26);
         output.WriteMessage(Planned);
       }
-      if (payloadCase_ == PayloadOneofCase.Moved) {
-        output.WriteRawTag(34);
-        output.WriteMessage(Moved);
+      if (payloadCase_ == PayloadOneofCase.CardsDrawn) {
+        output.WriteRawTag(42);
+        output.WriteMessage(CardsDrawn);
+      }
+      if (payloadCase_ == PayloadOneofCase.CardSelected) {
+        output.WriteRawTag(50);
+        output.WriteMessage(CardSelected);
+      }
+      if (payloadCase_ == PayloadOneofCase.Resolved) {
+        output.WriteRawTag(58);
+        output.WriteMessage(Resolved);
+      }
+      if (payloadCase_ == PayloadOneofCase.CardsReturned) {
+        output.WriteRawTag(66);
+        output.WriteMessage(CardsReturned);
+      }
+      if (payloadCase_ == PayloadOneofCase.OwnersChanged) {
+        output.WriteRawTag(74);
+        output.WriteMessage(OwnersChanged);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -2730,9 +4517,25 @@ namespace GrpcPawn {
         output.WriteRawTag(26);
         output.WriteMessage(Planned);
       }
-      if (payloadCase_ == PayloadOneofCase.Moved) {
-        output.WriteRawTag(34);
-        output.WriteMessage(Moved);
+      if (payloadCase_ == PayloadOneofCase.CardsDrawn) {
+        output.WriteRawTag(42);
+        output.WriteMessage(CardsDrawn);
+      }
+      if (payloadCase_ == PayloadOneofCase.CardSelected) {
+        output.WriteRawTag(50);
+        output.WriteMessage(CardSelected);
+      }
+      if (payloadCase_ == PayloadOneofCase.Resolved) {
+        output.WriteRawTag(58);
+        output.WriteMessage(Resolved);
+      }
+      if (payloadCase_ == PayloadOneofCase.CardsReturned) {
+        output.WriteRawTag(66);
+        output.WriteMessage(CardsReturned);
+      }
+      if (payloadCase_ == PayloadOneofCase.OwnersChanged) {
+        output.WriteRawTag(74);
+        output.WriteMessage(OwnersChanged);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -2753,8 +4556,20 @@ namespace GrpcPawn {
       if (payloadCase_ == PayloadOneofCase.Planned) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Planned);
       }
-      if (payloadCase_ == PayloadOneofCase.Moved) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Moved);
+      if (payloadCase_ == PayloadOneofCase.CardsDrawn) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(CardsDrawn);
+      }
+      if (payloadCase_ == PayloadOneofCase.CardSelected) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(CardSelected);
+      }
+      if (payloadCase_ == PayloadOneofCase.Resolved) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Resolved);
+      }
+      if (payloadCase_ == PayloadOneofCase.CardsReturned) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(CardsReturned);
+      }
+      if (payloadCase_ == PayloadOneofCase.OwnersChanged) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(OwnersChanged);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2787,11 +4602,35 @@ namespace GrpcPawn {
           }
           Planned.MergeFrom(other.Planned);
           break;
-        case PayloadOneofCase.Moved:
-          if (Moved == null) {
-            Moved = new global::GrpcPawn.PawnsMovedEvent();
+        case PayloadOneofCase.CardsDrawn:
+          if (CardsDrawn == null) {
+            CardsDrawn = new global::GrpcPawn.PawnsCardsDrawnEvent();
           }
-          Moved.MergeFrom(other.Moved);
+          CardsDrawn.MergeFrom(other.CardsDrawn);
+          break;
+        case PayloadOneofCase.CardSelected:
+          if (CardSelected == null) {
+            CardSelected = new global::GrpcPawn.PawnCardSelectedEvent();
+          }
+          CardSelected.MergeFrom(other.CardSelected);
+          break;
+        case PayloadOneofCase.Resolved:
+          if (Resolved == null) {
+            Resolved = new global::GrpcPawn.PawnsResolvedEvent();
+          }
+          Resolved.MergeFrom(other.Resolved);
+          break;
+        case PayloadOneofCase.CardsReturned:
+          if (CardsReturned == null) {
+            CardsReturned = new global::GrpcPawn.PawnsCardsReturnedEvent();
+          }
+          CardsReturned.MergeFrom(other.CardsReturned);
+          break;
+        case PayloadOneofCase.OwnersChanged:
+          if (OwnersChanged == null) {
+            OwnersChanged = new global::GrpcPawn.PawnsOwnersChangedEvent();
+          }
+          OwnersChanged.MergeFrom(other.OwnersChanged);
           break;
       }
 
@@ -2841,13 +4680,49 @@ namespace GrpcPawn {
             Planned = subBuilder;
             break;
           }
-          case 34: {
-            global::GrpcPawn.PawnsMovedEvent subBuilder = new global::GrpcPawn.PawnsMovedEvent();
-            if (payloadCase_ == PayloadOneofCase.Moved) {
-              subBuilder.MergeFrom(Moved);
+          case 42: {
+            global::GrpcPawn.PawnsCardsDrawnEvent subBuilder = new global::GrpcPawn.PawnsCardsDrawnEvent();
+            if (payloadCase_ == PayloadOneofCase.CardsDrawn) {
+              subBuilder.MergeFrom(CardsDrawn);
             }
             input.ReadMessage(subBuilder);
-            Moved = subBuilder;
+            CardsDrawn = subBuilder;
+            break;
+          }
+          case 50: {
+            global::GrpcPawn.PawnCardSelectedEvent subBuilder = new global::GrpcPawn.PawnCardSelectedEvent();
+            if (payloadCase_ == PayloadOneofCase.CardSelected) {
+              subBuilder.MergeFrom(CardSelected);
+            }
+            input.ReadMessage(subBuilder);
+            CardSelected = subBuilder;
+            break;
+          }
+          case 58: {
+            global::GrpcPawn.PawnsResolvedEvent subBuilder = new global::GrpcPawn.PawnsResolvedEvent();
+            if (payloadCase_ == PayloadOneofCase.Resolved) {
+              subBuilder.MergeFrom(Resolved);
+            }
+            input.ReadMessage(subBuilder);
+            Resolved = subBuilder;
+            break;
+          }
+          case 66: {
+            global::GrpcPawn.PawnsCardsReturnedEvent subBuilder = new global::GrpcPawn.PawnsCardsReturnedEvent();
+            if (payloadCase_ == PayloadOneofCase.CardsReturned) {
+              subBuilder.MergeFrom(CardsReturned);
+            }
+            input.ReadMessage(subBuilder);
+            CardsReturned = subBuilder;
+            break;
+          }
+          case 74: {
+            global::GrpcPawn.PawnsOwnersChangedEvent subBuilder = new global::GrpcPawn.PawnsOwnersChangedEvent();
+            if (payloadCase_ == PayloadOneofCase.OwnersChanged) {
+              subBuilder.MergeFrom(OwnersChanged);
+            }
+            input.ReadMessage(subBuilder);
+            OwnersChanged = subBuilder;
             break;
           }
         }
@@ -2896,13 +4771,49 @@ namespace GrpcPawn {
             Planned = subBuilder;
             break;
           }
-          case 34: {
-            global::GrpcPawn.PawnsMovedEvent subBuilder = new global::GrpcPawn.PawnsMovedEvent();
-            if (payloadCase_ == PayloadOneofCase.Moved) {
-              subBuilder.MergeFrom(Moved);
+          case 42: {
+            global::GrpcPawn.PawnsCardsDrawnEvent subBuilder = new global::GrpcPawn.PawnsCardsDrawnEvent();
+            if (payloadCase_ == PayloadOneofCase.CardsDrawn) {
+              subBuilder.MergeFrom(CardsDrawn);
             }
             input.ReadMessage(subBuilder);
-            Moved = subBuilder;
+            CardsDrawn = subBuilder;
+            break;
+          }
+          case 50: {
+            global::GrpcPawn.PawnCardSelectedEvent subBuilder = new global::GrpcPawn.PawnCardSelectedEvent();
+            if (payloadCase_ == PayloadOneofCase.CardSelected) {
+              subBuilder.MergeFrom(CardSelected);
+            }
+            input.ReadMessage(subBuilder);
+            CardSelected = subBuilder;
+            break;
+          }
+          case 58: {
+            global::GrpcPawn.PawnsResolvedEvent subBuilder = new global::GrpcPawn.PawnsResolvedEvent();
+            if (payloadCase_ == PayloadOneofCase.Resolved) {
+              subBuilder.MergeFrom(Resolved);
+            }
+            input.ReadMessage(subBuilder);
+            Resolved = subBuilder;
+            break;
+          }
+          case 66: {
+            global::GrpcPawn.PawnsCardsReturnedEvent subBuilder = new global::GrpcPawn.PawnsCardsReturnedEvent();
+            if (payloadCase_ == PayloadOneofCase.CardsReturned) {
+              subBuilder.MergeFrom(CardsReturned);
+            }
+            input.ReadMessage(subBuilder);
+            CardsReturned = subBuilder;
+            break;
+          }
+          case 74: {
+            global::GrpcPawn.PawnsOwnersChangedEvent subBuilder = new global::GrpcPawn.PawnsOwnersChangedEvent();
+            if (payloadCase_ == PayloadOneofCase.OwnersChanged) {
+              subBuilder.MergeFrom(OwnersChanged);
+            }
+            input.ReadMessage(subBuilder);
+            OwnersChanged = subBuilder;
             break;
           }
         }

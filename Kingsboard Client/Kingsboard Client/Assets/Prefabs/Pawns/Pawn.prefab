@@ -238,6 +238,7 @@ Transform:
   - {fileID: 8414077611687043981}
   - {fileID: 8472153337096981829}
   - {fileID: 3501750243652481460}
+  - {fileID: 8379482330136752698}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &835324419040637948
@@ -256,6 +257,7 @@ MonoBehaviour:
   _label: {fileID: 1283376797895447002}
   _plannedPath: {fileID: 1895351879025148110}
   _selectionIndicator: {fileID: 4733225782258073409}
+  _speechBubble: {fileID: 7781452823541877384}
   _secondsPerStep: 0.25
   _hopHeight: 0.15
   _showPlannedPath: 1
@@ -363,6 +365,79 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4294967295
+--- !u!1001 &746123921394843552
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6029121511711888988}
+    m_Modifications:
+    - target: {fileID: 4860171247188800788, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_Name
+      value: SpeechBubble
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+--- !u!114 &7781452823541877384 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7036740129884845352, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+  m_PrefabInstance: {fileID: 746123921394843552}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83c299fea0e2112479c3729e11cee1d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Pawns.SpeechBubbleController
+--- !u!4 &8379482330136752698 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9084645592652549530, guid: 612844ee41116df4ab28dfdb415fc2e5, type: 3}
+  m_PrefabInstance: {fileID: 746123921394843552}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5452179389449893391
 PrefabInstance:
   m_ObjectHideFlags: 0

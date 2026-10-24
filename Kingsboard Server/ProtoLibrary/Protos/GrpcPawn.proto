@@ -3,29 +3,48 @@ option csharp_namespace = "GrpcPawn";
 
 import "google/protobuf/empty.proto";
 import "GrpcBoard.proto";
+import "GrpcCard.proto";
 
-// Pawns: characters that move around the board on their own. The server decides everything about them;
+// Pawns: characters on the board that act by playing action cards. The server decides everything about them;
 // clients only display what they're sent.
 //
-// Pawns move in two stages every turn:
-//   Planning phase   - each pawn chooses where it intends to go and the path to get there (`planned` event)
-//   Resolution phase - each pawn walks its path as far as it still can (`moved` event)
+// Every turn:
+//   Upkeep phase     - each pawn draws a hand of cards from its deck (`cards_drawn` event)
+//   Planning phase   - each pawn chooses a card from its hand and a target if it needs one (`planned` event)
+//   Player phase     - a pawn's owner can change its card with SelectCard (`card_selected` event)
+//   Resolution phase - each pawn plays its chosen card, highest Dexterity first (`resolved` event)
+//   End phase        - each pawn shuffles its hand back into its deck (`cards_returned` event)
 // A pawn always stands on top of a stack: its position is the empty space directly above the stack's top tile.
 service PawnService {
-  // Server stream of pawn events. The first event is always a `snapshot` of every pawn (with any plan already made
-  // this turn), followed by `spawned`, `planned` and `moved` events as the game plays out.
+  // Server stream of pawn events. The first event is always a `snapshot` of every pawn, followed by the events
+  // above, `spawned` when a new set of pawns is placed, and `owners_changed` when players join or leave.
   rpc JoinPawnStream(google.protobuf.Empty) returns (stream PawnEvent);
 
   // One-off query for every pawn
   rpc GetPawns(google.protobuf.Empty) returns (PawnList);
 
-  // One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+  // One-off query for all of one pawn's details (name, colour, position, attributes, health, cards, owner, plan).
   // Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
   rpc GetPawnById(GetPawnByIdRequest) returns (Pawn);
+
+  // Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
+  //   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
+  //   FAILED_PRECONDITION - it isn't the Player phase
+  //   NOT_FOUND           - no pawn has that id
+  //   PERMISSION_DENIED   - you don't control that pawn
+  //   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+  rpc SelectCard(SelectCardRequest) returns (google.protobuf.Empty);
 }
 
 message GetPawnByIdRequest {
   string id = 1; // The pawn's id, as sent in Pawn.id
+}
+
+message SelectCardRequest {
+  string session_id = 1;    // From PlayerService's `joined` event
+  string pawn_id = 2;
+  string card_id = 3;       // A card in the pawn's hand
+  BoardPosition target = 4; // Required for cards with CARD_TARGET_TYPE_TILE; ignored otherwise
 }
 
 message Pawn {
@@ -33,19 +52,24 @@ message Pawn {
   string name = 2;
   string colour = 3;                    // "#RRGGBB"
   BoardPosition position = 4;           // Where the pawn stands: the empty space on top of a stack
-  // The path the pawn plans to walk this turn: each step in order, ending at its intended destination.
-  // Empty when it has no plan (before Planning, after Resolution, or when it chose to stay put).
+  // The path the pawn expects to walk this turn if its chosen card moves it: each step in order, ending where it
+  // expects to stop. Empty when its card doesn't move it or it has no card chosen.
   repeated BoardPosition planned_path = 5;
   PawnAttributes attributes = 6;        // Core attributes (each a whole number from 1 to 10) and Physique
   reserved 7;                           // Was physique; now PawnAttributes.physique
   int32 health = 8;                     // Current health
   int32 max_health = 9;                 // Most health the pawn can have (equal to its physique)
+  repeated Card deck = 10;              // Cards it draws from, in draw order (cards in hand aren't here)
+  repeated Card hand = 11;              // Cards it can play this turn
+  CardSelection selected_card = 12;     // The card it will play this turn; absent when none is chosen
+  string owner_id = 13;                 // Player id of the player who controls it; empty when it acts on its own
+  string owner_name = 14;               // That player's name; empty when it acts on its own
 }
 
 // A pawn's core attributes, rolled when it is spawned, and the Physique stat derived from them
 message PawnAttributes {
   int32 strength = 1;
-  int32 dexterity = 2;
+  int32 dexterity = 2;                  // Also how many steps a Move card takes it
   int32 intelligence = 3;
   int32 wisdom = 4;
   int32 constitution = 5;
@@ -61,7 +85,13 @@ message PawnMovement {
   string pawn_id = 1;
   repeated BoardPosition path = 2;  // Each position it moved through, in order (empty if it didn't move)
   BoardPosition position = 3;       // Where it ended up
-  bool blocked = 4;                 // True if it stopped short of its planned destination
+  bool blocked = 4;                 // True if it stopped short of its target
+}
+
+// Something a pawn said during Resolution, because its card made it talk
+message PawnSpeech {
+  string pawn_id = 1;
+  string text = 2;
 }
 
 message PawnsSnapshotEvent {
@@ -72,22 +102,47 @@ message PawnsSpawnedEvent {
   repeated Pawn pawns = 1; // Every pawn: a new set replaces all earlier pawns (e.g. a new game)
 }
 
-message PawnsPlannedEvent {
+message PawnsCardsDrawnEvent {
   int32 turn_id = 1;
-  repeated Pawn pawns = 2; // Every pawn, with its planned_path for this turn
+  repeated Pawn pawns = 2; // Every pawn, with its new hand
 }
 
-message PawnsMovedEvent {
+message PawnsPlannedEvent {
   int32 turn_id = 1;
-  repeated PawnMovement movements = 2; // How each pawn moved, for animating
-  repeated Pawn pawns = 3;             // Every pawn after moving (plans cleared)
+  repeated Pawn pawns = 2; // Every pawn, with the card it chose and its planned_path
+}
+
+message PawnCardSelectedEvent {
+  int32 turn_id = 1;
+  Pawn pawn = 2;           // The pawn whose owner changed its card, with its new choice and planned_path
+}
+
+message PawnsResolvedEvent {
+  int32 turn_id = 1;
+  repeated PawnMovement movements = 2; // How each pawn that moved got there, for animating (in the order they moved)
+  repeated PawnSpeech speeches = 3;    // What pawns said (in the order they spoke)
+  repeated Pawn pawns = 4;             // Every pawn after resolving (choices and plans cleared)
+}
+
+message PawnsCardsReturnedEvent {
+  int32 turn_id = 1;
+  repeated Pawn pawns = 2; // Every pawn, with its hand shuffled back into its deck
+}
+
+message PawnsOwnersChangedEvent {
+  repeated Pawn pawns = 1; // Every pawn, with its owner
 }
 
 message PawnEvent {
   oneof payload {
-    PawnsSnapshotEvent snapshot = 1; // Sent first: replace everything the client had
+    PawnsSnapshotEvent snapshot = 1;          // Sent first: replace everything the client had
     PawnsSpawnedEvent spawned = 2;
     PawnsPlannedEvent planned = 3;
-    PawnsMovedEvent moved = 4;
+    PawnsCardsDrawnEvent cards_drawn = 5;
+    PawnCardSelectedEvent card_selected = 6;
+    PawnsResolvedEvent resolved = 7;
+    PawnsCardsReturnedEvent cards_returned = 8;
+    PawnsOwnersChangedEvent owners_changed = 9;
   }
+  reserved 4;                                 // Was moved; now resolved
 }

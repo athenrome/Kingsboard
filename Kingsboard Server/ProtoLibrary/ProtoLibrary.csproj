@@ -34,6 +34,8 @@
       (mirroring any subfolders) and compiled by Grpc.Tools.
     -->
     <Protobuf Include="Protos\**\*.proto" ProtoRoot="Protos" GrpcServices="Both" OutputDir="Generated" />
+    <!-- Messages only (no gRPC service), so there is no ...Grpc.cs file to generate -->
+    <Protobuf Update="Protos\GrpcCard.proto" GrpcServices="None" />
 
     <!-- Grpc.Tools already compiles its output; stop the SDK's *.cs glob from compiling Generated/ a second time -->
     <Compile Remove="Generated\**" />

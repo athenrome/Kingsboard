@@ -1,0 +1,194 @@
+using Kingsboard.Shared.Models.Cards;
+using Kingsboard.Shared.Models.Enumerations;
+using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Models.Cards;
+using KingsboardServer.Models.Enumerations;
+using KingsboardServer.Services.Interfaces;
+
+namespace KingsboardServer.Services
+{
+    /// <summary>
+    /// Owns the action cards. The kinds of card are listed here in code; each one names the <see cref="CardActionType"/>
+    /// that an <see cref="ICardAction"/> carries out.
+    /// </summary>
+    public class CardService : ICardService
+    {
+        /// <summary>
+        /// Id of the Move card
+        /// </summary>
+        public const string MoveCardId = "move";
+
+        /// <summary>
+        /// Id of the test card that says a random number
+        /// </summary>
+        public const string SayNumberCardId = "say-number";
+
+        /// <summary>
+        /// Id of the test card that says a random colour
+        /// </summary>
+        public const string SayColourCardId = "say-colour";
+
+        /// <summary>
+        /// Id of the test card that says hello
+        /// </summary>
+        public const string SayHelloCardId = "say-hello";
+
+        private static readonly CardDefinition[] Definitions =
+        {
+            new CardDefinition()
+            {
+                Id = MoveCardId,
+                Name = "Move",
+                Description = "Walk towards a tile, up to as many steps as your Dexterity.",
+                TargetType = CardTargetType.Tile,
+                Action = CardActionType.Move
+            },
+            new CardDefinition()
+            {
+                Id = SayNumberCardId,
+                Name = "Pick a Number",
+                Description = "Say a random number from 1 to 100.",
+                TargetType = CardTargetType.None,
+                Action = CardActionType.SayRandomNumber
+            },
+            new CardDefinition()
+            {
+                Id = SayColourCardId,
+                Name = "Pick a Colour",
+                Description = "Say a random colour.",
+                TargetType = CardTargetType.None,
+                Action = CardActionType.SayRandomColour
+            },
+            new CardDefinition()
+            {
+                Id = SayHelloCardId,
+                Name = "Introduce Yourself",
+                Description = "Say hello and tell everyone your name.",
+                TargetType = CardTargetType.None,
+                Action = CardActionType.SayHello
+            }
+        };
+
+        private readonly Serilog.ILogger _logger;
+        private readonly IReadOnlyDictionary<CardActionType, ICardAction> _actions;
+
+        /// <summary>
+        /// Creates the service with every registered card action. Throws if two actions claim the same <see cref="CardActionType"/>.
+        /// </summary>
+        public CardService(Serilog.ILogger logger, IEnumerable<ICardAction> actions)
+        {
+            _logger = logger;
+            _actions = actions.ToDictionary(a => a.Action);
+
+            foreach (CardDefinition definition in Definitions.Where(d => !_actions.ContainsKey(d.Action)))
+            {
+                _logger.Warning("Card {CardId} has no action registered for {Action}; it will do nothing", definition.Id, definition.Action);
+            }
+        }
+
+        /// <summary>
+        /// Every kind of card in the game
+        /// </summary>
+        public IReadOnlyList<CardDefinition> GetDefinitions()
+        {
+            return Definitions;
+        }
+
+        /// <summary>
+        /// The kind of card with this id (case-insensitive), or null if there isn't one
+        /// </summary>
+        public CardDefinition? GetDefinition(string definitionId)
+        {
+            return Definitions.FirstOrDefault(d => string.Equals(d.Id, definitionId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Makes a fresh copy, with a new id, of each listed card. Unknown ids are logged and skipped.
+        /// </summary>
+        public IReadOnlyList<Card> CreateDeck(IEnumerable<string> definitionIds)
+        {
+            List<Card> deck = new List<Card>();
+            foreach (string id in definitionIds)
+            {
+                if (GetDefinition(id) is not CardDefinition definition)
+                {
+                    _logger.Warning("Unknown card {CardId} in a starting deck; skipping it", id);
+                    continue;
+                }
+
+                deck.Add(new Card()
+                {
+                    Id = Guid.NewGuid(),
+                    DefinitionId = definition.Id,
+                    Name = definition.Name,
+                    Description = definition.Description,
+                    ImageId = definition.ImageId,
+                    TargetType = definition.TargetType
+                });
+            }
+            return deck;
+        }
+
+        /// <summary>
+        /// The action registered for the card's definition, or null if there is none
+        /// </summary>
+        public ICardAction? GetAction(Card card)
+        {
+            if (GetDefinition(card.DefinitionId) is not CardDefinition definition)
+            {
+                return null;
+            }
+            return _actions.TryGetValue(definition.Action, out ICardAction? action) ? action : null;
+        }
+
+        /// <summary>
+        /// Moves cards from the front of the deck to the end of the hand, so a drawn card is never in both
+        /// </summary>
+        public void DrawCards(Pawn pawn, int count)
+        {
+            int drawn = Math.Clamp(count, 0, pawn.Deck.Count);
+            pawn.Hand = pawn.Hand.Concat(pawn.Deck.Take(drawn)).ToArray();
+            pawn.Deck = pawn.Deck.Skip(drawn).ToArray();
+        }
+
+        /// <summary>
+        /// Puts the hand back into the deck, shuffles the deck, and clears the chosen card
+        /// </summary>
+        public void ReturnHand(Pawn pawn, Random random)
+        {
+            pawn.Deck = Shuffle(pawn.Deck.Concat(pawn.Hand).ToArray(), random);
+            pawn.Hand = Array.Empty<Card>();
+            pawn.SelectedCard = null;
+        }
+
+        /// <summary>
+        /// A Fisher-Yates shuffle into a new list
+        /// </summary>
+        public IReadOnlyList<Card> Shuffle(IReadOnlyList<Card> cards, Random random)
+        {
+            Card[] shuffled = cards.ToArray();
+            for (int i = shuffled.Length - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
+            }
+            return shuffled;
+        }
+
+        /// <summary>
+        /// A copy of the card, so callers can't change the original
+        /// </summary>
+        public Card Clone(Card card)
+        {
+            return new Card()
+            {
+                Id = card.Id,
+                DefinitionId = card.DefinitionId,
+                Name = card.Name,
+                Description = card.Description,
+                ImageId = card.ImageId,
+                TargetType = card.TargetType
+            };
+        }
+    }
+}

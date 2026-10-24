@@ -1,0 +1,31 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcCard";
+
+import "GrpcBoard.proto";
+
+// Action cards. Pawns act by playing cards: each turn a pawn draws a hand from its deck, one card from the hand is
+// chosen (by the pawn in the Planning phase, or by its owner in the Player phase), and that card's action is carried
+// out in the Resolution phase. The server decides what every card does; clients only show cards.
+
+// What a card has to be pointed at when it is chosen
+enum CardTargetType {
+  CARD_TARGET_TYPE_UNSPECIFIED = 0;
+  CARD_TARGET_TYPE_NONE = 1;  // The card needs no target
+  CARD_TARGET_TYPE_TILE = 2;  // The card needs a board position (only its column matters)
+}
+
+// One copy of an action card
+message Card {
+  string id = 1;                  // Unique id of this copy
+  string definition_id = 2;       // Which card it is a copy of (e.g. "move")
+  string name = 3;
+  string description = 4;
+  string image_id = 5;            // Picture for the card; empty until card art exists
+  CardTargetType target_type = 6;
+}
+
+// The card a pawn will play in the Resolution phase, and what it is aimed at
+message CardSelection {
+  string card_id = 1;             // A card in the pawn's hand
+  BoardPosition target = 2;       // Absent for cards that need no target
+}

@@ -9,8 +9,9 @@ using UnityEngine.Serialization;
 namespace Kingsboard.Pawns
 {
     /// <summary>
-    /// Drives one pawn on the client: its look (name and colour), showing the move it has planned, walking its path when
-    /// moves resolve, hiding while it's outside the loaded board section, and being selected. Every pawn has its own.
+    /// Drives one pawn on the client: its look (name, colour and who controls it), showing the move it has planned, walking
+    /// its path when moves resolve, saying things in a speech bubble, hiding while it's outside the loaded board section,
+    /// and being selected. Every pawn has its own.
     /// Lives on the root of the Pawn prefab (Assets/Prefabs/Pawns/Pawn.prefab); the <see cref="PawnManager"/> spawns one per
     /// pawn the server sends and passes it that pawn's updates. The server makes every decision; this only shows them.
     /// The prefab's pivot is at the pawn's feet, so placing its transform at a standing point stands it on the board.
@@ -29,6 +30,9 @@ namespace Kingsboard.Pawns
         [Tooltip("Shown while the pawn is selected")]
         [SerializeField, FormerlySerializedAs("selectionIndicator")] private GameObject _selectionIndicator;
 
+        [Tooltip("Speech bubble over the pawn's head (the nested SpeechBubble prefab), shown when a card makes it talk")]
+        [SerializeField] private SpeechBubbleController _speechBubble;
+
         [Tooltip("Seconds the pawn takes to walk one step of its path")]
         [SerializeField, FormerlySerializedAs("secondsPerStep")] private float _secondsPerStep = 0.25f;
 
@@ -42,11 +46,32 @@ namespace Kingsboard.Pawns
         private Material _bodyMaterial;
         private Material _pathMaterial;
         private Coroutine _walk;
+        private Guid? _localPlayerId;
+        private int _spokeInTurn;
 
         /// <summary>
         /// The latest state of this pawn from the server
         /// </summary>
         public Pawn Pawn { get; private set; }
+
+        /// <summary>
+        /// Our player id (null while we aren't joined), so the pawn can show whether we control it.
+        /// Set by the <see cref="PawnManager"/>.
+        /// </summary>
+        public Guid? LocalPlayerId
+        {
+            get => _localPlayerId;
+            set
+            {
+                _localPlayerId = value;
+                RefreshLabel();
+            }
+        }
+
+        /// <summary>
+        /// True if we control this pawn, so we can choose its cards
+        /// </summary>
+        public bool IsOwnedByLocalPlayer => Pawn != null && Pawn.OwnerId.HasValue && Pawn.OwnerId == _localPlayerId;
 
         /// <summary>
         /// True while the pawn is selected
@@ -79,19 +104,52 @@ namespace Kingsboard.Pawns
             UpdatePawn(pawn);
             StandAt(pawn.Position);
             SetSelected(false);
+            if (_speechBubble != null)
+            {
+                _speechBubble.Hide();
+            }
         }
 
         /// <summary>
-        /// Takes the pawn's latest state from the server without moving it (e.g. after a reconnect)
+        /// Takes the pawn's latest state from the server without moving it (e.g. after a reconnect, a new hand or a new
+        /// owner). Shows its current plan, if any.
         /// </summary>
         public void UpdatePawn(Pawn pawn)
         {
             Pawn = pawn;
             ShowPlan();
+            RefreshLabel();
         }
 
         /// <summary>
-        /// The pawn has planned its move for the turn (Planning phase): show the path it intends to walk
+        /// Shows <paramref name="text"/> in a speech bubble over the pawn, said during turn <paramref name="turnId"/>.
+        /// It stays up until the end of the next turn (see <see cref="EndTurn"/>), then fades.
+        /// </summary>
+        public void Say(string text, int turnId)
+        {
+            if (_speechBubble == null)
+            {
+                return;
+            }
+
+            _spokeInTurn = turnId;
+            _speechBubble.Show(text);
+        }
+
+        /// <summary>
+        /// Turn <paramref name="turnId"/> has ended. A pawn speaks during Resolution, just before its turn ends, so its
+        /// speech bubble is kept through the following turn and fades at that turn's end.
+        /// </summary>
+        public void EndTurn(int turnId)
+        {
+            if (_speechBubble != null && _speechBubble.IsShowing && turnId > _spokeInTurn)
+            {
+                _speechBubble.FadeOut();
+            }
+        }
+
+        /// <summary>
+        /// The pawn has chosen its card for the turn (Planning phase): show the path it intends to walk, if the card moves it
         /// </summary>
         public void PlanMove(Pawn pawn)
         {
@@ -261,7 +319,6 @@ namespace Kingsboard.Pawns
 
             if (_label != null)
             {
-                _label.text = pawn.Name;
                 _label.color = colour;
             }
 
@@ -274,6 +331,31 @@ namespace Kingsboard.Pawns
                 }
                 _pathMaterial.color = colour;
                 _plannedPath.positionCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// Names the pawn on its label, with who controls it underneath: "(you)" for us, the player's name for anyone else,
+        /// nothing when it acts on its own
+        /// </summary>
+        private void RefreshLabel()
+        {
+            if (_label == null || Pawn == null)
+            {
+                return;
+            }
+
+            if (IsOwnedByLocalPlayer)
+            {
+                _label.text = $"{Pawn.Name}\n(you)";
+            }
+            else if (Pawn.OwnerId.HasValue)
+            {
+                _label.text = $"{Pawn.Name}\n({Pawn.OwnerName})";
+            }
+            else
+            {
+                _label.text = Pawn.Name;
             }
         }
 

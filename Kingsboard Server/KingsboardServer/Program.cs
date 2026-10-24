@@ -3,6 +3,7 @@ using KingsboardServer.Models.Configuration;
 using KingsboardServer.Repositories;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services;
+using KingsboardServer.Services.CardActions;
 using KingsboardServer.Services.Interfaces;
 using Serilog;
 
@@ -77,12 +78,28 @@ namespace KingsboardServer
                 builder.Services.AddSingleton<ITileService, TileService>();
                 builder.Services.AddSingleton<IBoardViewService, BoardViewService>();
 
+                //Player settings (appsettings.json -> "PlayerSettings")
+                builder.Services.AddOptions<PlayerSettings>()
+                    .Bind(builder.Configuration.GetSection(PlayerSettings.SectionName))
+                    .Validate(s => s.PawnsPerPlayer >= 0 && s.MaxNameLength > 0, "PlayerSettings: PawnsPerPlayer can't be negative, and MaxNameLength must be greater than 0")
+                    .ValidateOnStart();
+
+                builder.Services.AddSingleton<IPlayerService, PlayerService>();
+
+                //Cards: every kind of card names an action, and each action is carried out by one ICardAction
+                builder.Services.AddSingleton<ICardAction, MoveCardAction>();
+                builder.Services.AddSingleton<ICardAction, SayRandomNumberCardAction>();
+                builder.Services.AddSingleton<ICardAction, SayRandomColourCardAction>();
+                builder.Services.AddSingleton<ICardAction, SayHelloCardAction>();
+                builder.Services.AddSingleton<ICardService, CardService>();
+
                 //Pawn settings (appsettings.json -> "PawnSettings")
                 builder.Services.AddOptions<PawnSettings>()
                     .Bind(builder.Configuration.GetSection(PawnSettings.SectionName))
-                    .Validate(s => s.Count >= 0 && s.SpawnAreaSize > 0 && s.MoveRange >= 0 && s.MaxClimb >= 0, "PawnSettings: Count, MoveRange and MaxClimb can't be negative, and SpawnAreaSize must be greater than 0")
+                    .Validate(s => s.Count >= 0 && s.SpawnAreaSize > 0 && s.MaxClimb >= 0 && s.HandSize >= 0, "PawnSettings: Count, MaxClimb and HandSize can't be negative, and SpawnAreaSize must be greater than 0")
                     .ValidateOnStart();
 
+                builder.Services.AddSingleton<IPawnMovementService, PawnMovementService>();
                 builder.Services.AddSingleton<IPawnRepository, PawnRepository>();
                 // One PawnService instance is both the pawn API and the handler for the turn phases pawns act in
                 builder.Services.AddSingleton<PawnService>();
@@ -103,6 +120,7 @@ namespace KingsboardServer
                 app.MapGrpcService<TurnTimerGrpcHandler>();
                 app.MapGrpcService<BoardGrpcHandler>();
                 app.MapGrpcService<PawnGrpcHandler>();
+                app.MapGrpcService<PlayerGrpcHandler>();
                 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
                 IGameService game = app.Services.GetRequiredService<IGameService>();
