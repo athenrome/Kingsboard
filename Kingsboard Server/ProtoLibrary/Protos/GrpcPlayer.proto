@@ -1,0 +1,28 @@
+syntax = "proto3";
+option csharp_namespace = "GrpcPlayer";
+
+// Players: the people connected to the game. A player joins with a name and stays joined while the stream is open.
+// Each player is given up to PlayerSettings:PawnsPerPlayer pawns to control; a pawn's owner shows in Pawn.owner_id.
+service PlayerService {
+  // Joins the game. The first event is always `joined` (your public player id, your secret session id and the name
+  // you were given). Keep the stream open: closing it leaves the game, and your pawns go back to acting on their own.
+  rpc JoinGame(JoinGameRequest) returns (stream PlayerEvent);
+}
+
+message JoinGameRequest {
+  // Requested display name. The server may trim it or add a suffix to keep it unique.
+  string name = 1;
+}
+
+message PlayerEvent {
+  oneof payload {
+    PlayerJoinedEvent joined = 1; // Sent once, first
+  }
+}
+
+message PlayerJoinedEvent {
+  string player_id = 1;  // Your public id: pawns you control have this as their owner_id
+  string session_id = 2; // Your secret id: pass it to requests that act as you (e.g. SelectCard). Don't share it.
+  string name = 3;       // The name you were given
+  string colour = 4;     // Your colour, "#RRGGBB"; pawns you control are shown in it
+}

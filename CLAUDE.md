@@ -37,7 +37,8 @@ dotnet run --project "Kingsboard Server/KingsboardServer" --launch-profile https
 
 - To change the contract, edit `Protos/*.proto` and build ProtoLibrary. That regenerates `Generated/`, which the server and Unity (package `com.kingsboard.protos`) share. Never hand-edit `Generated/*.cs`; commit the regenerated files.
 - Protos have no protobuf `package`, so one proto refers to another's types by bare name after `import` (e.g. `GrpcPawn.proto` imports `GrpcBoard.proto` and uses `BoardPosition`).
-- Each proto uses its own `csharp_namespace` (`GrpcChat`, `GrpcTurnTimer`, `GrpcBoard`, `GrpcPawn`).
+- Each proto uses its own `csharp_namespace` (`GrpcChat`, `GrpcTurnTimer`, `GrpcBoard`, `GrpcPawn`, `GrpcCard`, `GrpcPlayer`).
+- A proto with no `service` (today only `GrpcCard.proto`) needs a `<Protobuf Update="Protos\Xxx.proto" GrpcServices="None" />` line in `ProtoLibrary.csproj`, or the build fails looking for a `XxxGrpc.cs` that is never generated.
 
 ## Server architecture (`KingsboardServer/`)
 
@@ -51,8 +52,8 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
   - Services hand out snapshots or clones, never live state.
   - `GameService` runs the game loop: it creates the board and spawns the pawns, then runs the turn loop.
 - **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories hold no game rules. Thread-safety and handing out copies is the owning service's job (e.g. `BoardService` locks and clones around `BoardRepository`).
-- **`Models/`**: server-only domain types, with subfolders `Board/` (`GameBoard`, `BoardSection`), `Chat/`, `Configuration/` and `Enumerations/`, and `Turn.cs` at the root. Models the client also uses live in SharedLibrary instead (see below). See the model rule below.
-- **`Events/<Category>/`**: event objects, the payloads passed through C# events. They are grouped by category, each with its own namespace: `Events/Board/` (`KingsboardServer.Events.Board`: `TilesChangeEvent`, `BoardViewEvent`) and `Events/Pawns/` (`KingsboardServer.Events.Pawns`: `PawnsChangeEvent`). Add a new category folder for a new system. The model rule applies to these too.
+- **`Models/`**: server-only domain types, with subfolders `Board/` (`GameBoard`, `BoardSection`), `Cards/` (`CardDefinition`, `CardActionContext`, `CardActionResult`, `CardSelectResult`), `Chat/`, `Configuration/`, `Enumerations/` and `Players/` (`Player`), and `Turn.cs` at the root. Models the client also uses live in SharedLibrary instead (see below). See the model rule below.
+- **`Events/<Category>/`**: event objects, the payloads passed through C# events. They are grouped by category, each with its own namespace: `Events/Board/` (`KingsboardServer.Events.Board`: `TilesChangeEvent`, `BoardViewEvent`), `Events/Pawns/` (`KingsboardServer.Events.Pawns`: `PawnsChangeEvent`) and `Events/Players/` (`KingsboardServer.Events.Players`: `PlayersChangeEvent`). Add a new category folder for a new system. The model rule applies to these too.
 - **`Subscriptions/<Category>/`**: subscription objects, which a service returns when a client joins a stream (a session id plus the `ChannelReader` it reads from). They are grouped by category, each with its own namespace: `Subscriptions/Chat/` (`KingsboardServer.Subscriptions.Chat`: `ChatSubscription`) and `Subscriptions/Board/` (`KingsboardServer.Subscriptions.Board`: `BoardViewSubscription`). Name them `XxxSubscription`, keep one type per file, and apply the model rule to them too.
 - **No extension classes.** All logic for a model lives in the service that owns it: `BoardService` for boards, `TileService` for tiles, `TurnService` for turns (`GetDuration`, `GetTimeRemaining`, cloning), `PawnService` for pawns. Don't add `XxxExtensions` classes on the server.
 - **Settings:** each system has a settings class in `Models/Configuration/` with a `SectionName` constant. It is bound in `Program.cs` with `.Validate(...).ValidateOnStart()`, mirrored in `appsettings.json`, and read through `IOptionsMonitor<T>.CurrentValue`.
@@ -60,7 +61,7 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
 
 ## Shared models (`Kingsboard Client/SharedLibrary/`)
 
-- Any model used by both the server and the client lives in `SharedLibrary/SharedModels/` (namespace `Kingsboard.Shared.Models.*`), never as two copies. The server references `SharedLibrary.csproj`; Unity uses `SharedModels/` as the local package `com.kingsboard.sharedmodels`. Today that is `BoardPosition`, `BoardRegion`, `MapTile`, `TileType`, `TurnPhase`, `Pawn`, `PawnAttributes` and `PawnMovement`.
+- Any model used by both the server and the client lives in `SharedLibrary/SharedModels/` (namespace `Kingsboard.Shared.Models.*`), never as two copies. The server references `SharedLibrary.csproj`; Unity uses `SharedModels/` as the local package `com.kingsboard.sharedmodels`. Today that is `BoardPosition`, `BoardRegion`, `MapTile`, `TileType`, `TurnPhase`, `CardTargetType`, `Card`, `CardSelection`, `Pawn`, `PawnAttributes`, `PawnMovement` and `PawnSpeech`.
 - Shared files must compile as C# 9 with no Unity or server dependencies (`SharedLibrary.csproj` pins `LangVersion` 9). Use plain .NET types, e.g. a colour is a `"#RRGGBB"` string.
 - The model rule applies. Logic stays in each side's owning service.
 
@@ -114,7 +115,7 @@ Every turn runs Start → Upkeep → Planning → Player → Resolution → End.
 
 ## Pawns
 
-Pawns are characters that move around the board on their own. All pawn logic is on the server in `PawnService`; the Unity client (`PawnManager` and a `PawnController` per pawn) only displays it. A pawn has an id, a name, a colour (`#RRGGBB`), a `Position`, `Attributes` and `Health`.
+Pawns are characters on the board that act by playing action cards (see Cards). All pawn logic is on the server in `PawnService`; the Unity client (`PawnManager` and a `PawnController` per pawn) only displays it. A pawn has an id, a name, a colour (`#RRGGBB`), a `Position`, `Attributes`, `Health`, a `Deck`, a `Hand`, a `SelectedCard` and an optional owner (`OwnerId`/`OwnerName`).
 
 - **Attributes:** Strength, Dexterity, Intelligence, Wisdom and Constitution (`PawnAttributes`), each a random whole number from 1 to 10, rolled at spawn.
 - **Stats:** Physique = Dexterity + Strength × 2. `PawnService` works it out when it rolls the attributes and stores it as `PawnAttributes.Physique` (also `PawnAttributes.physique` in the proto). Max health equals Physique (`GetMaxHealth`); `CreatePawn` stores it as `Pawn.MaxHealth` (sent as `max_health`), and pawns spawn at full health.
@@ -122,14 +123,29 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 
 - **Position:** the empty space directly above its stack's top tile.
 - **Spawning:** `GameService` spawns `PawnSettings:Count` pawns on passable ground near the board's front-left corner, inside `SpawnAreaSize`. That's where the default board section is.
-- **Planning phase:** each pawn picks a random destination it can reach and stores the path in `PlannedPath`.
-  - A move is up to `MoveRange` steps. Each step goes to a neighbouring column (4-way) with a passable top, at most `MaxClimb` levels up or down, and never through another pawn.
-  - No two pawns pick the same destination, and none picks a column where another pawn stands.
-- **Resolution phase:** each pawn walks its path step by step and re-checks every step against the current board and the other pawns, because tiles may have changed. It stops at the first step it can't take (`Blocked`), then its plan is cleared.
-- **One instance:** `PawnService` is both `IPawnService` and the `ITurnPhaseHandler` for Planning and Resolution.
-- **Ordering:** `PawnsChanged` is raised under the pawn lock, and `ReadPawns(callback)` subscribes and takes a snapshot together, the same pattern as `BoardService.ReadSection`. Lock order is pawn, then board; the board never calls into pawns.
-- **gRPC:** `JoinPawnStream` sends a `snapshot`, then `spawned`, `planned` and `moved` events. Every pawn is sent; the client shows only those inside its loaded board section. `GetPawnById(id)` returns all of one pawn's details in one call (`INVALID_ARGUMENT` for a malformed id, `NOT_FOUND` for an unknown one); on the client it's `PawnManager.GetPawnById`.
+- **Turn flow (cards):** Upkeep: each pawn draws `PawnSettings:HandSize` (5) cards from its `Deck` into its `Hand`. Planning: each pawn tries its hand in random order and chooses the first usable card (`SelectedCard`, plus a target if the card needs one); a Move card's path goes in `PlannedPath`, and no two AI pawns pick the same destination. Player: the pawn's owner may change the choice with `SelectCard`. Resolution: pawns play their cards highest Dexterity first (ties random), each against the board and pawns as they are at that moment; cards stay in hand and choices are cleared. End: the hand is shuffled back into the deck.
+- **Movement:** the Move card walks towards its target tile, up to **Dexterity** steps (there is no `MoveRange` any more), to the reachable column nearest the target. Step rules (4-way, passable top, `MaxClimb`, never through another pawn) live in `PawnMovementService`, shared by `PawnService` and `MoveCardAction`.
+- **One instance:** `PawnService` is both `IPawnService` and the `ITurnPhaseHandler` for Upkeep, Planning, Player, Resolution and End. It tracks the Player phase itself (it can't depend on `ITurnService`, which depends on the phase handlers).
+- **Ordering:** `PawnsChanged` is raised under the pawn lock, and `ReadPawns(callback)` subscribes and takes a snapshot together, the same pattern as `BoardService.ReadSection`. Lock order is **player, then pawn, then board**: `PlayersChanged` arrives under the player lock, and `SpawnPawns` takes the player lock (`ReadPlayers`) before the pawn lock. Never call into players or pawns from the board, or into players from inside the pawn lock.
+- **gRPC:** `JoinPawnStream` sends a `snapshot`, then `spawned`, `cards_drawn`, `planned`, `card_selected` (one pawn), `resolved` (movements and speeches), `cards_returned` and `owners_changed`. Every pawn is sent; the client shows only those inside its loaded board section. `GetPawnById(id)` returns all of one pawn's details in one call (`INVALID_ARGUMENT` for a malformed id, `NOT_FOUND` for an unknown one); on the client it's `PawnManager.GetPawnById`. `SelectCard(session_id, pawn_id, card_id, target)` returns UNAUTHENTICATED for an unknown session and INVALID_ARGUMENT for malformed ids. `PawnService.SelectCard` returns a `CardSelectResult` (a `Selected` bool plus an error message), and any refusal becomes FAILED_PRECONDITION with that message as the detail.
 - **Client:** `PawnManager` (on the Pawns prefab) handles pawns as a group. It receives them from the server, spawns a `Pawn` prefab per new pawn and despawns pawns that are gone, passes each pawn its own plans and moves, and keeps one pawn selected (click a pawn to select it, click empty space to deselect). Each pawn has its own `PawnController` (on the Pawn prefab) that drives its client actions: name and colour, showing its planned path, walking the path when moves resolve, hiding outside the loaded section, and being selected (`Select`/`Deselect`, which shows its `SelectionRing`). Put per-pawn behaviour in `PawnController` and group behaviour in `PawnManager`. `PawnDetailsController` (the PawnDetails prefab, nested in Pawns) shows the selected pawn's name, health, Physique and attributes at the top right, and hides when nothing is selected. It loads a newly selected pawn through `GetPawnById`, then follows streamed updates.
+- **Client (cards):** `PawnHandController` (the PawnHand prefab, nested in Pawns) shows the selected pawn's hand at the bottom right, with the chosen card highlighted. Anyone's hand is visible; only our own pawns' cards are clickable, and only in the Player phase. A card that needs a tile calls `PawnManager.BeginTargeting`, and the next click on the board aims it (right-click or Esc cancels). `PawnController.Say` shows a `SpeechBubble`. Pawns speak in Resolution, right before End, so a bubble stays up until the end of the *following* turn, then fades.
+
+## Cards
+
+Pawns act by playing action cards. All card logic is on the server.
+
+- **Definitions:** `CardService` lists every kind of card in code (`CardDefinition`: id, name, description, image id, `CardTargetType`, `CardActionType`). A `Card` in a deck or hand is a copy with its own `Id`; `DefinitionId` says which kind it is. Today: `move`, `say-number`, `say-colour`, `say-hello`.
+- **Decks:** `PawnSettings:StartingDeck` lists the definition ids each pawn starts with (empty means the default: 3 Move and 1 of each test card). Decks are shuffled at spawn and stored on the pawn. A drawn card is in `Hand`, not `Deck`, until End returns it.
+- **Actions:** each `CardActionType` is carried out by one `ICardAction` (`Services/CardActions/`, registered in `Program.cs` as `ICardAction`). An action works things out and returns a `CardActionResult` (path, position, blocked, speech); `PawnService` applies it. Actions run under the pawn lock, so they must be quick and must not call back into `PawnService`. To add a card, add a `CardDefinition` and, if it needs a new behaviour, a `CardActionType` plus an `ICardAction`.
+
+## Players
+
+- `PlayerService` tracks connected players (kept in the service, like chat participants). `JoinGame(name)` streams `joined` (public `player_id`, secret `session_id`, name, colour); closing the stream leaves the game.
+- Each player gets a colour (`#RRGGBB`) from `PlayerService`'s palette: the first no joined player has, reused in turn once all are taken.
+- Each player gets up to `PlayerSettings:PawnsPerPlayer` (2) pawns no one controls, in join order; a leaver's pawns go back to no one and are given to players who are short. A pawn's owner is `Pawn.OwnerId`/`OwnerName`/`OwnerColour` (null/empty means it acts on its own). The client shows a controlled pawn in its owner's colour instead of its own (`PawnService.GetColour`). Owned pawns still choose a card in Planning; the owner can override it.
+- Requests that act as a player send the secret `session_id`. Only the public `player_id` ever goes out in pawn data.
+- **Client:** `PlayerController` (the Player prefab, placed in the Main scene) joins with its prefab name, or `--name=` from the command line, and exposes `Player`/`IsMe`.
 
 ## Prefab rule (Unity): every GameObject comes from a prefab
 
@@ -142,12 +158,15 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 |---|---|
 | `Prefabs/Board/Board.prefab` | `BoardController`, with a `Tiles` child that tile blocks are created under |
 | `Prefabs/Board/BoardTile.prefab` | One tile block (a cube) |
-| `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under and a nested `PawnDetails` |
+| `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under and nested `PawnDetails` and `PawnHand` |
 | `Prefabs/Pawns/PawnDetails.prefab` | `PawnDetailsController` and its `UIDocument` (`Prefabs/Pawns/PawnDetailsPanelSettings.asset`), the selected-pawn panel |
-| `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` capsule, a `Name` label, a nested `PawnPath` and a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`). Its pivot is at its feet. |
+| `Prefabs/Pawns/PawnHand.prefab` | `PawnHandController` and its `UIDocument` (`Prefabs/Pawns/PawnHandPanelSettings.asset`), the selected pawn's hand. Nested in `Pawns`. |
+| `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` capsule, a `Name` label, a nested `PawnPath`, a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`) and a nested, hidden `SpeechBubble`. Its pivot is at its feet. |
+| `Prefabs/Pawns/SpeechBubble.prefab` | `SpeechBubbleController`, a `Background` quad (`Materials/Pawns/SpeechBubble.mat`) and a `Text` TextMesh. Starts hidden; nested in `Pawn`. |
 | `Prefabs/Pawns/PawnPath.prefab` | `LineRenderer` for a planned path (`Materials/Pawns/PawnPath.mat`), nested in `Pawn`. It draws in world space, so it stays put while the pawn walks. |
 | `Prefabs/Chat/Chat.prefab` | `ChatController` and its `UIDocument` (`Prefabs/Chat/ChatPanelSettings.asset`) |
 | `Prefabs/TurnTimer/TurnTimer.prefab` | `TurnTimerController` and its `UIDocument` (`Prefabs/TurnTimer/TurnTimerPanelSettings.asset`) |
+| `Prefabs/Players/Player.prefab` | `PlayerController`: this client's player |
 
 **Making or changing prefabs:**
 - **Use the live editor.** When the Unity Editor is open, change prefabs and scenes through it (`unity command ...`, e.g. `eval_file` with fully-qualified type names, since `eval` code can't have `using` lines). Don't hand-edit `.prefab` or `.unity` YAML.
@@ -184,7 +203,7 @@ When you find logic in an existing model, move it to the owning service rather t
 - Brace style is Allman. Fields are `_camelCase`. Write `/// <summary>` docs on public members and interfaces in plain language.
 - **Event objects end in `Event`.** Any type whose job is to describe something that happened gets the suffix. That includes:
   - payloads passed through C# events, e.g. `TilesChangeEvent`, `PawnsChangeEvent` and `BoardViewEvent`. These live in `KingsboardServer/Events/<Category>/`, not `Models/`;
-  - proto messages sent as stream events, e.g. `ChatEvent`, `BoardEvent`, `TilesChangedEvent`, `PawnsMovedEvent` and `BoardJoinedEvent`. These stay in their service's `.proto` file, alongside the service that streams them.
+  - proto messages sent as stream events, e.g. `ChatEvent`, `BoardEvent`, `TilesChangedEvent`, `PawnsResolvedEvent` and `BoardJoinedEvent`. These stay in their service's `.proto` file, alongside the service that streams them.
 
   Domain objects that an event merely carries keep their own names: `Turn`, `GameBoard`, `ChatMessage`
 ## Documentation rule

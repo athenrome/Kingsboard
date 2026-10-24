@@ -11,13 +11,33 @@ namespace KingsboardServer.Models.Enumerations
         Spawned,
 
         /// <summary>
-        /// Pawns chose where they intend to move this turn (Planning phase)
+        /// Pawns drew their hands for the turn (Upkeep phase)
+        /// </summary>
+        CardsDrawn,
+
+        /// <summary>
+        /// Pawns chose the card they'll play this turn (Planning phase)
         /// </summary>
         Planned,
 
         /// <summary>
-        /// Pawns walked their planned paths (Resolution phase)
+        /// A player changed the card one of their pawns will play (Player phase). Only that pawn is included.
         /// </summary>
-        Moved
+        CardSelected,
+
+        /// <summary>
+        /// Pawns played their chosen cards (Resolution phase)
+        /// </summary>
+        Resolved,
+
+        /// <summary>
+        /// Pawns shuffled their hands back into their decks (End phase)
+        /// </summary>
+        CardsReturned,
+
+        /// <summary>
+        /// Players joined or left, so which player controls which pawn changed
+        /// </summary>
+        OwnersChanged
     }
 }

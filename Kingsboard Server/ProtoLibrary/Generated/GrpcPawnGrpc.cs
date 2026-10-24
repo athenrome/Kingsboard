@@ -9,12 +9,15 @@ using grpc = global::Grpc.Core;
 
 namespace GrpcPawn {
   /// <summary>
-  /// Pawns: characters that move around the board on their own. The server decides everything about them;
+  /// Pawns: characters on the board that act by playing action cards. The server decides everything about them;
   /// clients only display what they're sent.
   ///
-  /// Pawns move in two stages every turn:
-  ///   Planning phase   - each pawn chooses where it intends to go and the path to get there (`planned` event)
-  ///   Resolution phase - each pawn walks its path as far as it still can (`moved` event)
+  /// Every turn:
+  ///   Upkeep phase     - each pawn draws a hand of cards from its deck (`cards_drawn` event)
+  ///   Planning phase   - each pawn chooses a card from its hand and a target if it needs one (`planned` event)
+  ///   Player phase     - a pawn's owner can change its card with SelectCard (`card_selected` event)
+  ///   Resolution phase - each pawn plays its chosen card, highest Dexterity first (`resolved` event)
+  ///   End phase        - each pawn shuffles its hand back into its deck (`cards_returned` event)
   /// A pawn always stands on top of a stack: its position is the empty space directly above the stack's top tile.
   /// </summary>
   public static partial class PawnService
@@ -64,6 +67,8 @@ namespace GrpcPawn {
     static readonly grpc::Marshaller<global::GrpcPawn.GetPawnByIdRequest> __Marshaller_GetPawnByIdRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.GetPawnByIdRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::GrpcPawn.Pawn> __Marshaller_Pawn = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.Pawn.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::GrpcPawn.SelectCardRequest> __Marshaller_SelectCardRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcPawn.SelectCardRequest.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnEvent> __Method_JoinPawnStream = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnEvent>(
@@ -89,6 +94,14 @@ namespace GrpcPawn {
         __Marshaller_GetPawnByIdRequest,
         __Marshaller_Pawn);
 
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::GrpcPawn.SelectCardRequest, global::Google.Protobuf.WellKnownTypes.Empty> __Method_SelectCard = new grpc::Method<global::GrpcPawn.SelectCardRequest, global::Google.Protobuf.WellKnownTypes.Empty>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "SelectCard",
+        __Marshaller_SelectCardRequest,
+        __Marshaller_google_protobuf_Empty);
+
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
     {
@@ -100,8 +113,8 @@ namespace GrpcPawn {
     public abstract partial class PawnServiceBase
     {
       /// <summary>
-      /// Server stream of pawn events. The first event is always a `snapshot` of every pawn (with any plan already made
-      /// this turn), followed by `spawned`, `planned` and `moved` events as the game plays out.
+      /// Server stream of pawn events. The first event is always a `snapshot` of every pawn, followed by the events
+      /// above, `spawned` when a new set of pawns is placed, and `owners_changed` when players join or leave.
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="responseStream">Used for sending responses back to the client.</param>
@@ -126,7 +139,7 @@ namespace GrpcPawn {
       }
 
       /// <summary>
-      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, cards, owner, plan).
       /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
       /// </summary>
       /// <param name="request">The request received from the client.</param>
@@ -134,6 +147,22 @@ namespace GrpcPawn {
       /// <returns>The response to send back to the client (wrapped by a task).</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       public virtual global::System.Threading.Tasks.Task<global::GrpcPawn.Pawn> GetPawnById(global::GrpcPawn.GetPawnByIdRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      /// <summary>
+      /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
+      ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
+      /// </summary>
+      /// <param name="request">The request received from the client.</param>
+      /// <param name="context">The context of the server-side call handler being invoked.</param>
+      /// <returns>The response to send back to the client (wrapped by a task).</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::Google.Protobuf.WellKnownTypes.Empty> SelectCard(global::GrpcPawn.SelectCardRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -168,8 +197,8 @@ namespace GrpcPawn {
       }
 
       /// <summary>
-      /// Server stream of pawn events. The first event is always a `snapshot` of every pawn (with any plan already made
-      /// this turn), followed by `spawned`, `planned` and `moved` events as the game plays out.
+      /// Server stream of pawn events. The first event is always a `snapshot` of every pawn, followed by the events
+      /// above, `spawned` when a new set of pawns is placed, and `owners_changed` when players join or leave.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -182,8 +211,8 @@ namespace GrpcPawn {
         return JoinPawnStream(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// Server stream of pawn events. The first event is always a `snapshot` of every pawn (with any plan already made
-      /// this turn), followed by `spawned`, `planned` and `moved` events as the game plays out.
+      /// Server stream of pawn events. The first event is always a `snapshot` of every pawn, followed by the events
+      /// above, `spawned` when a new set of pawns is placed, and `owners_changed` when players join or leave.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -242,7 +271,7 @@ namespace GrpcPawn {
         return CallInvoker.AsyncUnaryCall(__Method_GetPawns, null, options, request);
       }
       /// <summary>
-      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, cards, owner, plan).
       /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
@@ -256,7 +285,7 @@ namespace GrpcPawn {
         return GetPawnById(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, cards, owner, plan).
       /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
@@ -268,7 +297,7 @@ namespace GrpcPawn {
         return CallInvoker.BlockingUnaryCall(__Method_GetPawnById, null, options, request);
       }
       /// <summary>
-      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, cards, owner, plan).
       /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
@@ -282,7 +311,7 @@ namespace GrpcPawn {
         return GetPawnByIdAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, plan).
+      /// One-off query for all of one pawn's details (name, colour, position, attributes, health, cards, owner, plan).
       /// Fails with INVALID_ARGUMENT if the id isn't a valid pawn id, and NOT_FOUND if no pawn has it.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
@@ -292,6 +321,70 @@ namespace GrpcPawn {
       public virtual grpc::AsyncUnaryCall<global::GrpcPawn.Pawn> GetPawnByIdAsync(global::GrpcPawn.GetPawnByIdRequest request, grpc::CallOptions options)
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetPawnById, null, options, request);
+      }
+      /// <summary>
+      /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
+      ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Google.Protobuf.WellKnownTypes.Empty SelectCard(global::GrpcPawn.SelectCardRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return SelectCard(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
+      ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Google.Protobuf.WellKnownTypes.Empty SelectCard(global::GrpcPawn.SelectCardRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_SelectCard, null, options, request);
+      }
+      /// <summary>
+      /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
+      ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Google.Protobuf.WellKnownTypes.Empty> SelectCardAsync(global::GrpcPawn.SelectCardRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return SelectCardAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
+      ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Google.Protobuf.WellKnownTypes.Empty> SelectCardAsync(global::GrpcPawn.SelectCardRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_SelectCard, null, options, request);
       }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
@@ -309,7 +402,8 @@ namespace GrpcPawn {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_JoinPawnStream, serviceImpl.JoinPawnStream)
           .AddMethod(__Method_GetPawns, serviceImpl.GetPawns)
-          .AddMethod(__Method_GetPawnById, serviceImpl.GetPawnById).Build();
+          .AddMethod(__Method_GetPawnById, serviceImpl.GetPawnById)
+          .AddMethod(__Method_SelectCard, serviceImpl.SelectCard).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -322,6 +416,7 @@ namespace GrpcPawn {
       serviceBinder.AddMethod(__Method_JoinPawnStream, serviceImpl == null ? null : new grpc::ServerStreamingServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnEvent>(serviceImpl.JoinPawnStream));
       serviceBinder.AddMethod(__Method_GetPawns, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::GrpcPawn.PawnList>(serviceImpl.GetPawns));
       serviceBinder.AddMethod(__Method_GetPawnById, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcPawn.GetPawnByIdRequest, global::GrpcPawn.Pawn>(serviceImpl.GetPawnById));
+      serviceBinder.AddMethod(__Method_SelectCard, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::GrpcPawn.SelectCardRequest, global::Google.Protobuf.WellKnownTypes.Empty>(serviceImpl.SelectCard));
     }
 
   }

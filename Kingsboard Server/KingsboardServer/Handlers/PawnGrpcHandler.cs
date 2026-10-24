@@ -3,16 +3,26 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using GrpcPawn;
 using KingsboardServer.Events.Pawns;
+using KingsboardServer.Models.Cards;
 using KingsboardServer.Models.Enumerations;
+using KingsboardServer.Models.Players;
 using KingsboardServer.Services.Interfaces;
 using BoardPosition = Kingsboard.Shared.Models.Board.BoardPosition;
+using Card = Kingsboard.Shared.Models.Cards.Card;
+using CardSelection = Kingsboard.Shared.Models.Cards.CardSelection;
+using CardTargetType = Kingsboard.Shared.Models.Enumerations.CardTargetType;
 using Pawn = Kingsboard.Shared.Models.Pawns.Pawn;
 using PawnMovement = Kingsboard.Shared.Models.Pawns.PawnMovement;
+using PawnSpeech = Kingsboard.Shared.Models.Pawns.PawnSpeech;
 using ProtoBoardPosition = GrpcBoard.BoardPosition;
 using PawnAttributes = Kingsboard.Shared.Models.Pawns.PawnAttributes;
+using ProtoCard = GrpcCard.Card;
+using ProtoCardSelection = GrpcCard.CardSelection;
+using ProtoCardTargetType = GrpcCard.CardTargetType;
 using ProtoPawn = GrpcPawn.Pawn;
 using ProtoPawnAttributes = GrpcPawn.PawnAttributes;
 using ProtoPawnMovement = GrpcPawn.PawnMovement;
+using ProtoPawnSpeech = GrpcPawn.PawnSpeech;
 
 namespace KingsboardServer.Handlers
 {
@@ -26,15 +36,18 @@ namespace KingsboardServer.Handlers
         private const int OutboxCapacity = 64;
 
         private readonly IPawnService _pawnService;
+        private readonly IPlayerService _playerService;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly Serilog.ILogger _logger;
 
         /// <summary>
-        /// Created by gRPC for each call, with the pawn service and server lifetime it streams from
+        /// Created by gRPC for each call, with the pawn service it streams from, the player service that identifies
+        /// callers, and the server lifetime
         /// </summary>
-        public PawnGrpcHandler(IPawnService pawnService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
+        public PawnGrpcHandler(IPawnService pawnService, IPlayerService playerService, IHostApplicationLifetime lifetime, Serilog.ILogger logger)
         {
             _pawnService = pawnService;
+            _playerService = playerService;
             _lifetime = lifetime;
             _logger = logger;
         }
@@ -64,7 +77,39 @@ namespace KingsboardServer.Handlers
         }
 
         /// <summary>
-        /// Streams the pawns to one client: a snapshot first, then every spawn, plan and move, until the client disconnects
+        /// Chooses the card one of the caller's pawns will play this turn. Throws Unauthenticated for an unknown session,
+        /// InvalidArgument for malformed ids, and FailedPrecondition (with the reason as its detail) when the pawn service
+        /// turns the choice down.
+        /// </summary>
+        public override Task<Empty> SelectCard(SelectCardRequest request, ServerCallContext context)
+        {
+            if (!Guid.TryParse(request.SessionId, out Guid sessionId) || _playerService.GetPlayerBySession(sessionId) is not Player player)
+            {
+                throw new RpcException(new Status(StatusCode.Unauthenticated, "Missing or unknown session id. Join the game first."));
+            }
+            if (!Guid.TryParse(request.PawnId, out Guid pawnId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "A valid pawn id is required"));
+            }
+            if (!Guid.TryParse(request.CardId, out Guid cardId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "A valid card id is required"));
+            }
+
+            BoardPosition? target = request.Target is null ? null : ToBoardPosition(request.Target);
+            CardSelectResult result = _pawnService.SelectCard(player.Id, pawnId, cardId, target);
+
+            if (!result.Selected)
+            {
+                throw new RpcException(new Status(StatusCode.FailedPrecondition, result.Error ?? "The card could not be chosen"));
+            }
+
+            return Task.FromResult(new Empty());
+        }
+
+        /// <summary>
+        /// Streams the pawns to one client: a snapshot first, then every change (spawns, draws, card choices, resolutions,
+        /// returned hands and owner changes), until the client disconnects
         /// </summary>
         public override async Task JoinPawnStream(Empty request, IServerStreamWriter<PawnEvent> responseStream, ServerCallContext context)
         {
@@ -138,16 +183,38 @@ namespace KingsboardServer.Handlers
                     spawned.Pawns.AddRange(change.Pawns.Select(ToProto));
                     return new PawnEvent() { Spawned = spawned };
 
+                case PawnChangeReason.CardsDrawn:
+                    PawnsCardsDrawnEvent drawn = new PawnsCardsDrawnEvent() { TurnId = change.TurnId };
+                    drawn.Pawns.AddRange(change.Pawns.Select(ToProto));
+                    return new PawnEvent() { CardsDrawn = drawn };
+
                 case PawnChangeReason.Planned:
                     PawnsPlannedEvent planned = new PawnsPlannedEvent() { TurnId = change.TurnId };
                     planned.Pawns.AddRange(change.Pawns.Select(ToProto));
                     return new PawnEvent() { Planned = planned };
 
+                case PawnChangeReason.CardSelected:
+                    return new PawnEvent()
+                    {
+                        CardSelected = new PawnCardSelectedEvent() { TurnId = change.TurnId, Pawn = ToProto(change.Pawns[0]) }
+                    };
+
+                case PawnChangeReason.Resolved:
+                    PawnsResolvedEvent resolved = new PawnsResolvedEvent() { TurnId = change.TurnId };
+                    resolved.Movements.AddRange(change.Movements.Select(ToProto));
+                    resolved.Speeches.AddRange(change.Speeches.Select(ToProto));
+                    resolved.Pawns.AddRange(change.Pawns.Select(ToProto));
+                    return new PawnEvent() { Resolved = resolved };
+
+                case PawnChangeReason.CardsReturned:
+                    PawnsCardsReturnedEvent returned = new PawnsCardsReturnedEvent() { TurnId = change.TurnId };
+                    returned.Pawns.AddRange(change.Pawns.Select(ToProto));
+                    return new PawnEvent() { CardsReturned = returned };
+
                 default:
-                    PawnsMovedEvent moved = new PawnsMovedEvent() { TurnId = change.TurnId };
-                    moved.Movements.AddRange(change.Movements.Select(ToProto));
-                    moved.Pawns.AddRange(change.Pawns.Select(ToProto));
-                    return new PawnEvent() { Moved = moved };
+                    PawnsOwnersChangedEvent owners = new PawnsOwnersChangedEvent();
+                    owners.Pawns.AddRange(change.Pawns.Select(ToProto));
+                    return new PawnEvent() { OwnersChanged = owners };
             }
         }
 
@@ -161,10 +228,57 @@ namespace KingsboardServer.Handlers
                 Position = ToProto(pawn.Position),
                 Attributes = ToProto(pawn.Attributes),
                 Health = pawn.Health,
-                MaxHealth = pawn.MaxHealth
+                MaxHealth = pawn.MaxHealth,
+                SelectedCard = pawn.SelectedCard is null ? null : ToProto(pawn.SelectedCard),
+                OwnerId = pawn.OwnerId?.ToString() ?? string.Empty,
+                OwnerName = pawn.OwnerName,
+                OwnerColour = pawn.OwnerColour
             };
             message.PlannedPath.AddRange(pawn.PlannedPath.Select(ToProto));
+            message.Deck.AddRange(pawn.Deck.Select(ToProto));
+            message.Hand.AddRange(pawn.Hand.Select(ToProto));
             return message;
+        }
+
+        private static ProtoCard ToProto(Card card)
+        {
+            return new ProtoCard()
+            {
+                Id = card.Id.ToString(),
+                DefinitionId = card.DefinitionId,
+                Name = card.Name,
+                Description = card.Description,
+                ImageId = card.ImageId,
+                TargetType = card.TargetType switch
+                {
+                    CardTargetType.None => ProtoCardTargetType.None,
+                    CardTargetType.Tile => ProtoCardTargetType.Tile,
+                    _ => ProtoCardTargetType.Unspecified
+                }
+            };
+        }
+
+        private static ProtoCardSelection ToProto(CardSelection selection)
+        {
+            return new ProtoCardSelection()
+            {
+                CardId = selection.CardId.ToString(),
+                Target = selection.Target is null ? null : ToProto(selection.Target)
+            };
+        }
+
+        private static ProtoPawnSpeech ToProto(PawnSpeech speech)
+        {
+            return new ProtoPawnSpeech()
+            {
+                PawnId = speech.PawnId.ToString(),
+                Text = speech.Text
+            };
+        }
+
+        private static BoardPosition ToBoardPosition(ProtoBoardPosition position)
+        {
+            return new BoardPosition(position.X, position.Y, position.Z);
         }
 
         private static ProtoPawnAttributes ToProto(PawnAttributes attributes)

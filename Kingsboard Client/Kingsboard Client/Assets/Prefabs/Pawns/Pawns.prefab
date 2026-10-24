@@ -32,6 +32,7 @@ Transform:
   m_Children:
   - {fileID: 115212509077786171}
   - {fileID: 2662442242408836209}
+  - {fileID: 1141530347166758465}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6610616763651750211
@@ -48,6 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Pawns.PawnController
   _pawnPrefab: {fileID: 835324419040637948, guid: dbfaa25437ef569489e8173f0f2d28c6, type: 3}
   _pawnRoot: {fileID: 115212509077786171}
+  _hand: {fileID: 8187654793649004358}
   _clickToSelect: 1
   _maxClickDistance: 500
 --- !u!1 &6987887288727711204
@@ -147,3 +149,80 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8580528527154336531, guid: 44d5cd59f528e8747b1fb808e4a1a4aa, type: 3}
   m_PrefabInstance: {fileID: 6045744018269552482}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &7604940223563975928
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7764660301304982752}
+    m_Modifications:
+    - target: {fileID: 1741283854714753982, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: _pawnManager
+      value: 
+      objectReference: {fileID: 6610616763651750211}
+    - target: {fileID: 7245112696332478144, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_Name
+      value: PawnHand
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+--- !u!4 &1141530347166758465 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7376239894079716025, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+  m_PrefabInstance: {fileID: 7604940223563975928}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8187654793649004358 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1741283854714753982, guid: efd1f23e2e1de4146b6521c3d9af6e5b, type: 3}
+  m_PrefabInstance: {fileID: 7604940223563975928}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f57b319bd9859f499de74b0e7e97bed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Pawns.PawnHandController

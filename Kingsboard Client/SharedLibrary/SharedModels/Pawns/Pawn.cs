@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Cards;
 
 namespace Kingsboard.Shared.Models.Pawns
 {
     /// <summary>
-    /// A character that moves around the board on its own. The server decides where it goes; clients only display it.
+    /// A character on the board that acts by playing action cards from its hand. The server decides everything it does;
+    /// clients only display it.
     /// </summary>
     public class Pawn
     {
@@ -49,5 +51,40 @@ namespace Kingsboard.Shared.Models.Pawns
         /// Chosen in the Planning phase and walked (then cleared) in the Resolution phase. Empty when it has no plan.
         /// </summary>
         public IReadOnlyList<BoardPosition> PlannedPath { get; set; } = Array.Empty<BoardPosition>();
+
+        /// <summary>
+        /// The cards the pawn draws from, in draw order (the first card is drawn next). A card drawn into the
+        /// <see cref="Hand"/> leaves the deck until it is returned at the end of the turn.
+        /// </summary>
+        public IReadOnlyList<Card> Deck { get; set; } = Array.Empty<Card>();
+
+        /// <summary>
+        /// The cards the pawn can play this turn. Drawn from the <see cref="Deck"/> in the Upkeep phase and shuffled back
+        /// into it in the End phase.
+        /// </summary>
+        public IReadOnlyList<Card> Hand { get; set; } = Array.Empty<Card>();
+
+        /// <summary>
+        /// The card from the <see cref="Hand"/> the pawn will play in the Resolution phase, and its target.
+        /// Chosen by the pawn in the Planning phase, can be changed by its owner in the Player phase, and cleared once played.
+        /// Null when it has no card chosen.
+        /// </summary>
+        public CardSelection? SelectedCard { get; set; }
+
+        /// <summary>
+        /// Public id of the player who controls the pawn, or null when no player does and the pawn acts on its own
+        /// </summary>
+        public Guid? OwnerId { get; set; }
+
+        /// <summary>
+        /// Display name of the player who controls the pawn. Empty when no player does.
+        /// </summary>
+        public string OwnerName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Colour ("#RRGGBB") of the player who controls the pawn; clients show the pawn in it instead of
+        /// <see cref="Colour"/> while it is controlled. Empty when no player does.
+        /// </summary>
+        public string OwnerColour { get; set; } = string.Empty;
     }
 }

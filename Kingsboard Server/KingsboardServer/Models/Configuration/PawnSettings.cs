@@ -2,7 +2,8 @@ namespace KingsboardServer.Models.Configuration
 {
     /// <summary>
     /// Settings for pawns. Bound from the "PawnSettings" section of appsettings.json.
-    /// Count and spawn area are picked up the next time pawns are spawned (when a game starts); movement rules apply from the next turn.
+    /// Count, spawn area and starting deck are picked up the next time pawns are spawned (when a game starts); movement
+    /// rules and hand size apply from the next turn.
     /// </summary>
     public class PawnSettings
     {
@@ -23,14 +24,20 @@ namespace KingsboardServer.Models.Configuration
         public int SpawnAreaSize { get; set; } = 24;
 
         /// <summary>
-        /// Most steps a pawn can take in one turn (each step is to a neighbouring column)
-        /// </summary>
-        public int MoveRange { get; set; } = 3;
-
-        /// <summary>
         /// Most levels a pawn can step up or down between neighbouring columns
         /// </summary>
         public int MaxClimb { get; set; } = 1;
+
+        /// <summary>
+        /// How many cards each pawn draws from its deck at the start of every turn (Upkeep phase)
+        /// </summary>
+        public int HandSize { get; set; } = 5;
+
+        /// <summary>
+        /// The card ids every pawn's deck starts with, one entry per copy (e.g. "move" three times for three Move cards).
+        /// Leave empty for the default deck: three Move cards and one of each test card. Unknown ids are skipped.
+        /// </summary>
+        public string[] StartingDeck { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Seed for pawn names, colours, starting places and choices, so a game can be reproduced. Leave empty for different pawns every game.

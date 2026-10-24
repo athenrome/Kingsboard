@@ -1,11 +1,15 @@
 using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Cards;
 using Kingsboard.Shared.Models.Enumerations;
 using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Events.Players;
 using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Board;
+using KingsboardServer.Models.Cards;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Enumerations;
+using KingsboardServer.Models.Players;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
 using Microsoft.Extensions.Options;
@@ -13,9 +17,11 @@ using Microsoft.Extensions.Options;
 namespace KingsboardServer.Services
 {
     /// <summary>
-    /// Owns the pawns and decides everything they do. Each turn, in the Planning phase every pawn picks a destination it
-    /// can reach and the path there; in the Resolution phase every pawn walks its path as far as the board still allows.
-    /// All pawn rules (where pawns can stand, how far and how high they can move, avoiding each other) live here.
+    /// Owns the pawns and decides everything they do. Pawns act by playing action cards: each turn every pawn draws a
+    /// hand (Upkeep), picks a card and target from it (Planning), may have that choice changed by the player who controls
+    /// it (Player), plays it (Resolution, highest Dexterity first) and shuffles its hand back into its deck (End).
+    /// It also hands pawns out to players as they join and takes them back when they leave.
+    /// What each card does is up to its <see cref="ICardAction"/>; where pawns can walk is up to <see cref="IPawnMovementService"/>.
     /// </summary>
     public class PawnService : IPawnService, ITurnPhaseHandler
     {
@@ -31,10 +37,14 @@ namespace KingsboardServer.Services
             "#FB8500", "#8AC926", "#FFFFFF", "#6D597A"
         };
 
-        // The four neighbouring columns a pawn can step to
-        private static readonly (int X, int Y)[] Steps = { (1, 0), (-1, 0), (0, 1), (0, -1) };
+        // Used when PawnSettings:StartingDeck is empty: three Move cards and one of each test card
+        private static readonly string[] DefaultStartingDeck =
+        {
+            CardService.MoveCardId, CardService.MoveCardId, CardService.MoveCardId,
+            CardService.SayNumberCardId, CardService.SayColourCardId, CardService.SayHelloCardId
+        };
 
-        private static readonly TurnPhase[] HandledPhases = { TurnPhase.Planning, TurnPhase.Resolution };
+        private static readonly TurnPhase[] HandledPhases = { TurnPhase.Upkeep, TurnPhase.Planning, TurnPhase.Player, TurnPhase.Resolution, TurnPhase.End };
 
         // Every attribute is rolled as a whole number in this range, inclusive
         private const int MinAttribute = 1;
@@ -42,35 +52,50 @@ namespace KingsboardServer.Services
 
         private readonly Serilog.ILogger _logger;
         private readonly IOptionsMonitor<PawnSettings> _settings;
+        private readonly IOptionsMonitor<PlayerSettings> _playerSettings;
         private readonly IPawnRepository _repository;
         private readonly IBoardService _boardService;
-        private readonly ITileService _tileService;
+        private readonly IPawnMovementService _movement;
+        private readonly ICardService _cardService;
+        private readonly IPlayerService _playerService;
 
         // Guards every read and change of the pawns, and keeps changes and their events in order.
-        // Board queries are made while holding it (pawn lock, then board lock); the board never calls back in.
+        // Lock order is player, then pawn, then board: player changes arrive under the player lock, board queries are made
+        // while holding this one, and neither the board nor the players ever call back in.
         private readonly object _lock = new();
         private Random _random = new Random();
 
+        // The turn in progress, and whether players may change their pawns' cards (only during its Player phase)
+        private int _turnId;
+        private bool _selectionOpen;
+
         /// <summary>
-        /// Raised when pawns are spawned, plan their moves, or move. Raised under the pawn lock, in order.
-        /// Handlers must be quick and non-blocking.
+        /// Raised when pawns change. Raised under the pawn lock, in order. Handlers must be quick and non-blocking.
         /// </summary>
         public event EventHandler<PawnsChangeEvent>? PawnsChanged;
 
         /// <summary>
-        /// Creates the service. There are no pawns until <see cref="SpawnPawns"/> is called.
+        /// Creates the service and starts following players joining and leaving. There are no pawns until
+        /// <see cref="SpawnPawns"/> is called.
         /// </summary>
-        public PawnService(Serilog.ILogger logger, IOptionsMonitor<PawnSettings> settings, IPawnRepository repository, IBoardService boardService, ITileService tileService)
+        public PawnService(Serilog.ILogger logger, IOptionsMonitor<PawnSettings> settings, IOptionsMonitor<PlayerSettings> playerSettings,
+            IPawnRepository repository, IBoardService boardService, IPawnMovementService movement, ICardService cardService, IPlayerService playerService)
         {
             _logger = logger;
             _settings = settings;
+            _playerSettings = playerSettings;
             _repository = repository;
             _boardService = boardService;
-            _tileService = tileService;
+            _movement = movement;
+            _cardService = cardService;
+            _playerService = playerService;
+
+            _playerService.PlayersChanged += OnPlayersChanged;
         }
 
         /// <summary>
-        /// The phases pawns do work in: Planning (choose moves) and Resolution (carry them out)
+        /// The phases pawns do work in: Upkeep (draw), Planning (choose cards), Player (players may change choices),
+        /// Resolution (play cards) and End (return hands)
         /// </summary>
         public IReadOnlyCollection<TurnPhase> Phases => HandledPhases;
 
@@ -93,7 +118,7 @@ namespace KingsboardServer.Services
             lock (_lock)
             {
                 Pawn? pawn = _repository.GetPawns().FirstOrDefault(p => p.Id == id);
-                return pawn is null ? null : CloneAll(new[] { pawn })[0];
+                return pawn is null ? null : Clone(pawn);
             }
         }
 
@@ -111,51 +136,63 @@ namespace KingsboardServer.Services
 
         /// <summary>
         /// Places PawnSettings:Count pawns on random passable columns near the board's front-left corner, replacing any
-        /// earlier pawns, and raises <see cref="PawnsChanged"/>. Throws if no board has been created yet.
+        /// earlier pawns, gives them to the joined players, and raises <see cref="PawnsChanged"/>.
+        /// Throws if no board has been created yet.
         /// </summary>
         public IReadOnlyList<Pawn> SpawnPawns()
         {
             PawnSettings settings = _settings.CurrentValue;
             GameBoard board = _boardService.GetBoard() ?? throw new InvalidOperationException("No board has been created yet");
 
-            lock (_lock)
+            IReadOnlyList<Pawn> spawned = Array.Empty<Pawn>();
+
+            // Hold the players steady (player lock, then pawn lock) so no one joins between spawning and handing pawns out
+            _playerService.ReadPlayers(players =>
             {
-                _random = settings.Seed is int seed ? new Random(seed) : new Random();
-
-                int areaWidth = Math.Clamp(settings.SpawnAreaSize, 1, board.Width);
-                int areaDepth = Math.Clamp(settings.SpawnAreaSize, 1, board.Depth);
-
-                List<BoardPosition> candidates = new List<BoardPosition>();
-                for (int y = 0; y < areaDepth; y++)
+                lock (_lock)
                 {
-                    for (int x = 0; x < areaWidth; x++)
+                    _random = settings.Seed is int seed ? new Random(seed) : new Random();
+
+                    int areaWidth = Math.Clamp(settings.SpawnAreaSize, 1, board.Width);
+                    int areaDepth = Math.Clamp(settings.SpawnAreaSize, 1, board.Depth);
+
+                    List<BoardPosition> candidates = new List<BoardPosition>();
+                    for (int y = 0; y < areaDepth; y++)
                     {
-                        if (GetStandPosition(new BoardPosition(x, y, 0)) is BoardPosition stand)
+                        for (int x = 0; x < areaWidth; x++)
                         {
-                            candidates.Add(stand);
+                            if (_movement.GetStandPosition(new BoardPosition(x, y, 0)) is BoardPosition stand)
+                            {
+                                candidates.Add(stand);
+                            }
                         }
                     }
+
+                    Shuffle(candidates);
+                    int count = Math.Min(Math.Max(0, settings.Count), candidates.Count);
+                    IReadOnlyList<string> startingDeck = settings.StartingDeck is { Length: > 0 } deck ? deck : DefaultStartingDeck;
+
+                    List<Pawn> pawns = new List<Pawn>(count);
+                    for (int i = 0; i < count; i++)
+                    {
+                        pawns.Add(CreatePawn(i, candidates[i], startingDeck));
+                    }
+
+                    if (count < settings.Count)
+                    {
+                        _logger.Warning("Only room for {Count} of {Wanted} pawns in the spawn area", count, settings.Count);
+                    }
+
+                    AssignOwners(pawns, players);
+                    _repository.SavePawns(pawns);
+                    RaiseChanged(PawnChangeReason.Spawned, 0, pawns);
+
+                    _logger.Information("Spawned {Count} pawns", count);
+                    spawned = CloneAll(pawns);
                 }
+            });
 
-                Shuffle(candidates);
-                int count = Math.Min(Math.Max(0, settings.Count), candidates.Count);
-                List<Pawn> pawns = new List<Pawn>(count);
-                for (int i = 0; i < count; i++)
-                {
-                    pawns.Add(CreatePawn(i, candidates[i]));
-                }
-
-                if (count < settings.Count)
-                {
-                    _logger.Warning("Only room for {Count} of {Wanted} pawns in the spawn area", count, settings.Count);
-                }
-
-                _repository.SavePawns(pawns);
-                RaiseChanged(PawnChangeReason.Spawned, 0, pawns, Array.Empty<PawnMovement>());
-
-                _logger.Information("Spawned {Count} pawns", count);
-                return CloneAll(pawns);
-            }
+            return spawned;
         }
 
         /// <summary>
@@ -167,77 +204,125 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Does the pawns' work for the turn's phase: plan moves in Planning, carry them out in Resolution.
-        /// Finishes all of it before returning, so the next phase only begins once every pawn has planned or moved.
+        /// Chooses a card for a pawn on behalf of a player, if it's the Player phase, the player controls the pawn, the
+        /// card is in its hand and any target it needs is on the board. Works out the pawn's new planned path and raises
+        /// <see cref="PawnsChanged"/> with just that pawn.
+        /// </summary>
+        public CardSelectResult SelectCard(Guid playerId, Guid pawnId, Guid cardId, BoardPosition? target)
+        {
+            lock (_lock)
+            {
+                if (!_selectionOpen)
+                {
+                    return new CardSelectResult(false, "Cards can only be chosen in the Player phase");
+                }
+
+                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                Pawn? pawn = pawns.FirstOrDefault(p => p.Id == pawnId);
+                if (pawn is null)
+                {
+                    return new CardSelectResult(false, $"No pawn has id {pawnId}");
+                }
+                if (pawn.OwnerId != playerId)
+                {
+                    return new CardSelectResult(false, $"You don't control {pawn.Name}");
+                }
+
+                Card? card = pawn.Hand.FirstOrDefault(c => c.Id == cardId);
+                if (card is null)
+                {
+                    return new CardSelectResult(false, $"That card isn't in {pawn.Name}'s hand");
+                }
+
+                BoardPosition? aim = null;
+                if (card.TargetType == CardTargetType.Tile)
+                {
+                    if (target is null)
+                    {
+                        return new CardSelectResult(false, $"{card.Name} needs a tile to aim at");
+                    }
+
+                    BoardPosition column = _movement.GetColumn(target);
+                    if (!_boardService.IsOnBoard(column))
+                    {
+                        return new CardSelectResult(false, "That tile isn't on the board");
+                    }
+                    aim = _movement.GetStandPosition(column) ?? column;
+                }
+
+                pawn.SelectedCard = new CardSelection(card.Id, aim);
+                pawn.PlannedPath = PlanPath(pawn, card, aim, OccupiedBy(pawns, pawn));
+
+                _repository.SavePawns(pawns);
+                RaiseChanged(PawnChangeReason.CardSelected, _turnId, new[] { pawn });
+
+                _logger.Debug("Turn {TurnId}: player {PlayerId} chose {Card} for {Pawn}", _turnId, playerId, card.Name, pawn.Name);
+                return new CardSelectResult(true);
+            }
+        }
+
+        /// <summary>
+        /// Does the pawns' work for the turn's phase. Finishes all of it before returning, so the next phase only begins
+        /// once every pawn is done.
         /// </summary>
         public Task RunPhaseAsync(Turn turn, CancellationToken cancellationToken)
         {
             switch (turn.CurrentPhase)
             {
+                case TurnPhase.Upkeep:
+                    DrawHands(turn.Id);
+                    break;
                 case TurnPhase.Planning:
-                    PlanMoves(turn.Id);
+                    PlanCards(turn.Id);
+                    break;
+                case TurnPhase.Player:
+                    OpenSelection(turn.Id);
                     break;
                 case TurnPhase.Resolution:
-                    ResolveMoves(turn.Id);
+                    ResolveCards(turn.Id);
+                    break;
+                case TurnPhase.End:
+                    ReturnHands(turn.Id);
                     break;
             }
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Each pawn picks a random destination it can reach this turn (not one another pawn stands on or has already picked)
-        /// and the shortest path there. A pawn with nowhere to go stays put with no plan.
+        /// Upkeep: each pawn draws up to PawnSettings:HandSize cards from its deck
         /// </summary>
-        private void PlanMoves(int turnId)
+        private void DrawHands(int turnId)
         {
-            PawnSettings settings = _settings.CurrentValue;
+            int handSize = Math.Max(0, _settings.CurrentValue.HandSize);
 
             lock (_lock)
             {
+                _turnId = turnId;
+                _selectionOpen = false;
+
                 List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
                 if (pawns.Count == 0)
                 {
                     return;
                 }
 
-                HashSet<BoardPosition> standing = pawns.Select(p => Column(p.Position)).ToHashSet();
-                HashSet<BoardPosition> claimed = new HashSet<BoardPosition>();
-
                 foreach (Pawn pawn in pawns)
                 {
-                    BoardPosition start = Column(pawn.Position);
-                    HashSet<BoardPosition> blocked = standing.Where(c => c != start).ToHashSet();
-
-                    Dictionary<BoardPosition, List<BoardPosition>> reachable = FindReachable(pawn.Position, settings, blocked);
-                    List<BoardPosition> destinations = reachable.Keys.Where(c => c != start && !claimed.Contains(c)).ToList();
-
-                    if (destinations.Count == 0)
-                    {
-                        pawn.PlannedPath = Array.Empty<BoardPosition>();
-                        continue;
-                    }
-
-                    BoardPosition destination = destinations[_random.Next(destinations.Count)];
-                    claimed.Add(destination);
-                    pawn.PlannedPath = reachable[destination];
+                    _cardService.DrawCards(pawn, handSize - pawn.Hand.Count);
                 }
 
                 _repository.SavePawns(pawns);
-                RaiseChanged(PawnChangeReason.Planned, turnId, pawns, Array.Empty<PawnMovement>());
-
-                _logger.Debug("Turn {TurnId}: {Planned} of {Count} pawns planned a move", turnId, pawns.Count(p => p.PlannedPath.Count > 0), pawns.Count);
+                RaiseChanged(PawnChangeReason.CardsDrawn, turnId, pawns);
             }
         }
 
         /// <summary>
-        /// Each pawn walks its planned path one step at a time, re-checking every step against the board as it is now
-        /// (tiles may have changed since Planning) and against where the other pawns are. It stops at the first step it
-        /// can no longer take. Plans are cleared afterwards.
+        /// Planning: each pawn tries the cards in its hand in a random order and chooses the first it can use, with a target
+        /// if it needs one. Pawns that move pick a destination no other pawn stands on or has already picked.
+        /// A pawn with no usable card chooses nothing. Pawns players control choose too; their players can change it later.
         /// </summary>
-        private void ResolveMoves(int turnId)
+        private void PlanCards(int turnId)
         {
-            PawnSettings settings = _settings.CurrentValue;
-
             lock (_lock)
             {
                 List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
@@ -246,121 +331,247 @@ namespace KingsboardServer.Services
                     return;
                 }
 
-                Dictionary<Guid, BoardPosition> standing = pawns.ToDictionary(p => p.Id, p => Column(p.Position));
-                List<PawnMovement> movements = new List<PawnMovement>(pawns.Count);
+                HashSet<BoardPosition> claimed = new HashSet<BoardPosition>();
+                foreach (Pawn pawn in pawns)
+                {
+                    pawn.SelectedCard = null;
+                    pawn.PlannedPath = Array.Empty<BoardPosition>();
+
+                    CardActionContext context = new CardActionContext()
+                    {
+                        Pawn = pawn,
+                        Occupied = OccupiedBy(pawns, pawn),
+                        Claimed = claimed,
+                        Random = _random
+                    };
+
+                    foreach (Card card in _cardService.Shuffle(pawn.Hand, _random))
+                    {
+                        if (_cardService.GetAction(card) is not ICardAction action || !action.TryChooseTarget(context, out BoardPosition? target))
+                        {
+                            continue;
+                        }
+
+                        pawn.SelectedCard = new CardSelection(card.Id, target);
+                        context.Target = target;
+                        pawn.PlannedPath = action.PlanPath(context);
+                        if (pawn.PlannedPath.Count > 0)
+                        {
+                            claimed.Add(_movement.GetColumn(pawn.PlannedPath[^1]));
+                        }
+                        break;
+                    }
+                }
+
+                _repository.SavePawns(pawns);
+                RaiseChanged(PawnChangeReason.Planned, turnId, pawns);
+
+                _logger.Debug("Turn {TurnId}: {Chosen} of {Count} pawns chose a card", turnId, pawns.Count(p => p.SelectedCard is not null), pawns.Count);
+            }
+        }
+
+        /// <summary>
+        /// Player: players may now change the cards their pawns will play, until Resolution begins
+        /// </summary>
+        private void OpenSelection(int turnId)
+        {
+            lock (_lock)
+            {
+                _turnId = turnId;
+                _selectionOpen = true;
+            }
+        }
+
+        /// <summary>
+        /// Resolution: each pawn plays its chosen card, highest Dexterity first (ties in random order), against the board
+        /// and the other pawns as they are at that moment, so earlier pawns' moves can block later ones. Cards stay in the
+        /// hand; choices and plans are cleared afterwards.
+        /// </summary>
+        private void ResolveCards(int turnId)
+        {
+            lock (_lock)
+            {
+                _selectionOpen = false;
+
+                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                if (pawns.Count == 0)
+                {
+                    return;
+                }
+
+                List<Pawn> order = pawns
+                    .Select(p => (Pawn: p, TieBreak: _random.Next()))
+                    .OrderByDescending(entry => entry.Pawn.Attributes.Dexterity)
+                    .ThenBy(entry => entry.TieBreak)
+                    .Select(entry => entry.Pawn)
+                    .ToList();
+
+                List<PawnMovement> movements = new List<PawnMovement>();
+                List<PawnSpeech> speeches = new List<PawnSpeech>();
+
+                foreach (Pawn pawn in order)
+                {
+                    CardSelection? selection = pawn.SelectedCard;
+                    Card? card = selection is null ? null : pawn.Hand.FirstOrDefault(c => c.Id == selection.CardId);
+
+                    pawn.SelectedCard = null;
+                    pawn.PlannedPath = Array.Empty<BoardPosition>();
+
+                    if (card is null || _cardService.GetAction(card) is not ICardAction action)
+                    {
+                        continue;
+                    }
+
+                    CardActionResult result = action.Resolve(new CardActionContext()
+                    {
+                        Pawn = pawn,
+                        Target = selection!.Target,
+                        Occupied = OccupiedBy(pawns, pawn),
+                        Random = _random
+                    });
+
+                    if (result.Path.Count > 0 || result.Blocked || result.Position != pawn.Position)
+                    {
+                        movements.Add(new PawnMovement(pawn.Id, result.Path, result.Position, result.Blocked));
+                    }
+                    pawn.Position = result.Position;
+
+                    if (result.Speech is string speech)
+                    {
+                        speeches.Add(new PawnSpeech(pawn.Id, speech));
+                    }
+                }
+
+                _repository.SavePawns(pawns);
+                RaiseChanged(PawnChangeReason.Resolved, turnId, pawns, movements, speeches);
+
+                _logger.Debug("Turn {TurnId}: {Moved} pawns moved ({Blocked} blocked), {Spoke} spoke",
+                    turnId, movements.Count(m => m.Path.Count > 0), movements.Count(m => m.Blocked), speeches.Count);
+            }
+        }
+
+        /// <summary>
+        /// End: each pawn shuffles its hand back into its deck
+        /// </summary>
+        private void ReturnHands(int turnId)
+        {
+            lock (_lock)
+            {
+                _selectionOpen = false;
+
+                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                if (pawns.Count == 0)
+                {
+                    return;
+                }
 
                 foreach (Pawn pawn in pawns)
                 {
-                    // The ground under the pawn may have changed; stand on whatever is there now
-                    BoardPosition current = GetStandPosition(Column(pawn.Position)) ?? pawn.Position;
-                    List<BoardPosition> walked = new List<BoardPosition>();
-
-                    foreach (BoardPosition step in pawn.PlannedPath)
-                    {
-                        BoardPosition column = Column(step);
-                        bool occupied = standing.Any(s => s.Key != pawn.Id && s.Value == column);
-                        if (occupied || CanStep(current, column, settings) is not BoardPosition next)
-                        {
-                            break;
-                        }
-
-                        current = next;
-                        walked.Add(next);
-                        standing[pawn.Id] = column;
-                    }
-
-                    bool blocked = walked.Count < pawn.PlannedPath.Count;
-                    movements.Add(new PawnMovement(pawn.Id, walked, current, blocked));
-
-                    pawn.Position = current;
+                    _cardService.ReturnHand(pawn, _random);
                     pawn.PlannedPath = Array.Empty<BoardPosition>();
                 }
 
                 _repository.SavePawns(pawns);
-                RaiseChanged(PawnChangeReason.Moved, turnId, pawns, movements);
-
-                _logger.Debug("Turn {TurnId}: {Moved} pawns moved, {Blocked} were blocked", turnId, movements.Count(m => m.Path.Count > 0), movements.Count(m => m.Blocked));
+                RaiseChanged(PawnChangeReason.CardsReturned, turnId, pawns);
             }
         }
 
         /// <summary>
-        /// Every column the pawn can reach within PawnSettings:MoveRange steps (including where it stands), each with the
-        /// shortest path to it: the stand positions it walks through, in order, ending at the destination.
+        /// A player joined or left: hand pawns out again. Raised under the player lock, so this runs in order.
         /// </summary>
-        private Dictionary<BoardPosition, List<BoardPosition>> FindReachable(BoardPosition from, PawnSettings settings, HashSet<BoardPosition> blocked)
+        private void OnPlayersChanged(object? sender, PlayersChangeEvent change)
         {
-            int range = Math.Max(0, settings.MoveRange);
-            Dictionary<BoardPosition, List<BoardPosition>> paths = new Dictionary<BoardPosition, List<BoardPosition>>()
+            lock (_lock)
             {
-                [Column(from)] = new List<BoardPosition>()
-            };
-            Queue<BoardPosition> frontier = new Queue<BoardPosition>();
-            frontier.Enqueue(from);
-
-            while (frontier.Count > 0)
-            {
-                BoardPosition current = frontier.Dequeue();
-                List<BoardPosition> pathHere = paths[Column(current)];
-                if (pathHere.Count >= range)
+                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                if (!AssignOwners(pawns, change.Players))
                 {
+                    return;
+                }
+
+                _repository.SavePawns(pawns);
+                RaiseChanged(PawnChangeReason.OwnersChanged, 0, pawns);
+
+                _logger.Information("Pawn owners changed: {Owned} of {Count} pawns are controlled by players", pawns.Count(p => p.OwnerId is not null), pawns.Count);
+            }
+        }
+
+        /// <summary>
+        /// Gives each player (in the order they joined) pawns no one controls until they have PlayerSettings:PawnsPerPlayer,
+        /// marking each with the player's name and colour.
+        /// Pawns of players who have left go back to no one, as do any a player has beyond the limit (if it was lowered).
+        /// Returns true if any pawn's owner changed. Caller must hold <see cref="_lock"/>.
+        /// </summary>
+        private bool AssignOwners(List<Pawn> pawns, IReadOnlyList<Player> players)
+        {
+            int perPlayer = Math.Max(0, _playerSettings.CurrentValue.PawnsPerPlayer);
+            Dictionary<Guid, Player> joined = players.ToDictionary(p => p.Id);
+            Dictionary<Guid, int> owned = new Dictionary<Guid, int>();
+            bool changed = false;
+
+            foreach (Pawn pawn in pawns.Where(p => p.OwnerId is not null))
+            {
+                Guid ownerId = pawn.OwnerId!.Value;
+                int count = owned.GetValueOrDefault(ownerId);
+                if (!joined.ContainsKey(ownerId) || count >= perPlayer)
+                {
+                    pawn.OwnerId = null;
+                    pawn.OwnerName = string.Empty;
+                    pawn.OwnerColour = string.Empty;
+                    changed = true;
                     continue;
                 }
+                owned[ownerId] = count + 1;
+            }
 
-                foreach ((int dx, int dy) in Steps)
+            foreach (Player player in players)
+            {
+                int count = owned.GetValueOrDefault(player.Id);
+                foreach (Pawn pawn in pawns.Where(p => p.OwnerId is null).Take(perPlayer - count))
                 {
-                    BoardPosition column = new BoardPosition(current.X + dx, current.Y + dy, 0);
-                    if (paths.ContainsKey(column) || blocked.Contains(column) || CanStep(current, column, settings) is not BoardPosition next)
-                    {
-                        continue;
-                    }
-
-                    paths[column] = new List<BoardPosition>(pathHere) { next };
-                    frontier.Enqueue(next);
+                    pawn.OwnerId = player.Id;
+                    pawn.OwnerName = player.Name;
+                    pawn.OwnerColour = player.Colour;
+                    changed = true;
                 }
             }
 
-            return paths;
+            return changed;
         }
 
         /// <summary>
-        /// Where a pawn at <paramref name="from"/> would stand after stepping onto <paramref name="column"/>, or null if it can't:
-        /// the column must be a neighbour on the board, with a passable top tile, no more than PawnSettings:MaxClimb levels up or down
+        /// The path <paramref name="pawn"/> expects to walk if it plays <paramref name="card"/> at <paramref name="target"/>
         /// </summary>
-        private BoardPosition? CanStep(BoardPosition from, BoardPosition column, PawnSettings settings)
+        private IReadOnlyList<BoardPosition> PlanPath(Pawn pawn, Card card, BoardPosition? target, IReadOnlySet<BoardPosition> occupied)
         {
-            if (Math.Abs(column.X - from.X) + Math.Abs(column.Y - from.Y) != 1)
+            if (_cardService.GetAction(card) is not ICardAction action)
             {
-                return null;
+                return Array.Empty<BoardPosition>();
             }
-            if (GetStandPosition(column) is not BoardPosition stand)
+
+            return action.PlanPath(new CardActionContext()
             {
-                return null;
-            }
-            return Math.Abs(stand.Z - from.Z) <= Math.Max(0, settings.MaxClimb) ? stand : null;
+                Pawn = pawn,
+                Target = target,
+                Occupied = occupied,
+                Random = _random
+            });
         }
 
         /// <summary>
-        /// Where a pawn would stand in a column: the space directly above its top tile. Null if the column is off the board,
-        /// empty, or its top tile isn't passable. On a full stack this is one level above the board's height limit.
+        /// The columns every pawn except <paramref name="pawn"/> stands on
         /// </summary>
-        private BoardPosition? GetStandPosition(BoardPosition column)
+        private IReadOnlySet<BoardPosition> OccupiedBy(IEnumerable<Pawn> pawns, Pawn pawn)
         {
-            MapTile? top = _boardService.GetTopTile(column);
-            if (top is null || !_tileService.IsPassable(top))
-            {
-                return null;
-            }
-            return top.Position with { Z = top.Position.Z + 1 };
+            return pawns.Where(p => p.Id != pawn.Id).Select(p => _movement.GetColumn(p.Position)).ToHashSet();
         }
-
-        private static BoardPosition Column(BoardPosition position) => position with { Z = 0 };
 
         /// <summary>
         /// Creates the <paramref name="index"/>th pawn of a new set, standing at <paramref name="position"/>: gives it a name
-        /// (numbered once the name list runs out) and colour, rolls its attributes and starts it at full health.
-        /// Caller must hold <see cref="_lock"/>, since it uses the shared random.
+        /// (numbered once the name list runs out) and colour, rolls its attributes, starts it at full health and deals it
+        /// a shuffled deck of <paramref name="startingDeck"/>. Caller must hold <see cref="_lock"/>, since it uses the shared random.
         /// </summary>
-        private Pawn CreatePawn(int index, BoardPosition position)
+        private Pawn CreatePawn(int index, BoardPosition position, IReadOnlyList<string> startingDeck)
         {
             Pawn pawn = new Pawn()
             {
@@ -368,7 +579,8 @@ namespace KingsboardServer.Services
                 Name = index < Names.Length ? Names[index] : $"{Names[index % Names.Length]} {index / Names.Length + 1}",
                 Colour = Colours[index % Colours.Length],
                 Position = position,
-                Attributes = RollAttributes()
+                Attributes = RollAttributes(),
+                Deck = _cardService.Shuffle(_cardService.CreateDeck(startingDeck), _random)
             };
             pawn.MaxHealth = GetMaxHealth(pawn);
             pawn.Health = pawn.MaxHealth;
@@ -413,35 +625,51 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Raises <see cref="PawnsChanged"/> with snapshots, so listeners can't change the stored pawns. Caller must hold <see cref="_lock"/>.
         /// </summary>
-        private void RaiseChanged(PawnChangeReason reason, int turnId, IReadOnlyList<Pawn> pawns, IReadOnlyList<PawnMovement> movements)
+        private void RaiseChanged(PawnChangeReason reason, int turnId, IReadOnlyList<Pawn> pawns,
+            IReadOnlyList<PawnMovement>? movements = null, IReadOnlyList<PawnSpeech>? speeches = null)
         {
-            PawnsChanged?.Invoke(this, new PawnsChangeEvent(reason, turnId, CloneAll(pawns), movements));
+            PawnsChanged?.Invoke(this, new PawnsChangeEvent(reason, turnId, CloneAll(pawns),
+                movements ?? Array.Empty<PawnMovement>(), speeches ?? Array.Empty<PawnSpeech>()));
         }
 
         /// <summary>
         /// Creates copies so callers can't change the stored pawns
         /// </summary>
-        private static IReadOnlyList<Pawn> CloneAll(IReadOnlyList<Pawn> pawns)
+        private IReadOnlyList<Pawn> CloneAll(IReadOnlyList<Pawn> pawns)
         {
-            return pawns.Select(p => new Pawn()
+            return pawns.Select(Clone).ToArray();
+        }
+
+        /// <summary>
+        /// Creates a copy of one pawn, including its cards, so callers can't change the stored one
+        /// </summary>
+        private Pawn Clone(Pawn pawn)
+        {
+            return new Pawn()
             {
-                Id = p.Id,
-                Name = p.Name,
-                Colour = p.Colour,
-                Position = p.Position,
+                Id = pawn.Id,
+                Name = pawn.Name,
+                Colour = pawn.Colour,
+                Position = pawn.Position,
                 Attributes = new PawnAttributes()
                 {
-                    Strength = p.Attributes.Strength,
-                    Dexterity = p.Attributes.Dexterity,
-                    Intelligence = p.Attributes.Intelligence,
-                    Wisdom = p.Attributes.Wisdom,
-                    Constitution = p.Attributes.Constitution,
-                    Physique = p.Attributes.Physique
+                    Strength = pawn.Attributes.Strength,
+                    Dexterity = pawn.Attributes.Dexterity,
+                    Intelligence = pawn.Attributes.Intelligence,
+                    Wisdom = pawn.Attributes.Wisdom,
+                    Constitution = pawn.Attributes.Constitution,
+                    Physique = pawn.Attributes.Physique
                 },
-                Health = p.Health,
-                MaxHealth = p.MaxHealth,
-                PlannedPath = p.PlannedPath.ToArray()
-            }).ToArray();
+                Health = pawn.Health,
+                MaxHealth = pawn.MaxHealth,
+                PlannedPath = pawn.PlannedPath.ToArray(),
+                Deck = pawn.Deck.Select(_cardService.Clone).ToArray(),
+                Hand = pawn.Hand.Select(_cardService.Clone).ToArray(),
+                SelectedCard = pawn.SelectedCard,
+                OwnerId = pawn.OwnerId,
+                OwnerName = pawn.OwnerName,
+                OwnerColour = pawn.OwnerColour
+            };
         }
     }
 }
