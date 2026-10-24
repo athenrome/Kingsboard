@@ -28,5 +28,7 @@
   <ItemGroup>
     <!-- gRPC contract (messages + service base classes) is generated and compiled by ProtoLibrary -->
     <ProjectReference Include="..\ProtoLibrary\ProtoLibrary.csproj" />
+    <!-- Models shared with the Unity client (BoardPosition, MapTile, Pawn...); see SharedLibrary.csproj -->
+    <ProjectReference Include="..\..\Kingsboard Client\SharedLibrary\SharedLibrary.csproj" />
   </ItemGroup>
 </Project>

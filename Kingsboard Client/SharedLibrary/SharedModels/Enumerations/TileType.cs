@@ -1,4 +1,4 @@
-namespace Kingsboard.Board
+namespace Kingsboard.Shared.Models.Enumerations
 {
     /// <summary>
     /// The terrain on a map tile
@@ -6,7 +6,7 @@ namespace Kingsboard.Board
     public enum TileType
     {
         /// <summary>
-        /// A tile type this client doesn't recognise (e.g. the server is newer)
+        /// A tile type this side doesn't recognise (e.g. a client older than the server). The server never creates one.
         /// </summary>
         Unknown,
         /// <summary>
@@ -33,26 +33,5 @@ namespace Kingsboard.Board
         /// Bedrock that fills a stack below its surface tile
         /// </summary>
         Stone
-    }
-
-    /// <summary>
-    /// One block of the game board, as last sent by the server
-    /// </summary>
-    public class MapTile
-    {
-        /// <summary>
-        /// Where the tile sits on the board
-        /// </summary>
-        public BoardPosition Position { get; set; }
-
-        /// <summary>
-        /// The terrain this tile is made of
-        /// </summary>
-        public TileType Type { get; set; }
-
-        /// <summary>
-        /// Whether pawns can stand on this tile when it's the top of its stack
-        /// </summary>
-        public bool IsPassable { get; set; }
     }
 }

@@ -1,9 +1,11 @@
+using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Enumerations;
+using Kingsboard.Shared.Models.Pawns;
 using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Enumerations;
-using KingsboardServer.Models.Pawns;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
 using Microsoft.Extensions.Options;
@@ -368,7 +370,8 @@ namespace KingsboardServer.Services
                 Position = position,
                 Attributes = RollAttributes()
             };
-            pawn.Health = GetMaxHealth(pawn);
+            pawn.MaxHealth = GetMaxHealth(pawn);
+            pawn.Health = pawn.MaxHealth;
             return pawn;
         }
 
@@ -436,6 +439,7 @@ namespace KingsboardServer.Services
                     Physique = p.Attributes.Physique
                 },
                 Health = p.Health,
+                MaxHealth = p.MaxHealth,
                 PlannedPath = p.PlannedPath.ToArray()
             }).ToArray();
         }

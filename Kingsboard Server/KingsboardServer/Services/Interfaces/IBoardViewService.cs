@@ -1,3 +1,4 @@
+using Kingsboard.Shared.Models.Board;
 using KingsboardServer.Subscriptions.Board;
 using KingsboardServer.Models.Board;
 

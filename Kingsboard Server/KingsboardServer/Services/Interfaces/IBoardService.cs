@@ -1,6 +1,7 @@
+using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Enumerations;
 using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
-using KingsboardServer.Models.Enumerations;
 
 namespace KingsboardServer.Services.Interfaces
 {

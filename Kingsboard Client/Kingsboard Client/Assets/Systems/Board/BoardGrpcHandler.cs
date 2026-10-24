@@ -7,10 +7,11 @@ using Grpc.Core;
 using GrpcBoard;
 using Kingsboard.Networking;
 using UnityEngine;
-using BoardPosition = Kingsboard.Board.BoardPosition;
-using BoardRegion = Kingsboard.Board.BoardRegion;
+using BoardPosition = Kingsboard.Shared.Models.Board.BoardPosition;
+using BoardRegion = Kingsboard.Shared.Models.Board.BoardRegion;
 using BoardSection = Kingsboard.Board.BoardSection;
-using TileType = Kingsboard.Board.TileType;
+using MapTile = Kingsboard.Shared.Models.Board.MapTile;
+using TileType = Kingsboard.Shared.Models.Enumerations.TileType;
 
 namespace Kingsboard.Board
 {
@@ -28,7 +29,7 @@ namespace Kingsboard.Board
         private readonly CancellationTokenSource _shutdown = new CancellationTokenSource();
         private GrpcBoard.BoardService.BoardServiceClient _client;
         private string _sessionId;
-        private BoardRegion? _region;
+        private BoardRegion _region;
 
         /// <summary>
         /// Largest width or depth of a section the server allows (0 until joined)
@@ -61,7 +62,7 @@ namespace Kingsboard.Board
         /// Starts viewing the board at <paramref name="region"/> (or the server's default section if null),
         /// reconnecting to the latest section whenever the connection drops
         /// </summary>
-        public async void Connect(BoardRegion? region = null)
+        public async void Connect(BoardRegion region = null)
         {
             CancellationToken token = _shutdown.Token;
             _client = new GrpcBoard.BoardService.BoardServiceClient(GrpcConnection.Channel);
@@ -194,27 +195,17 @@ namespace Kingsboard.Board
 
         private static MapTile ToMapTile(Tile tile)
         {
-            return new MapTile()
-            {
-                Position = ToBoardPosition(tile.Position),
-                Type = ToTileType(tile.Type),
-                IsPassable = tile.Passable
-            };
+            return new MapTile(ToBoardPosition(tile.Position), ToTileType(tile.Type));
         }
 
         private static BoardRegion ToBoardRegion(GrpcBoard.BoardRegion region)
         {
             if (region == null)
             {
-                return new BoardRegion();
+                return new BoardRegion(new BoardPosition(0, 0, 0), 0, 0);
             }
 
-            return new BoardRegion()
-            {
-                Origin = ToBoardPosition(region.Origin),
-                Width = region.Width,
-                Depth = region.Depth
-            };
+            return new BoardRegion(ToBoardPosition(region.Origin), region.Width, region.Depth);
         }
 
         private static BoardPosition ToBoardPosition(GrpcBoard.BoardPosition position)
@@ -222,15 +213,10 @@ namespace Kingsboard.Board
             // A missing message field arrives as null; proto3 treats that as all-zero
             if (position == null)
             {
-                return new BoardPosition();
+                return new BoardPosition(0, 0, 0);
             }
 
-            return new BoardPosition()
-            {
-                X = position.X,
-                Y = position.Y,
-                Z = position.Z
-            };
+            return new BoardPosition(position.X, position.Y, position.Z);
         }
 
         private static GrpcBoard.BoardRegion ToProto(BoardRegion region)

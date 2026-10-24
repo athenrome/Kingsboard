@@ -1,0 +1,7 @@
+{
+  "name": "com.kingsboard.sharedmodels",
+  "version": "1.0.0",
+  "displayName": "Kingsboard SharedModels",
+  "description": "Model types shared by the Kingsboard server and Unity client. Built for the server by the SharedLibrary project.",
+  "unity": "6000.5"
+}

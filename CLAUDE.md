@@ -8,8 +8,15 @@ Kingsboard Server/
   ProtoLibrary/       Shared gRPC contract (netstandard2.1)
     Protos/           .proto files — the only place protos are added or edited
     Generated/        C# generated from Protos/ on build. TRACKED in git; also a Unity local package
-Kingsboard Client/Kingsboard Client/   Unity 6000.6.2f1 project (URP)
+Kingsboard Client/
+  Kingsboard Client/  Unity 6000.6.2f1 project (URP)
+  SharedLibrary/      Models shared by server and client (netstandard2.1, C# 9)
+    SharedModels/     The model source; also the Unity local package com.kingsboard.sharedmodels
 ```
+
+## Changing this file
+
+- **Ask before adding a rule.** Never add a new rule or convention to this file without the user's approval. Propose the exact wording and where it goes, and wait for a clear yes. This applies even to rules that seem obvious or that follow from work just done.
 
 ## Build & run
 
@@ -20,7 +27,7 @@ dotnet run --project "Kingsboard Server/KingsboardServer" --launch-profile https
 
 - The server has no MVC controllers. Visual Studio injects its Endpoints Explorer hosting startup (`Microsoft.WebTools.ApiEndpointDiscovery`), which uses MVC and logs "No action descriptors found". Every launch profile in `launchSettings.json` excludes it with `ASPNETCORE_HOSTINGSTARTUPEXCLUDEASSEMBLIES`; keep that when adding profiles.
 - If the server is already running, its `bin/` is locked and builds fail with MSB3021. Build to another folder with `-o <dir>` instead of killing the user's server.
-- The Unity client can't be compiled from the CLI. Check that its scripts compile with a throwaway `netstandard2.1` csproj that compiles `Assets/Systems/**/*.cs` and `ProtoLibrary/Generated/*.cs`, referencing `<Unity Editor>/Data/Managed/UnityEngine/*.dll` and `Assets/Plugins/Grpc/*.dll`.
+- The Unity client can't be compiled from the CLI. Check that its scripts compile with a throwaway `netstandard2.1` csproj with `LangVersion` 9 that compiles `Assets/Systems/**/*.cs`, `ProtoLibrary/Generated/*.cs` and `SharedLibrary/SharedModels/**/*.cs`, referencing `<Unity Editor>/Data/Managed/UnityEngine/*.dll` and `Assets/Plugins/Grpc/*.dll`.
   - **⚠ REVIEW:** possibly obsolete. The prefab section below already uses the `unity` CLI (`unity command recompile`) against a live editor, so "can't be compiled from the CLI" only holds when the editor is closed. Say which to prefer when.
 - There are no automated tests yet. Verify server changes in two ways:
   - **Logic:** a throwaway console project in the scratchpad that references `KingsboardServer.csproj` and calls the services directly. Don't add it to the repo.
@@ -44,13 +51,18 @@ The layers are gRPC handler, then Service, then Repository. Everything is a sing
   - Services hand out snapshots or clones, never live state.
   - `GameService` runs the game loop: it creates the board and spawns the pawns, then runs the turn loop.
 - **`Repositories/`** (and `Repositories/Interfaces/`): in-memory storage behind interfaces. Repositories hold no game rules. Thread-safety and handing out copies is the owning service's job (e.g. `BoardService` locks and clones around `BoardRepository`).
-- **`Models/`**: domain types, with subfolders `Chat/`, `Board/`, `Configuration/` and `Enumerations/`. See the model rule below.
-  - **⚠ REVIEW:** out of date. There is also `Models/Pawns/` (`Pawn`, `PawnMovement`), and `Turn.cs` sits at the `Models/` root.
+- **`Models/`**: server-only domain types, with subfolders `Board/` (`GameBoard`, `BoardSection`), `Chat/`, `Configuration/` and `Enumerations/`, and `Turn.cs` at the root. Models the client also uses live in SharedLibrary instead (see below). See the model rule below.
 - **`Events/<Category>/`**: event objects, the payloads passed through C# events. They are grouped by category, each with its own namespace: `Events/Board/` (`KingsboardServer.Events.Board`: `TilesChangeEvent`, `BoardViewEvent`) and `Events/Pawns/` (`KingsboardServer.Events.Pawns`: `PawnsChangeEvent`). Add a new category folder for a new system. The model rule applies to these too.
 - **`Subscriptions/<Category>/`**: subscription objects, which a service returns when a client joins a stream (a session id plus the `ChannelReader` it reads from). They are grouped by category, each with its own namespace: `Subscriptions/Chat/` (`KingsboardServer.Subscriptions.Chat`: `ChatSubscription`) and `Subscriptions/Board/` (`KingsboardServer.Subscriptions.Board`: `BoardViewSubscription`). Name them `XxxSubscription`, keep one type per file, and apply the model rule to them too.
 - **No extension classes.** All logic for a model lives in the service that owns it: `BoardService` for boards, `TileService` for tiles, `TurnService` for turns (`GetDuration`, `GetTimeRemaining`, cloning), `PawnService` for pawns. Don't add `XxxExtensions` classes on the server.
 - **Settings:** each system has a settings class in `Models/Configuration/` with a `SectionName` constant. It is bound in `Program.cs` with `.Validate(...).ValidateOnStart()`, mirrored in `appsettings.json`, and read through `IOptionsMonitor<T>.CurrentValue`.
 - **Other dependencies:** inject `Serilog.ILogger` for logging and `TimeProvider` for time; never call `DateTime.Now`.
+
+## Shared models (`Kingsboard Client/SharedLibrary/`)
+
+- Any model used by both the server and the client lives in `SharedLibrary/SharedModels/` (namespace `Kingsboard.Shared.Models.*`), never as two copies. The server references `SharedLibrary.csproj`; Unity uses `SharedModels/` as the local package `com.kingsboard.sharedmodels`. Today that is `BoardPosition`, `BoardRegion`, `MapTile`, `TileType`, `TurnPhase`, `Pawn`, `PawnAttributes` and `PawnMovement`.
+- Shared files must compile as C# 9 with no Unity or server dependencies (`SharedLibrary.csproj` pins `LangVersion` 9). Use plain .NET types, e.g. a colour is a `"#RRGGBB"` string.
+- The model rule applies. Logic stays in each side's owning service.
 
 ## Client architecture (`Assets/Systems/<System>/`)
 
@@ -82,11 +94,11 @@ The board, 128 × 128 × 8 by default, is too big to send whole. Each client vie
 
 ### BoardPosition
 
-`BoardPosition` (X, Y, Z) represents every position on the board: in the proto, on the server (a `readonly record struct`) and on the client (a plain struct). A position may hold a tile or be empty space.
+`BoardPosition` (X, Y, Z) represents every position on the board: in the proto and as one shared positional `record` (a class, compared by value) on the server and client. A position may hold a tile or be empty space.
 
 - **Always use it for board positions.** Use `BoardPosition` whenever you check or evaluate a position: methods take a `BoardPosition`, not separate x/y/z ints, and `MapTile` carries one as `Position`. Don't add new APIs that take loose coordinates.
 - **Empty space is a first-class position.** `IsEmpty(position)` means "on the board and holds no tile". `GetPlacementPosition(column)` returns the empty position on top of a stack, and a removed tile leaves its position as empty space. A position off the board is neither on the board nor empty, so check with `IsOnBoard`/`Contains`.
-- **Column methods ignore Z.** `GetStack`, `GetTopTile` and `GetPlacementPosition` act on the position's column. To change a position's level, use `position with { Z = ... }` on the server or `BoardService.AtLevel(position, z)` on the client (Unity is on C# 9 and has no `with` for structs).
+- **Column methods ignore Z.** `GetStack`, `GetTopTile` and `GetPlacementPosition` act on the position's column. To change a position's level, use `position with { Z = ... }` (the client also has `BoardService.AtLevel(position, z)`).
 - **Ask before you change.** `CanPlaceTile(position)` is true when the position is empty space resting on a tile or the ground. `CanRemoveTile(position)` is true when the position holds a tile with nothing on top of it.
 - **Client helpers:** `BoardController.WorldToPosition` turns a world point, such as a raycast hit, into a `BoardPosition`, which may be empty space. `PositionToWorld` goes the other way.
 
@@ -105,7 +117,7 @@ Every turn runs Start → Upkeep → Planning → Player → Resolution → End.
 Pawns are characters that move around the board on their own. All pawn logic is on the server in `PawnService`; the Unity client (`PawnManager` and a `PawnController` per pawn) only displays it. A pawn has an id, a name, a colour (`#RRGGBB`), a `Position`, `Attributes` and `Health`.
 
 - **Attributes:** Strength, Dexterity, Intelligence, Wisdom and Constitution (`PawnAttributes`), each a random whole number from 1 to 10, rolled at spawn.
-- **Stats:** Physique = Dexterity + Strength × 2. `PawnService` works it out when it rolls the attributes and stores it as `PawnAttributes.Physique` (also `PawnAttributes.physique` in the proto). Max health equals Physique (`GetMaxHealth`, sent as `max_health`), and pawns spawn at full health.
+- **Stats:** Physique = Dexterity + Strength × 2. `PawnService` works it out when it rolls the attributes and stores it as `PawnAttributes.Physique` (also `PawnAttributes.physique` in the proto). Max health equals Physique (`GetMaxHealth`); `CreatePawn` stores it as `Pawn.MaxHealth` (sent as `max_health`), and pawns spawn at full health.
 - **Creating pawns:** `PawnService.CreatePawn` builds one pawn (name, colour, attributes, starting health). `SpawnPawns` only picks spawn positions and calls it.
 
 - **Position:** the empty space directly above its stack's top tile.
@@ -145,7 +157,7 @@ Pawns are characters that move around the board on their own. All pawn logic is 
 
 ## Model rule: models hold data only
 
-This applies to model files on both the server (`Models/**`, `Events/**` and `Subscriptions/**`) and the client (data classes such as `BoardSection`, `BoardRegion`, `MapTile` and `ChatLine`).
+This applies to model files on the server (`Models/**`, `Events/**` and `Subscriptions/**`), in `SharedLibrary/SharedModels/**`, and on the client (data classes such as `BoardSection`, `TurnInfo` and `ChatLine`).
 
 **Allowed in a model file:**
 - Auto-properties, optionally with a default value (`public int Width { get; set; } = 16;`)
@@ -196,3 +208,6 @@ A summary should say what the member does or means, including any limits and whe
 
 - Every class that manages gRPC communication is named `XxxGrpcHandler`: server endpoints in `KingsboardServer/Handlers/`, and client handlers in `Assets/Systems/<System>/`. There is no `Services/Grpc/`.
 - Work happens on the `prototype` branch; `master` is the main branch.
+- **Raise a PR into `prototype` when a sprint's work is done.** Do the work on a `feature/<short-kebab-name>` branch, commit it, push it, and open a GitHub PR with `prototype` as the base (never `master`).
+  - **Title:** a short, plain-language summary of what the sprint delivered, in sentence case with no prefix or trailing full stop, e.g. "Pawn stats and selected-pawn display". Name the feature, not the process ("Add pawn health bars", not "Sprint 3 work").
+  - **Description:** what changed per system (server, protos, client), how it was verified, and anything left undone.

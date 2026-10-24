@@ -1,4 +1,5 @@
-using KingsboardServer.Models.Board;
+
+using Kingsboard.Shared.Models.Board;
 
 namespace KingsboardServer.Services.Interfaces
 {

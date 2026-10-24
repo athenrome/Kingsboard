@@ -1,5 +1,5 @@
+using Kingsboard.Shared.Models.Pawns;
 using KingsboardServer.Events.Pawns;
-using KingsboardServer.Models.Pawns;
 
 namespace KingsboardServer.Services.Interfaces
 {

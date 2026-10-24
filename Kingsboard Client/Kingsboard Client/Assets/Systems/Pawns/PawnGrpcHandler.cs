@@ -8,10 +8,10 @@ using Grpc.Core;
 using GrpcPawn;
 using Kingsboard.Networking;
 using UnityEngine;
-using BoardPosition = Kingsboard.Board.BoardPosition;
-using Pawn = Kingsboard.Pawns.Pawn;
-using PawnAttributes = Kingsboard.Pawns.PawnAttributes;
-using PawnMovement = Kingsboard.Pawns.PawnMovement;
+using BoardPosition = Kingsboard.Shared.Models.Board.BoardPosition;
+using Pawn = Kingsboard.Shared.Models.Pawns.Pawn;
+using PawnAttributes = Kingsboard.Shared.Models.Pawns.PawnAttributes;
+using PawnMovement = Kingsboard.Shared.Models.Pawns.PawnMovement;
 
 namespace Kingsboard.Pawns
 {
@@ -130,12 +130,12 @@ namespace Kingsboard.Pawns
         /// Asks the server for all of one pawn's details. Returns null if no pawn has that id or the request fails
         /// (failures other than "not found" are logged). Continues on the main thread.
         /// </summary>
-        public async Task<Pawn> GetPawnByIdAsync(string id)
+        public async Task<Pawn> GetPawnByIdAsync(Guid id)
         {
             GrpcPawn.PawnService.PawnServiceClient client = new GrpcPawn.PawnService.PawnServiceClient(GrpcConnection.Channel);
             try
             {
-                GetPawnByIdRequest request = new GetPawnByIdRequest() { Id = id ?? string.Empty };
+                GetPawnByIdRequest request = new GetPawnByIdRequest() { Id = id.ToString() };
                 GrpcPawn.Pawn pawn = await client.GetPawnByIdAsync(request, deadline: DateTime.UtcNow.AddSeconds(RequestTimeoutSeconds), cancellationToken: _shutdown.Token);
                 return ToPawn(pawn);
             }
@@ -165,9 +165,9 @@ namespace Kingsboard.Pawns
         {
             return new Pawn()
             {
-                Id = pawn.Id,
+                Id = ToGuid(pawn.Id),
                 Name = pawn.Name,
-                Colour = ColorUtility.TryParseHtmlString(pawn.Colour, out Color colour) ? colour : Color.white,
+                Colour = pawn.Colour,
                 Position = ToBoardPosition(pawn.Position),
                 PlannedPath = pawn.PlannedPath.Select(ToBoardPosition).ToList(),
                 Attributes = ToPawnAttributes(pawn.Attributes),
@@ -197,13 +197,13 @@ namespace Kingsboard.Pawns
 
         private static PawnMovement ToPawnMovement(GrpcPawn.PawnMovement movement)
         {
-            return new PawnMovement()
-            {
-                PawnId = movement.PawnId,
-                Path = movement.Path.Select(ToBoardPosition).ToList(),
-                Position = ToBoardPosition(movement.Position),
-                Blocked = movement.Blocked
-            };
+            return new PawnMovement(ToGuid(movement.PawnId), movement.Path.Select(ToBoardPosition).ToList(), ToBoardPosition(movement.Position), movement.Blocked);
+        }
+
+        // The server always sends ids as Guids; anything else becomes Guid.Empty, which matches no pawn
+        private static Guid ToGuid(string id)
+        {
+            return Guid.TryParse(id, out Guid guid) ? guid : Guid.Empty;
         }
 
         private static BoardPosition ToBoardPosition(GrpcBoard.BoardPosition position)
@@ -211,15 +211,10 @@ namespace Kingsboard.Pawns
             // A missing message field arrives as null; proto3 treats that as all-zero
             if (position == null)
             {
-                return new BoardPosition();
+                return new BoardPosition(0, 0, 0);
             }
 
-            return new BoardPosition()
-            {
-                X = position.X,
-                Y = position.Y,
-                Z = position.Z
-            };
+            return new BoardPosition(position.X, position.Y, position.Z);
         }
     }
 }

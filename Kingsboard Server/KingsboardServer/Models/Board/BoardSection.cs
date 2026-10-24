@@ -1,3 +1,6 @@
+
+using Kingsboard.Shared.Models.Board;
+
 namespace KingsboardServer.Models.Board
 {
     /// <summary>

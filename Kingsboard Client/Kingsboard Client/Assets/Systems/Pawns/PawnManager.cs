@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Kingsboard.Board;
+using Kingsboard.Shared.Models.Pawns;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.InputSystem;
@@ -33,12 +34,12 @@ namespace Kingsboard.Pawns
 
         private PawnGrpcHandler _handler;
         private BoardController _board;
-        private readonly Dictionary<string, PawnController> _pawns = new Dictionary<string, PawnController>();
+        private readonly Dictionary<Guid, PawnController> _pawns = new Dictionary<Guid, PawnController>();
 
         /// <summary>
         /// Every spawned pawn's controller, by pawn id
         /// </summary>
-        public IReadOnlyDictionary<string, PawnController> Pawns => _pawns;
+        public IReadOnlyDictionary<Guid, PawnController> Pawns => _pawns;
 
         /// <summary>
         /// The selected pawn, or null if none is
@@ -83,7 +84,7 @@ namespace Kingsboard.Pawns
         /// Asks the server for all of one pawn's details (see <see cref="PawnGrpcHandler.GetPawnByIdAsync"/>).
         /// Returns null if no pawn has that id, the request fails, or the pawns aren't connected.
         /// </summary>
-        public Task<Pawn> GetPawnById(string id)
+        public Task<Pawn> GetPawnById(Guid id)
         {
             if (_handler == null)
             {
@@ -140,8 +141,8 @@ namespace Kingsboard.Pawns
         /// </summary>
         private void OnPawnsReset(IReadOnlyList<Pawn> pawns)
         {
-            HashSet<string> ids = new HashSet<string>(pawns.Select(p => p.Id));
-            foreach (string gone in _pawns.Keys.Where(id => !ids.Contains(id)).ToList())
+            HashSet<Guid> ids = new HashSet<Guid>(pawns.Select(p => p.Id));
+            foreach (Guid gone in _pawns.Keys.Where(id => !ids.Contains(id)).ToList())
             {
                 Despawn(gone);
             }
@@ -173,7 +174,7 @@ namespace Kingsboard.Pawns
 
         private void OnPawnsMoved(int turnId, IReadOnlyList<PawnMovement> movements, IReadOnlyList<Pawn> pawns)
         {
-            Dictionary<string, Pawn> after = pawns.ToDictionary(p => p.Id);
+            Dictionary<Guid, Pawn> after = pawns.ToDictionary(p => p.Id);
             foreach (PawnMovement movement in movements)
             {
                 if (_pawns.TryGetValue(movement.PawnId, out PawnController controller) && after.TryGetValue(movement.PawnId, out Pawn pawn))
@@ -207,7 +208,7 @@ namespace Kingsboard.Pawns
             PawnSpawned?.Invoke(controller);
         }
 
-        private void Despawn(string pawnId)
+        private void Despawn(Guid pawnId)
         {
             if (!_pawns.TryGetValue(pawnId, out PawnController controller))
             {

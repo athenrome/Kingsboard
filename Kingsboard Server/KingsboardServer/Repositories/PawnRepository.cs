@@ -1,4 +1,4 @@
-using KingsboardServer.Models.Pawns;
+using Kingsboard.Shared.Models.Pawns;
 using KingsboardServer.Repositories.Interfaces;
 
 namespace KingsboardServer.Repositories

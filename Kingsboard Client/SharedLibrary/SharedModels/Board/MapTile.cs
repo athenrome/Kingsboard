@@ -1,6 +1,6 @@
-using KingsboardServer.Models.Enumerations;
+using Kingsboard.Shared.Models.Enumerations;
 
-namespace KingsboardServer.Models.Board
+namespace Kingsboard.Shared.Models.Board
 {
     /// <summary>
     /// One block of the game board. Immutable: change a tile by replacing it on the board.

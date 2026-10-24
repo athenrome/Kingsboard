@@ -1,3 +1,5 @@
+using System;
+using Kingsboard.Shared.Models.Pawns;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -88,7 +90,7 @@ namespace Kingsboard.Pawns
         /// </summary>
         private async void LoadDetails(PawnController pawn)
         {
-            string id = pawn.Pawn != null ? pawn.Pawn.Id : null;
+            Guid id = pawn.Pawn != null ? pawn.Pawn.Id : Guid.Empty;
             Pawn details = await _pawnManager.GetPawnById(id);
 
             // The panel may have been destroyed or the selection changed while waiting
@@ -112,7 +114,7 @@ namespace Kingsboard.Pawns
             }
 
             _window.style.display = DisplayStyle.Flex;
-            _swatch.style.backgroundColor = pawn.Colour;
+            _swatch.style.backgroundColor = PawnService.GetColour(pawn);
             _nameLabel.text = pawn.Name;
 
             _healthLabel.text = $"Health {pawn.Health} / {pawn.MaxHealth}";

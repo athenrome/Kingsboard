@@ -1,4 +1,5 @@
 using System;
+using Kingsboard.Shared.Models.Board;
 
 namespace Kingsboard.Board
 {
@@ -38,7 +39,7 @@ namespace Kingsboard.Board
         /// <summary>
         /// The columns this section covers
         /// </summary>
-        public BoardRegion Region { get; set; }
+        public BoardRegion Region { get; set; } = new BoardRegion(new BoardPosition(0, 0, 0), 0, 0);
 
         /// <summary>
         /// Every position in the section, null where there is no tile. Indexed relative to the region's origin:

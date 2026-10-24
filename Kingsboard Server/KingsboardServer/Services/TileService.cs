@@ -1,5 +1,5 @@
-using KingsboardServer.Models.Board;
-using KingsboardServer.Models.Enumerations;
+using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Enumerations;
 using KingsboardServer.Services.Interfaces;
 
 namespace KingsboardServer.Services

@@ -1,4 +1,5 @@
-using KingsboardServer.Models.Enumerations;
+
+using Kingsboard.Shared.Models.Enumerations;
 
 namespace KingsboardServer.Models
 {

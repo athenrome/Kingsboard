@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using Kingsboard.Board;
+using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Pawns;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -152,7 +154,7 @@ namespace Kingsboard.Pawns
         /// </summary>
         public void RefreshVisibility()
         {
-            BoardPosition position = Pawn != null ? Pawn.Position : new BoardPosition();
+            BoardPosition position = Pawn != null ? Pawn.Position : new BoardPosition(0, 0, 0);
             SetInSection(IsInLoadedSection(position));
         }
 
@@ -244,6 +246,7 @@ namespace Kingsboard.Pawns
         /// </summary>
         private void ApplyLook(Pawn pawn)
         {
+            Color colour = PawnService.GetColour(pawn);
             gameObject.name = $"Pawn {pawn.Name}";
 
             if (_body != null)
@@ -253,13 +256,13 @@ namespace Kingsboard.Pawns
                     _bodyMaterial = new Material(_body.sharedMaterial);
                     _body.sharedMaterial = _bodyMaterial;
                 }
-                _bodyMaterial.color = pawn.Colour;
+                _bodyMaterial.color = colour;
             }
 
             if (_label != null)
             {
                 _label.text = pawn.Name;
-                _label.color = pawn.Colour;
+                _label.color = colour;
             }
 
             if (_plannedPath != null)
@@ -269,7 +272,7 @@ namespace Kingsboard.Pawns
                     _pathMaterial = new Material(_plannedPath.sharedMaterial);
                     _plannedPath.sharedMaterial = _pathMaterial;
                 }
-                _pathMaterial.color = pawn.Colour;
+                _pathMaterial.color = colour;
                 _plannedPath.positionCount = 0;
             }
         }

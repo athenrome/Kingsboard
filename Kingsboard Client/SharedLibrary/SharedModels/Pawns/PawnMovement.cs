@@ -1,6 +1,8 @@
-using KingsboardServer.Models.Board;
+using System;
+using System.Collections.Generic;
+using Kingsboard.Shared.Models.Board;
 
-namespace KingsboardServer.Models.Pawns
+namespace Kingsboard.Shared.Models.Pawns
 {
     /// <summary>
     /// How one pawn moved during the Resolution phase

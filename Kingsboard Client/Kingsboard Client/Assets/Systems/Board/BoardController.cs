@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Kingsboard.Shared.Models.Board;
+using Kingsboard.Shared.Models.Enumerations;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -118,12 +120,7 @@ namespace Kingsboard.Board
         public BoardPosition WorldToPosition(Vector3 worldPosition)
         {
             Vector3 local = transform.InverseTransformPoint(worldPosition);
-            return new BoardPosition()
-            {
-                X = Mathf.RoundToInt(local.x),
-                Y = Mathf.RoundToInt(local.z),
-                Z = Mathf.FloorToInt(local.y / LevelHeight)
-            };
+            return new BoardPosition(Mathf.RoundToInt(local.x), Mathf.RoundToInt(local.z), Mathf.FloorToInt(local.y / LevelHeight));
         }
 
         private void Start()
@@ -140,10 +137,10 @@ namespace Kingsboard.Board
             _handler.TilesChanged += OnTilesChanged;
             _handler.Disconnected += OnDisconnected;
 
-            BoardRegion? firstRegion = null;
+            BoardRegion firstRegion = null;
             if (_sectionSize > 0)
             {
-                firstRegion = new BoardRegion() { Origin = new BoardPosition(), Width = _sectionSize, Depth = _sectionSize };
+                firstRegion = new BoardRegion(new BoardPosition(0, 0, 0), _sectionSize, _sectionSize);
             }
             _handler.Connect(firstRegion);
         }

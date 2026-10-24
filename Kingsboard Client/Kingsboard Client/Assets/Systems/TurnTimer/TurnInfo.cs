@@ -1,40 +1,7 @@
+using Kingsboard.Shared.Models.Enumerations;
+
 namespace Kingsboard.TurnTimer
 {
-    /// <summary>
-    /// The stages every turn moves through, in order. Each phase finishes all its work before the next begins.
-    /// </summary>
-    public enum TurnPhase
-    {
-        /// <summary>
-        /// A phase this client doesn't recognise (e.g. the server is newer)
-        /// </summary>
-        Unknown,
-        /// <summary>
-        /// The turn has just begun
-        /// </summary>
-        Start,
-        /// <summary>
-        /// Pawns are prepared for the turn
-        /// </summary>
-        Upkeep,
-        /// <summary>
-        /// Pawns choose their actions
-        /// </summary>
-        Planning,
-        /// <summary>
-        /// Players choose cards for their pawns until the timer runs out
-        /// </summary>
-        Player,
-        /// <summary>
-        /// The chosen actions are carried out
-        /// </summary>
-        Resolution,
-        /// <summary>
-        /// The turn is over
-        /// </summary>
-        End
-    }
-
     /// <summary>
     /// The state of the turn in progress, as last sent by the server
     /// </summary>
