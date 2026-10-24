@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
@@ -10,7 +11,9 @@ namespace Kingsboard.Chat
     /// and talks to the server only through <see cref="ChatGrpcHandler"/>. All chat rules (validation, rate limiting,
     /// usernames) are enforced by the server.
     /// Lives on the Chat prefab (Assets/Prefabs/Chat/Chat.prefab), placed in the scene; set the username there.
-    /// Type a message and press Enter to send it.
+    /// Click the input box, type a message and press Enter to send it. The box only takes the keyboard when clicked
+    /// (never through keyboard navigation, so game keys such as WASD stay with the game), and lets it go on Esc or a
+    /// click anywhere outside the chat window.
     /// </summary>
     public class ChatController : MonoBehaviour
     {
@@ -34,6 +37,7 @@ namespace Kingsboard.Chat
         private static readonly Color SystemColor = new Color(1f, 0.85f, 0.4f);
 
         private ChatGrpcHandler _handler;
+        private VisualElement _window;
         private Label _status;
         private ScrollView _messages;
         private TextField _input;
@@ -74,6 +78,35 @@ namespace Kingsboard.Chat
             _handler.Connect(_username);
         }
 
+        private void Update()
+        {
+            if (_window == null || !IsTyping())
+            {
+                return;
+            }
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            {
+                StopTyping();
+                return;
+            }
+
+            Mouse mouse = Mouse.current;
+            if (mouse == null || !mouse.leftButton.wasPressedThisFrame)
+            {
+                return;
+            }
+
+            // A click outside the chat window hands the keyboard back to the game
+            Vector2 pointer = mouse.position.ReadValue();
+            Vector2 panelPoint = RuntimePanelUtils.ScreenToPanel(_window.panel, new Vector2(pointer.x, Screen.height - pointer.y));
+            if (!_window.worldBound.Contains(panelPoint))
+            {
+                StopTyping();
+            }
+        }
+
         private void OnDestroy()
         {
             if (_handler != null)
@@ -111,6 +144,7 @@ namespace Kingsboard.Chat
             root.pickingMode = PickingMode.Ignore;
 
             VisualElement window = new VisualElement();
+            _window = window;
             window.style.position = Position.Absolute;
             window.style.left = 16;
             window.style.bottom = 16;
@@ -144,7 +178,53 @@ namespace Kingsboard.Chat
             _input.style.marginLeft = 0;
             _input.style.marginRight = 0;
             _input.RegisterCallback<KeyDownEvent>(OnInputKeyDown, TrickleDown.TrickleDown);
+            _input.RegisterCallback<PointerDownEvent>(OnInputPointerDown, TrickleDown.TrickleDown);
+            _input.RegisterCallback<FocusOutEvent>(OnInputFocusOut);
             window.Add(_input);
+
+            // Keyboard navigation (which UI Toolkit maps to WASD and the arrows) would otherwise focus the box or the
+            // scrollbar and swallow the game's keys, so nothing in the window is focusable and the box only becomes
+            // focusable while clicked
+            window.Query<VisualElement>().ForEach(element => element.focusable = false);
+        }
+
+        private void OnInputPointerDown(PointerDownEvent pointerEvent)
+        {
+            SetInputFocusable(true);
+            _input.Focus();
+        }
+
+        private void OnInputFocusOut(FocusOutEvent focusEvent)
+        {
+            // Focus moving between the text field and its inner text element doesn't count as leaving
+            if (focusEvent.relatedTarget is VisualElement next && _input.Contains(next))
+            {
+                return;
+            }
+            SetInputFocusable(false);
+        }
+
+        /// <summary>
+        /// True while the input box has the keyboard
+        /// </summary>
+        private bool IsTyping()
+        {
+            VisualElement focused = _input?.focusController?.focusedElement as VisualElement;
+            return focused != null && (focused == _input || _input.Contains(focused));
+        }
+
+        private void StopTyping()
+        {
+            if (_input.focusController?.focusedElement is Focusable focused)
+            {
+                focused.Blur();
+            }
+            SetInputFocusable(false);
+        }
+
+        private void SetInputFocusable(bool focusable)
+        {
+            _input.Query<VisualElement>().ForEach(element => element.focusable = focusable);
         }
 
         private void OnInputKeyDown(KeyDownEvent keyEvent)

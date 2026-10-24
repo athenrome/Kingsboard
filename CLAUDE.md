@@ -167,6 +167,7 @@ Pawns act by playing action cards. All card logic is on the server.
 | `Prefabs/Chat/Chat.prefab` | `ChatController` and its `UIDocument` (`Prefabs/Chat/ChatPanelSettings.asset`) |
 | `Prefabs/TurnTimer/TurnTimer.prefab` | `TurnTimerController` and its `UIDocument` (`Prefabs/TurnTimer/TurnTimerPanelSettings.asset`) |
 | `Prefabs/Players/Player.prefab` | `PlayerController`: this client's player |
+| `Prefabs/Camera/Camera.prefab` | The main camera (tagged `MainCamera`) with its `CameraController`: WASD/arrows pan (Shift is faster), the mouse wheel zooms, and it frames each new section the focus point isn't in |
 
 **Making or changing prefabs:**
 - **Use the live editor.** When the Unity Editor is open, change prefabs and scenes through it (`unity command ...`, e.g. `eval_file` with fully-qualified type names, since `eval` code can't have `using` lines). Don't hand-edit `.prefab` or `.unity` YAML.
