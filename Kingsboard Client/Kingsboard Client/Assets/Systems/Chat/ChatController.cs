@@ -1,4 +1,5 @@
 using System;
+using Kingsboard.Players;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -13,7 +14,9 @@ namespace Kingsboard.Chat
     /// Lives on the Chat prefab (Assets/Prefabs/Chat/Chat.prefab), placed in the scene; set the username there.
     /// Click the input box, type a message and press Enter to send it. The box only takes the keyboard when clicked
     /// (never through keyboard navigation, so game keys such as WASD stay with the game), and lets it go on Esc or a
-    /// click anywhere outside the chat window.
+    /// click anywhere outside the chat window. While the box has the keyboard, the player's state
+    /// (<see cref="PlayerController.State"/>) shows <see cref="PlayerAction.TypingInChat"/>, so other systems leave the
+    /// keys alone.
     /// </summary>
     public class ChatController : MonoBehaviour
     {
@@ -37,6 +40,7 @@ namespace Kingsboard.Chat
         private static readonly Color SystemColor = new Color(1f, 0.85f, 0.4f);
 
         private ChatGrpcHandler _handler;
+        private PlayerController _player;
         private VisualElement _window;
         private Label _status;
         private ScrollView _messages;
@@ -68,6 +72,12 @@ namespace Kingsboard.Chat
                 return;
             }
 
+            _player = FindAnyObjectByType<PlayerController>();
+            if (_player == null)
+            {
+                Debug.LogWarning("[Chat] No PlayerController in the scene, so typing in chat won't stop game keys such as camera movement. Place the Player prefab.", this);
+            }
+
             BuildWindow(root);
             UpdateStatus();
 
@@ -78,7 +88,8 @@ namespace Kingsboard.Chat
             _handler.Connect(_username);
         }
 
-        private void Update()
+        // LateUpdate, so every other script's Update this frame still sees us typing and ignores the same Escape press
+        private void LateUpdate()
         {
             if (_window == null || !IsTyping())
             {
@@ -116,6 +127,11 @@ namespace Kingsboard.Chat
                 _handler.Disconnected -= OnDisconnected;
                 _handler.Dispose();
                 _handler = null;
+            }
+
+            if (_player != null)
+            {
+                _player.State.End(PlayerAction.TypingInChat);
             }
         }
 
@@ -179,6 +195,7 @@ namespace Kingsboard.Chat
             _input.style.marginRight = 0;
             _input.RegisterCallback<KeyDownEvent>(OnInputKeyDown, TrickleDown.TrickleDown);
             _input.RegisterCallback<PointerDownEvent>(OnInputPointerDown, TrickleDown.TrickleDown);
+            _input.RegisterCallback<FocusInEvent>(OnInputFocusIn);
             _input.RegisterCallback<FocusOutEvent>(OnInputFocusOut);
             window.Add(_input);
 
@@ -194,6 +211,14 @@ namespace Kingsboard.Chat
             _input.Focus();
         }
 
+        private void OnInputFocusIn(FocusInEvent focusEvent)
+        {
+            if (_player != null)
+            {
+                _player.State.Begin(PlayerAction.TypingInChat);
+            }
+        }
+
         private void OnInputFocusOut(FocusOutEvent focusEvent)
         {
             // Focus moving between the text field and its inner text element doesn't count as leaving
@@ -202,6 +227,10 @@ namespace Kingsboard.Chat
                 return;
             }
             SetInputFocusable(false);
+            if (_player != null)
+            {
+                _player.State.End(PlayerAction.TypingInChat);
+            }
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Kingsboard.Board;
+using Kingsboard.Players;
 using Kingsboard.Shared.Models.Board;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,7 +13,8 @@ namespace Kingsboard.CameraControl
     /// WASD (or the arrow keys) slides the focus point across the board, and the mouse wheel zooms in and out by moving
     /// the camera closer to or further from it. Hold Shift to move faster. The focus point stays inside the loaded board
     /// section, and the camera frames a new section when one arrives that the focus point isn't in.
-    /// Keys are ignored while a text field (such as the chat box) has focus, and the wheel is ignored over UI.
+    /// Keys are ignored while the local player's state says text entry blocks the camera
+    /// (<see cref="PlayerStateTracker.BlocksCameraMovement"/>, e.g. while typing in chat), and the wheel is ignored over UI.
     /// Lives on the Camera prefab (Assets/Prefabs/Camera/Camera.prefab), placed in the scene.
     /// </summary>
     public class CameraController : MonoBehaviour
@@ -45,6 +47,7 @@ namespace Kingsboard.CameraControl
         [SerializeField] private float _smoothing = 12f;
 
         private BoardController _board;
+        private PlayerController _player;
         private readonly List<UIDocument> _documents = new List<UIDocument>();
         private Vector3 _focus;
         private float _distance = 20f;
@@ -91,6 +94,12 @@ namespace Kingsboard.CameraControl
 
             _documents.AddRange(FindObjectsByType<UIDocument>());
 
+            _player = FindAnyObjectByType<PlayerController>();
+            if (_player == null)
+            {
+                Debug.LogWarning("[Camera] No PlayerController in the scene, so the camera can't tell when keys are for typing. Place the Player prefab.", this);
+            }
+
             _currentFocus = _focus;
             _currentDistance = _distance;
             ApplyTransform();
@@ -122,7 +131,8 @@ namespace Kingsboard.CameraControl
         {
             float dt = Time.unscaledDeltaTime;
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && !IsTyping())
+            bool blocked = _player != null && _player.State.BlocksCameraMovement;
+            if (keyboard != null && !blocked)
             {
                 Vector2 input = Vector2.zero;
                 if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) input.y += 1f;
@@ -208,23 +218,6 @@ namespace Kingsboard.CameraControl
             local.x = Mathf.Clamp(local.x, region.Origin.X - 0.5f, region.Origin.X + region.Width - 0.5f);
             local.z = Mathf.Clamp(local.z, region.Origin.Y - 0.5f, region.Origin.Y + region.Depth - 0.5f);
             return _board.transform.TransformPoint(local);
-        }
-
-        /// <summary>
-        /// True while a text field in any UI panel has keyboard focus, so typed letters don't move the camera
-        /// </summary>
-        private bool IsTyping()
-        {
-            foreach (UIDocument document in _documents)
-            {
-                IPanel panel = document != null && document.rootVisualElement != null ? document.rootVisualElement.panel : null;
-                if (panel?.focusController?.focusedElement is VisualElement focused
-                    && focused.GetFirstOfType<TextInputBaseField<string>>() != null)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /// <summary>

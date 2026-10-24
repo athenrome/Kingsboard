@@ -167,6 +167,10 @@ namespace Kingsboard.Pawns
         {
             TargetingPawn = pawn;
             TargetingCard = card;
+            if (_player != null)
+            {
+                _player.State.Begin(PlayerAction.TargetingCard);
+            }
             TargetingChanged?.Invoke();
         }
 
@@ -182,6 +186,10 @@ namespace Kingsboard.Pawns
 
             TargetingPawn = null;
             TargetingCard = null;
+            if (_player != null)
+            {
+                _player.State.End(PlayerAction.TargetingCard);
+            }
             TargetingChanged?.Invoke();
         }
 
@@ -220,8 +228,10 @@ namespace Kingsboard.Pawns
             Mouse mouse = Mouse.current;
             if (IsTargeting)
             {
+                // Escape while typing in chat only stops the typing
+                bool enteringText = _player != null && _player.State.IsEnteringText;
                 bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame)
-                              || (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame);
+                              || (!enteringText && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame);
                 if (cancel)
                 {
                     CancelTargeting();
@@ -269,6 +279,7 @@ namespace Kingsboard.Pawns
             {
                 _player.Joined -= OnPlayerJoined;
                 _player.Left -= OnPlayerLeft;
+                _player.State.End(PlayerAction.TargetingCard);
             }
 
             if (_board != null)

@@ -6,6 +6,7 @@ namespace Kingsboard.Players
     /// <summary>
     /// Joins the game as this client's player (through <see cref="PlayerGrpcHandler"/>) and keeps track of who we are,
     /// so other systems can tell which pawns we control and act as us. The server gives each player some pawns to control.
+    /// It also tracks what we're doing right now (joined or not, typing in chat, aiming a card) through <see cref="State"/>.
     /// Lives on the Player prefab (Assets/Prefabs/Players/Player.prefab), placed in the scene; set the name there, or
     /// start the client with --name=YourName to override it.
     /// </summary>
@@ -22,6 +23,13 @@ namespace Kingsboard.Players
         /// Who we are, or null while we aren't joined
         /// </summary>
         public PlayerInfo Player { get; private set; }
+
+        /// <summary>
+        /// What the local player is doing right now. Systems report their actions to it (e.g. chat reports
+        /// <see cref="PlayerAction.TypingInChat"/>) and check it before acting (e.g. the camera ignores keys while
+        /// <see cref="PlayerStateTracker.BlocksCameraMovement"/>). Available from the start, before we've joined.
+        /// </summary>
+        public PlayerStateTracker State { get; } = new PlayerStateTracker();
 
         /// <summary>
         /// True while we are joined to the game
@@ -68,6 +76,7 @@ namespace Kingsboard.Players
         private void OnJoined(PlayerInfo player)
         {
             Player = player;
+            State.SetConnection(PlayerConnectionState.Joined);
             Debug.Log($"[Players] Joined the game as {player.Name} ({player.Colour})");
             Joined?.Invoke(player);
         }
@@ -75,6 +84,7 @@ namespace Kingsboard.Players
         private void OnDisconnected()
         {
             Player = null;
+            State.SetConnection(PlayerConnectionState.Rejoining);
             Debug.LogWarning("[Players] Disconnected from the game. Rejoining...");
             Left?.Invoke();
         }
