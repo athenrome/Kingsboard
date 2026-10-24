@@ -1,10 +1,15 @@
-﻿namespace KingsboardServer.Models.Enumerations
+namespace Kingsboard.Shared.Models.Enumerations
 {
     /// <summary>
-    /// The stages a turn moves through, in order
+    /// The stages a turn moves through, in order. Each phase finishes all its work before the next begins.
     /// </summary>
     public enum TurnPhase
     {
+        /// <summary>
+        /// A phase this side doesn't recognise (e.g. a client older than the server). The server never runs it.
+        /// </summary>
+        Unknown,
+
         /// <summary>
         /// The turn has just begun
         /// </summary>

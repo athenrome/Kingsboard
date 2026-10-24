@@ -4,7 +4,7 @@ using Grpc.Core;
 using GrpcTurnTimer;
 using KingsboardServer.Models;
 using KingsboardServer.Services.Interfaces;
-using ModelTurnPhase = KingsboardServer.Models.Enumerations.TurnPhase;
+using ModelTurnPhase = Kingsboard.Shared.Models.Enumerations.TurnPhase;
 using ProtoTurnPhase = GrpcTurnTimer.TurnPhase;
 
 namespace KingsboardServer.Handlers

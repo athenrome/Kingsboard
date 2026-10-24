@@ -1,6 +1,6 @@
+using Kingsboard.Shared.Models.Enumerations;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Configuration;
-using KingsboardServer.Models.Enumerations;
 using KingsboardServer.Services.Interfaces;
 using Microsoft.Extensions.Options;
 

@@ -6,7 +6,7 @@ using Grpc.Core;
 using GrpcTurnTimer;
 using Kingsboard.Networking;
 using UnityEngine;
-using TurnPhase = Kingsboard.TurnTimer.TurnPhase;
+using TurnPhase = Kingsboard.Shared.Models.Enumerations.TurnPhase;
 
 namespace Kingsboard.TurnTimer
 {

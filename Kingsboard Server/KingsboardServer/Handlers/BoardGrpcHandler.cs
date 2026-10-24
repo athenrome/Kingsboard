@@ -3,16 +3,16 @@ using Grpc.Core;
 using GrpcBoard;
 using KingsboardServer.Subscriptions.Board;
 using KingsboardServer.Events.Board;
-using KingsboardServer.Models.Board;
 using KingsboardServer.Services.Interfaces;
-using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
-using BoardRegion = KingsboardServer.Models.Board.BoardRegion;
+using BoardPosition = Kingsboard.Shared.Models.Board.BoardPosition;
+using BoardRegion = Kingsboard.Shared.Models.Board.BoardRegion;
 using BoardSection = KingsboardServer.Models.Board.BoardSection;
+using MapTile = Kingsboard.Shared.Models.Board.MapTile;
 using ProtoBoardPosition = GrpcBoard.BoardPosition;
 using ProtoBoardRegion = GrpcBoard.BoardRegion;
 using ProtoBoardSection = GrpcBoard.BoardSection;
 using ProtoTileType = GrpcBoard.TileType;
-using TileType = KingsboardServer.Models.Enumerations.TileType;
+using TileType = Kingsboard.Shared.Models.Enumerations.TileType;
 
 namespace KingsboardServer.Handlers
 {

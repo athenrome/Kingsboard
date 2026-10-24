@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using Kingsboard.Shared.Models.Board;
 using KingsboardServer.Subscriptions.Board;
 using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;

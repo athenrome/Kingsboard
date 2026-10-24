@@ -1,5 +1,5 @@
+using Kingsboard.Shared.Models.Pawns;
 using KingsboardServer.Models.Enumerations;
-using KingsboardServer.Models.Pawns;
 
 namespace KingsboardServer.Events.Pawns
 {

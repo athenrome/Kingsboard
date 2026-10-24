@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Kingsboard.Shared.Models.Board;
 
 namespace Kingsboard.Board
 {
@@ -15,7 +16,7 @@ namespace Kingsboard.Board
         /// </summary>
         public static BoardPosition AtLevel(BoardPosition position, int z)
         {
-            return new BoardPosition() { X = position.X, Y = position.Y, Z = z };
+            return position with { Z = z };
         }
 
         /// <summary>
@@ -23,12 +24,7 @@ namespace Kingsboard.Board
         /// </summary>
         public static BoardRegion Move(BoardRegion region, int dx, int dy)
         {
-            return new BoardRegion()
-            {
-                Origin = new BoardPosition() { X = region.Origin.X + dx, Y = region.Origin.Y + dy, Z = 0 },
-                Width = region.Width,
-                Depth = region.Depth
-            };
+            return region with { Origin = new BoardPosition(region.Origin.X + dx, region.Origin.Y + dy, 0) };
         }
 
         /// <summary>
@@ -105,7 +101,7 @@ namespace Kingsboard.Board
         /// The empty position on top of the stack in the position's column (its Z is ignored), where the next tile would go.
         /// Null if the stack is full or the column is outside the section.
         /// </summary>
-        public static BoardPosition? GetPlacementPosition(BoardSection section, BoardPosition column)
+        public static BoardPosition GetPlacementPosition(BoardSection section, BoardPosition column)
         {
             if (!Contains(section.Region, column))
             {
@@ -113,7 +109,7 @@ namespace Kingsboard.Board
             }
 
             int stackHeight = GetStackHeight(section, column);
-            return stackHeight < section.BoardHeight ? AtLevel(column, stackHeight) : (BoardPosition?)null;
+            return stackHeight < section.BoardHeight ? AtLevel(column, stackHeight) : null;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-namespace KingsboardServer.Models.Pawns
+namespace Kingsboard.Shared.Models.Pawns
 {
     /// <summary>
     /// A pawn's core attributes, each a whole number from 1 to 10 rolled at random when the pawn is spawned,
@@ -32,7 +32,7 @@ namespace KingsboardServer.Models.Pawns
         public int Constitution { get; set; }
 
         /// <summary>
-        /// Physique stat: Dexterity + (Strength × 2). Set by PawnService when the attributes are rolled; it is also the pawn's max health.
+        /// Physique stat: Dexterity + (Strength × 2). Worked out by the server when the attributes are rolled; it is also the pawn's max health.
         /// </summary>
         public int Physique { get; set; }
     }

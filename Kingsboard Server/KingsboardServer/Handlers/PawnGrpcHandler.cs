@@ -4,13 +4,12 @@ using Grpc.Core;
 using GrpcPawn;
 using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models.Enumerations;
-using KingsboardServer.Models.Pawns;
 using KingsboardServer.Services.Interfaces;
-using BoardPosition = KingsboardServer.Models.Board.BoardPosition;
-using Pawn = KingsboardServer.Models.Pawns.Pawn;
-using PawnMovement = KingsboardServer.Models.Pawns.PawnMovement;
+using BoardPosition = Kingsboard.Shared.Models.Board.BoardPosition;
+using Pawn = Kingsboard.Shared.Models.Pawns.Pawn;
+using PawnMovement = Kingsboard.Shared.Models.Pawns.PawnMovement;
 using ProtoBoardPosition = GrpcBoard.BoardPosition;
-using PawnAttributes = KingsboardServer.Models.Pawns.PawnAttributes;
+using PawnAttributes = Kingsboard.Shared.Models.Pawns.PawnAttributes;
 using ProtoPawn = GrpcPawn.Pawn;
 using ProtoPawnAttributes = GrpcPawn.PawnAttributes;
 using ProtoPawnMovement = GrpcPawn.PawnMovement;
@@ -162,7 +161,7 @@ namespace KingsboardServer.Handlers
                 Position = ToProto(pawn.Position),
                 Attributes = ToProto(pawn.Attributes),
                 Health = pawn.Health,
-                MaxHealth = _pawnService.GetMaxHealth(pawn)
+                MaxHealth = pawn.MaxHealth
             };
             message.PlannedPath.AddRange(pawn.PlannedPath.Select(ToProto));
             return message;
