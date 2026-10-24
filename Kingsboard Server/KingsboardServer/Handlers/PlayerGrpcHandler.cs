@@ -44,7 +44,8 @@ namespace KingsboardServer.Handlers
                     {
                         PlayerId = player.Id.ToString(),
                         SessionId = player.SessionId.ToString(),
-                        Name = player.Name
+                        Name = player.Name,
+                        Colour = player.Colour
                     }
                 });
 

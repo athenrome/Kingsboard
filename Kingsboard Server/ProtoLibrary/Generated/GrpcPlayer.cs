@@ -26,17 +26,17 @@ namespace GrpcPlayer {
           string.Concat(
             "ChBHcnBjUGxheWVyLnByb3RvIh8KD0pvaW5HYW1lUmVxdWVzdBIMCgRuYW1l",
             "GAEgASgJIj4KC1BsYXllckV2ZW50EiQKBmpvaW5lZBgBIAEoCzISLlBsYXll",
-            "ckpvaW5lZEV2ZW50SABCCQoHcGF5bG9hZCJIChFQbGF5ZXJKb2luZWRFdmVu",
+            "ckpvaW5lZEV2ZW50SABCCQoHcGF5bG9hZCJYChFQbGF5ZXJKb2luZWRFdmVu",
             "dBIRCglwbGF5ZXJfaWQYASABKAkSEgoKc2Vzc2lvbl9pZBgCIAEoCRIMCgRu",
-            "YW1lGAMgASgJMj0KDVBsYXllclNlcnZpY2USLAoISm9pbkdhbWUSEC5Kb2lu",
-            "R2FtZVJlcXVlc3QaDC5QbGF5ZXJFdmVudDABQg2qAgpHcnBjUGxheWVyYgZw",
-            "cm90bzM="));
+            "YW1lGAMgASgJEg4KBmNvbG91chgEIAEoCTI9Cg1QbGF5ZXJTZXJ2aWNlEiwK",
+            "CEpvaW5HYW1lEhAuSm9pbkdhbWVSZXF1ZXN0GgwuUGxheWVyRXZlbnQwAUIN",
+            "qgIKR3JwY1BsYXllcmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPlayer.JoinGameRequest), global::GrpcPlayer.JoinGameRequest.Parser, new[]{ "Name" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPlayer.PlayerEvent), global::GrpcPlayer.PlayerEvent.Parser, new[]{ "Joined" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPlayer.PlayerJoinedEvent), global::GrpcPlayer.PlayerJoinedEvent.Parser, new[]{ "PlayerId", "SessionId", "Name" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPlayer.PlayerJoinedEvent), global::GrpcPlayer.PlayerJoinedEvent.Parser, new[]{ "PlayerId", "SessionId", "Name", "Colour" }, null, null, null, null)
           }));
     }
     #endregion
@@ -526,6 +526,7 @@ namespace GrpcPlayer {
       playerId_ = other.playerId_;
       sessionId_ = other.sessionId_;
       name_ = other.name_;
+      colour_ = other.colour_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -580,6 +581,21 @@ namespace GrpcPlayer {
       }
     }
 
+    /// <summary>Field number for the "colour" field.</summary>
+    public const int ColourFieldNumber = 4;
+    private string colour_ = "";
+    /// <summary>
+    /// Your colour, "#RRGGBB"; pawns you control are shown in it
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Colour {
+      get { return colour_; }
+      set {
+        colour_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -598,6 +614,7 @@ namespace GrpcPlayer {
       if (PlayerId != other.PlayerId) return false;
       if (SessionId != other.SessionId) return false;
       if (Name != other.Name) return false;
+      if (Colour != other.Colour) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -608,6 +625,7 @@ namespace GrpcPlayer {
       if (PlayerId.Length != 0) hash ^= PlayerId.GetHashCode();
       if (SessionId.Length != 0) hash ^= SessionId.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Colour.Length != 0) hash ^= Colour.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -638,6 +656,10 @@ namespace GrpcPlayer {
         output.WriteRawTag(26);
         output.WriteString(Name);
       }
+      if (Colour.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Colour);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -660,6 +682,10 @@ namespace GrpcPlayer {
         output.WriteRawTag(26);
         output.WriteString(Name);
       }
+      if (Colour.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Colour);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -678,6 +704,9 @@ namespace GrpcPlayer {
       }
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Colour.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Colour);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -699,6 +728,9 @@ namespace GrpcPlayer {
       }
       if (other.Name.Length != 0) {
         Name = other.Name;
+      }
+      if (other.Colour.Length != 0) {
+        Colour = other.Colour;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -731,6 +763,10 @@ namespace GrpcPlayer {
             Name = input.ReadString();
             break;
           }
+          case 34: {
+            Colour = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -760,6 +796,10 @@ namespace GrpcPlayer {
           }
           case 26: {
             Name = input.ReadString();
+            break;
+          }
+          case 34: {
+            Colour = input.ReadString();
             break;
           }
         }

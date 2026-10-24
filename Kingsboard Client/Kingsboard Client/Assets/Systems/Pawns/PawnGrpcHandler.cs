@@ -242,7 +242,8 @@ namespace Kingsboard.Pawns
                 Hand = pawn.Hand.Select(ToCard).ToList(),
                 SelectedCard = ToCardSelection(pawn.SelectedCard),
                 OwnerId = Guid.TryParse(pawn.OwnerId, out Guid ownerId) ? ownerId : (Guid?)null,
-                OwnerName = pawn.OwnerName
+                OwnerName = pawn.OwnerName,
+                OwnerColour = pawn.OwnerColour
             };
         }
 

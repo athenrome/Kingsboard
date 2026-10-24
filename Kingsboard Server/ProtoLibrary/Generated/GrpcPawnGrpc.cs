@@ -154,10 +154,9 @@ namespace GrpcPawn {
       /// <summary>
       /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
       ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
-      ///   FAILED_PRECONDITION - it isn't the Player phase
-      ///   NOT_FOUND           - no pawn has that id
-      ///   PERMISSION_DENIED   - you don't control that pawn
-      ///   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
@@ -326,10 +325,9 @@ namespace GrpcPawn {
       /// <summary>
       /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
       ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
-      ///   FAILED_PRECONDITION - it isn't the Player phase
-      ///   NOT_FOUND           - no pawn has that id
-      ///   PERMISSION_DENIED   - you don't control that pawn
-      ///   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -344,10 +342,9 @@ namespace GrpcPawn {
       /// <summary>
       /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
       ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
-      ///   FAILED_PRECONDITION - it isn't the Player phase
-      ///   NOT_FOUND           - no pawn has that id
-      ///   PERMISSION_DENIED   - you don't control that pawn
-      ///   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -360,10 +357,9 @@ namespace GrpcPawn {
       /// <summary>
       /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
       ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
-      ///   FAILED_PRECONDITION - it isn't the Player phase
-      ///   NOT_FOUND           - no pawn has that id
-      ///   PERMISSION_DENIED   - you don't control that pawn
-      ///   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -378,10 +374,9 @@ namespace GrpcPawn {
       /// <summary>
       /// Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
       ///   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
-      ///   FAILED_PRECONDITION - it isn't the Player phase
-      ///   NOT_FOUND           - no pawn has that id
-      ///   PERMISSION_DENIED   - you don't control that pawn
-      ///   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+      ///   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+      ///   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+      ///                         not your pawn, card not in its hand, target missing or off the board)
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>

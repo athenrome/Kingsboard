@@ -16,8 +16,8 @@ namespace KingsboardServer.Services.Interfaces
         event EventHandler<PlayersChangeEvent>? PlayersChanged;
 
         /// <summary>
-        /// Adds a player with a cleaned, unique version of <paramref name="requestedName"/> and new ids, and returns a
-        /// snapshot of them (including their secret session id)
+        /// Adds a player with a cleaned, unique version of <paramref name="requestedName"/>, a colour no other joined player
+        /// has (while there are colours to go round) and new ids, and returns a snapshot of them (including their secret session id)
         /// </summary>
         Player Join(string requestedName);
 

@@ -10,11 +10,13 @@ namespace Kingsboard.Pawns
     public static class PawnService
     {
         /// <summary>
-        /// The pawn's display colour as a Unity colour, parsed from its "#RRGGBB" string. White if the string isn't a valid colour.
+        /// The colour the pawn is shown in, as a Unity colour: its owner's colour while a player controls it, otherwise its
+        /// own. Parsed from the "#RRGGBB" string; white if that isn't a valid colour.
         /// </summary>
         public static Color GetColour(Pawn pawn)
         {
-            return ColorUtility.TryParseHtmlString(pawn.Colour, out Color colour) ? colour : Color.white;
+            string hex = pawn.OwnerId.HasValue && !string.IsNullOrEmpty(pawn.OwnerColour) ? pawn.OwnerColour : pawn.Colour;
+            return ColorUtility.TryParseHtmlString(hex, out Color colour) ? colour : Color.white;
         }
     }
 }

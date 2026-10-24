@@ -24,4 +24,5 @@ message PlayerJoinedEvent {
   string player_id = 1;  // Your public id: pawns you control have this as their owner_id
   string session_id = 2; // Your secret id: pass it to requests that act as you (e.g. SelectCard). Don't share it.
   string name = 3;       // The name you were given
+  string colour = 4;     // Your colour, "#RRGGBB"; pawns you control are shown in it
 }

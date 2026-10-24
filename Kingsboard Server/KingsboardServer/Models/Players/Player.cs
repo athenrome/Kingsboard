@@ -21,6 +21,12 @@ namespace KingsboardServer.Models.Players
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// The player's colour as "#RRGGBB", unique among joined players while there are colours to go round.
+        /// Pawns the player controls are shown in it.
+        /// </summary>
+        public string Colour { get; set; } = "#FFFFFF";
+
+        /// <summary>
         /// When they joined. Players are given pawns in the order they joined.
         /// </summary>
         public DateTimeOffset JoinedAt { get; set; }

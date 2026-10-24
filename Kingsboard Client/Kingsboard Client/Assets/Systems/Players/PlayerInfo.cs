@@ -21,5 +21,10 @@ namespace Kingsboard.Players
         /// The name the server gave us (it may differ from the one we asked for, to keep names unique)
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Our colour as "#RRGGBB", given by the server. Pawns we control are shown in it.
+        /// </summary>
+        public string Colour { get; set; }
     }
 }

@@ -100,7 +100,6 @@ namespace Kingsboard.Pawns
         public void Initialise(Pawn pawn, BoardController board)
         {
             _board = board;
-            ApplyLook(pawn);
             UpdatePawn(pawn);
             StandAt(pawn.Position);
             SetSelected(false);
@@ -112,11 +111,12 @@ namespace Kingsboard.Pawns
 
         /// <summary>
         /// Takes the pawn's latest state from the server without moving it (e.g. after a reconnect, a new hand or a new
-        /// owner). Shows its current plan, if any.
+        /// owner). Recolours it (a pawn takes its owner's colour), and shows its current plan, if any.
         /// </summary>
         public void UpdatePawn(Pawn pawn)
         {
             Pawn = pawn;
+            ApplyLook(pawn);
             ShowPlan();
             RefreshLabel();
         }
@@ -300,7 +300,8 @@ namespace Kingsboard.Pawns
         }
 
         /// <summary>
-        /// Names the pawn and tints its body, label and path in its colour (each pawn gets its own material copies)
+        /// Names the pawn and tints its body, label and path in the colour it's shown in: its owner's while a player controls
+        /// it, otherwise its own (each pawn gets its own material copies)
         /// </summary>
         private void ApplyLook(Pawn pawn)
         {

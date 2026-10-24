@@ -78,7 +78,8 @@ namespace KingsboardServer.Handlers
 
         /// <summary>
         /// Chooses the card one of the caller's pawns will play this turn. Throws Unauthenticated for an unknown session,
-        /// InvalidArgument for malformed ids, and the matching status code when the pawn service turns the choice down.
+        /// InvalidArgument for malformed ids, and FailedPrecondition (with the reason as its detail) when the pawn service
+        /// turns the choice down.
         /// </summary>
         public override Task<Empty> SelectCard(SelectCardRequest request, ServerCallContext context)
         {
@@ -98,21 +99,9 @@ namespace KingsboardServer.Handlers
             BoardPosition? target = request.Target is null ? null : ToBoardPosition(request.Target);
             CardSelectResult result = _pawnService.SelectCard(player.Id, pawnId, cardId, target);
 
-            StatusCode? errorCode = result.Status switch
+            if (!result.Selected)
             {
-                CardSelectStatus.Selected => null,
-                CardSelectStatus.NotPlayerPhase => StatusCode.FailedPrecondition,
-                CardSelectStatus.PawnNotFound => StatusCode.NotFound,
-                CardSelectStatus.NotOwner => StatusCode.PermissionDenied,
-                CardSelectStatus.CardNotInHand => StatusCode.InvalidArgument,
-                CardSelectStatus.TargetRequired => StatusCode.InvalidArgument,
-                CardSelectStatus.TargetOffBoard => StatusCode.InvalidArgument,
-                _ => StatusCode.Internal
-            };
-
-            if (errorCode is StatusCode code)
-            {
-                throw new RpcException(new Status(code, result.Error ?? "The card could not be chosen"));
+                throw new RpcException(new Status(StatusCode.FailedPrecondition, result.Error ?? "The card could not be chosen"));
             }
 
             return Task.FromResult(new Empty());
@@ -242,7 +231,8 @@ namespace KingsboardServer.Handlers
                 MaxHealth = pawn.MaxHealth,
                 SelectedCard = pawn.SelectedCard is null ? null : ToProto(pawn.SelectedCard),
                 OwnerId = pawn.OwnerId?.ToString() ?? string.Empty,
-                OwnerName = pawn.OwnerName
+                OwnerName = pawn.OwnerName,
+                OwnerColour = pawn.OwnerColour
             };
             message.PlannedPath.AddRange(pawn.PlannedPath.Select(ToProto));
             message.Deck.AddRange(pawn.Deck.Select(ToProto));

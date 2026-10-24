@@ -57,7 +57,8 @@ namespace Kingsboard.Players
                             {
                                 PlayerId = ToGuid(playerEvent.Joined.PlayerId),
                                 SessionId = ToGuid(playerEvent.Joined.SessionId),
-                                Name = playerEvent.Joined.Name
+                                Name = playerEvent.Joined.Name,
+                                Colour = playerEvent.Joined.Colour
                             });
                         }
                     }

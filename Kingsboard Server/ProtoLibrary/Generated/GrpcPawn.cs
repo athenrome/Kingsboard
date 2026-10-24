@@ -28,53 +28,54 @@ namespace GrpcPawn {
             "Gg9HcnBjQm9hcmQucHJvdG8aDkdycGNDYXJkLnByb3RvIiAKEkdldFBhd25C",
             "eUlkUmVxdWVzdBIKCgJpZBgBIAEoCSJpChFTZWxlY3RDYXJkUmVxdWVzdBIS",
             "CgpzZXNzaW9uX2lkGAEgASgJEg8KB3Bhd25faWQYAiABKAkSDwoHY2FyZF9p",
-            "ZBgDIAEoCRIeCgZ0YXJnZXQYBCABKAsyDi5Cb2FyZFBvc2l0aW9uIr4CCgRQ",
+            "ZBgDIAEoCRIeCgZ0YXJnZXQYBCABKAsyDi5Cb2FyZFBvc2l0aW9uItQCCgRQ",
             "YXduEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDgoGY29sb3VyGAMgASgJ",
             "EiAKCHBvc2l0aW9uGAQgASgLMg4uQm9hcmRQb3NpdGlvbhIkCgxwbGFubmVk",
             "X3BhdGgYBSADKAsyDi5Cb2FyZFBvc2l0aW9uEiMKCmF0dHJpYnV0ZXMYBiAB",
             "KAsyDy5QYXduQXR0cmlidXRlcxIOCgZoZWFsdGgYCCABKAUSEgoKbWF4X2hl",
             "YWx0aBgJIAEoBRITCgRkZWNrGAogAygLMgUuQ2FyZBITCgRoYW5kGAsgAygL",
             "MgUuQ2FyZBIlCg1zZWxlY3RlZF9jYXJkGAwgASgLMg4uQ2FyZFNlbGVjdGlv",
-            "bhIQCghvd25lcl9pZBgNIAEoCRISCgpvd25lcl9uYW1lGA4gASgJSgQIBxAI",
-            "IoMBCg5QYXduQXR0cmlidXRlcxIQCghzdHJlbmd0aBgBIAEoBRIRCglkZXh0",
-            "ZXJpdHkYAiABKAUSFAoMaW50ZWxsaWdlbmNlGAMgASgFEg4KBndpc2RvbRgE",
-            "IAEoBRIUCgxjb25zdGl0dXRpb24YBSABKAUSEAoIcGh5c2lxdWUYBiABKAUi",
-            "IAoIUGF3bkxpc3QSFAoFcGF3bnMYASADKAsyBS5QYXduInAKDFBhd25Nb3Zl",
-            "bWVudBIPCgdwYXduX2lkGAEgASgJEhwKBHBhdGgYAiADKAsyDi5Cb2FyZFBv",
-            "c2l0aW9uEiAKCHBvc2l0aW9uGAMgASgLMg4uQm9hcmRQb3NpdGlvbhIPCgdi",
-            "bG9ja2VkGAQgASgIIisKClBhd25TcGVlY2gSDwoHcGF3bl9pZBgBIAEoCRIM",
-            "CgR0ZXh0GAIgASgJIioKElBhd25zU25hcHNob3RFdmVudBIUCgVwYXducxgB",
-            "IAMoCzIFLlBhd24iKQoRUGF3bnNTcGF3bmVkRXZlbnQSFAoFcGF3bnMYASAD",
-            "KAsyBS5QYXduIj0KFFBhd25zQ2FyZHNEcmF3bkV2ZW50Eg8KB3R1cm5faWQY",
-            "ASABKAUSFAoFcGF3bnMYAiADKAsyBS5QYXduIjoKEVBhd25zUGxhbm5lZEV2",
-            "ZW50Eg8KB3R1cm5faWQYASABKAUSFAoFcGF3bnMYAiADKAsyBS5QYXduIj0K",
-            "FVBhd25DYXJkU2VsZWN0ZWRFdmVudBIPCgd0dXJuX2lkGAEgASgFEhMKBHBh",
-            "d24YAiABKAsyBS5QYXduInwKElBhd25zUmVzb2x2ZWRFdmVudBIPCgd0dXJu",
-            "X2lkGAEgASgFEiAKCW1vdmVtZW50cxgCIAMoCzINLlBhd25Nb3ZlbWVudBId",
-            "CghzcGVlY2hlcxgDIAMoCzILLlBhd25TcGVlY2gSFAoFcGF3bnMYBCADKAsy",
-            "BS5QYXduIkAKF1Bhd25zQ2FyZHNSZXR1cm5lZEV2ZW50Eg8KB3R1cm5faWQY",
-            "ASABKAUSFAoFcGF3bnMYAiADKAsyBS5QYXduIi8KF1Bhd25zT3duZXJzQ2hh",
-            "bmdlZEV2ZW50EhQKBXBhd25zGAEgAygLMgUuUGF3biKDAwoJUGF3bkV2ZW50",
-            "EicKCHNuYXBzaG90GAEgASgLMhMuUGF3bnNTbmFwc2hvdEV2ZW50SAASJQoH",
-            "c3Bhd25lZBgCIAEoCzISLlBhd25zU3Bhd25lZEV2ZW50SAASJQoHcGxhbm5l",
-            "ZBgDIAEoCzISLlBhd25zUGxhbm5lZEV2ZW50SAASLAoLY2FyZHNfZHJhd24Y",
-            "BSABKAsyFS5QYXduc0NhcmRzRHJhd25FdmVudEgAEi8KDWNhcmRfc2VsZWN0",
-            "ZWQYBiABKAsyFi5QYXduQ2FyZFNlbGVjdGVkRXZlbnRIABInCghyZXNvbHZl",
-            "ZBgHIAEoCzITLlBhd25zUmVzb2x2ZWRFdmVudEgAEjIKDmNhcmRzX3JldHVy",
-            "bmVkGAggASgLMhguUGF3bnNDYXJkc1JldHVybmVkRXZlbnRIABIyCg5vd25l",
-            "cnNfY2hhbmdlZBgJIAEoCzIYLlBhd25zT3duZXJzQ2hhbmdlZEV2ZW50SABC",
-            "CQoHcGF5bG9hZEoECAQQBTLZAQoLUGF3blNlcnZpY2USNgoOSm9pblBhd25T",
-            "dHJlYW0SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaCi5QYXduRXZlbnQwARIt",
-            "CghHZXRQYXducxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoJLlBhd25MaXN0",
-            "EikKC0dldFBhd25CeUlkEhMuR2V0UGF3bkJ5SWRSZXF1ZXN0GgUuUGF3bhI4",
-            "CgpTZWxlY3RDYXJkEhIuU2VsZWN0Q2FyZFJlcXVlc3QaFi5nb29nbGUucHJv",
-            "dG9idWYuRW1wdHlCC6oCCEdycGNQYXduYgZwcm90bzM="));
+            "bhIQCghvd25lcl9pZBgNIAEoCRISCgpvd25lcl9uYW1lGA4gASgJEhQKDG93",
+            "bmVyX2NvbG91chgPIAEoCUoECAcQCCKDAQoOUGF3bkF0dHJpYnV0ZXMSEAoI",
+            "c3RyZW5ndGgYASABKAUSEQoJZGV4dGVyaXR5GAIgASgFEhQKDGludGVsbGln",
+            "ZW5jZRgDIAEoBRIOCgZ3aXNkb20YBCABKAUSFAoMY29uc3RpdHV0aW9uGAUg",
+            "ASgFEhAKCHBoeXNpcXVlGAYgASgFIiAKCFBhd25MaXN0EhQKBXBhd25zGAEg",
+            "AygLMgUuUGF3biJwCgxQYXduTW92ZW1lbnQSDwoHcGF3bl9pZBgBIAEoCRIc",
+            "CgRwYXRoGAIgAygLMg4uQm9hcmRQb3NpdGlvbhIgCghwb3NpdGlvbhgDIAEo",
+            "CzIOLkJvYXJkUG9zaXRpb24SDwoHYmxvY2tlZBgEIAEoCCIrCgpQYXduU3Bl",
+            "ZWNoEg8KB3Bhd25faWQYASABKAkSDAoEdGV4dBgCIAEoCSIqChJQYXduc1Nu",
+            "YXBzaG90RXZlbnQSFAoFcGF3bnMYASADKAsyBS5QYXduIikKEVBhd25zU3Bh",
+            "d25lZEV2ZW50EhQKBXBhd25zGAEgAygLMgUuUGF3biI9ChRQYXduc0NhcmRz",
+            "RHJhd25FdmVudBIPCgd0dXJuX2lkGAEgASgFEhQKBXBhd25zGAIgAygLMgUu",
+            "UGF3biI6ChFQYXduc1BsYW5uZWRFdmVudBIPCgd0dXJuX2lkGAEgASgFEhQK",
+            "BXBhd25zGAIgAygLMgUuUGF3biI9ChVQYXduQ2FyZFNlbGVjdGVkRXZlbnQS",
+            "DwoHdHVybl9pZBgBIAEoBRITCgRwYXduGAIgASgLMgUuUGF3biJ8ChJQYXdu",
+            "c1Jlc29sdmVkRXZlbnQSDwoHdHVybl9pZBgBIAEoBRIgCgltb3ZlbWVudHMY",
+            "AiADKAsyDS5QYXduTW92ZW1lbnQSHQoIc3BlZWNoZXMYAyADKAsyCy5QYXdu",
+            "U3BlZWNoEhQKBXBhd25zGAQgAygLMgUuUGF3biJAChdQYXduc0NhcmRzUmV0",
+            "dXJuZWRFdmVudBIPCgd0dXJuX2lkGAEgASgFEhQKBXBhd25zGAIgAygLMgUu",
+            "UGF3biIvChdQYXduc093bmVyc0NoYW5nZWRFdmVudBIUCgVwYXducxgBIAMo",
+            "CzIFLlBhd24igwMKCVBhd25FdmVudBInCghzbmFwc2hvdBgBIAEoCzITLlBh",
+            "d25zU25hcHNob3RFdmVudEgAEiUKB3NwYXduZWQYAiABKAsyEi5QYXduc1Nw",
+            "YXduZWRFdmVudEgAEiUKB3BsYW5uZWQYAyABKAsyEi5QYXduc1BsYW5uZWRF",
+            "dmVudEgAEiwKC2NhcmRzX2RyYXduGAUgASgLMhUuUGF3bnNDYXJkc0RyYXdu",
+            "RXZlbnRIABIvCg1jYXJkX3NlbGVjdGVkGAYgASgLMhYuUGF3bkNhcmRTZWxl",
+            "Y3RlZEV2ZW50SAASJwoIcmVzb2x2ZWQYByABKAsyEy5QYXduc1Jlc29sdmVk",
+            "RXZlbnRIABIyCg5jYXJkc19yZXR1cm5lZBgIIAEoCzIYLlBhd25zQ2FyZHNS",
+            "ZXR1cm5lZEV2ZW50SAASMgoOb3duZXJzX2NoYW5nZWQYCSABKAsyGC5QYXdu",
+            "c093bmVyc0NoYW5nZWRFdmVudEgAQgkKB3BheWxvYWRKBAgEEAUy2QEKC1Bh",
+            "d25TZXJ2aWNlEjYKDkpvaW5QYXduU3RyZWFtEhYuZ29vZ2xlLnByb3RvYnVm",
+            "LkVtcHR5GgouUGF3bkV2ZW50MAESLQoIR2V0UGF3bnMSFi5nb29nbGUucHJv",
+            "dG9idWYuRW1wdHkaCS5QYXduTGlzdBIpCgtHZXRQYXduQnlJZBITLkdldFBh",
+            "d25CeUlkUmVxdWVzdBoFLlBhd24SOAoKU2VsZWN0Q2FyZBISLlNlbGVjdENh",
+            "cmRSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5QguqAghHcnBjUGF3",
+            "bmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::GrpcBoard.GrpcBoardReflection.Descriptor, global::GrpcCard.GrpcCardReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.GetPawnByIdRequest), global::GrpcPawn.GetPawnByIdRequest.Parser, new[]{ "Id" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.SelectCardRequest), global::GrpcPawn.SelectCardRequest.Parser, new[]{ "SessionId", "PawnId", "CardId", "Target" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.Pawn), global::GrpcPawn.Pawn.Parser, new[]{ "Id", "Name", "Colour", "Position", "PlannedPath", "Attributes", "Health", "MaxHealth", "Deck", "Hand", "SelectedCard", "OwnerId", "OwnerName" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.Pawn), global::GrpcPawn.Pawn.Parser, new[]{ "Id", "Name", "Colour", "Position", "PlannedPath", "Attributes", "Health", "MaxHealth", "Deck", "Hand", "SelectedCard", "OwnerId", "OwnerName", "OwnerColour" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnAttributes), global::GrpcPawn.PawnAttributes.Parser, new[]{ "Strength", "Dexterity", "Intelligence", "Wisdom", "Constitution", "Physique" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnList), global::GrpcPawn.PawnList.Parser, new[]{ "Pawns" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::GrpcPawn.PawnMovement), global::GrpcPawn.PawnMovement.Parser, new[]{ "PawnId", "Path", "Position", "Blocked" }, null, null, null, null),
@@ -670,6 +671,7 @@ namespace GrpcPawn {
       selectedCard_ = other.selectedCard_ != null ? other.selectedCard_.Clone() : null;
       ownerId_ = other.ownerId_;
       ownerName_ = other.ownerName_;
+      ownerColour_ = other.ownerColour_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -866,6 +868,21 @@ namespace GrpcPawn {
       }
     }
 
+    /// <summary>Field number for the "owner_colour" field.</summary>
+    public const int OwnerColourFieldNumber = 15;
+    private string ownerColour_ = "";
+    /// <summary>
+    /// That player's colour ("#RRGGBB"); empty when it acts on its own
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string OwnerColour {
+      get { return ownerColour_; }
+      set {
+        ownerColour_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -894,6 +911,7 @@ namespace GrpcPawn {
       if (!object.Equals(SelectedCard, other.SelectedCard)) return false;
       if (OwnerId != other.OwnerId) return false;
       if (OwnerName != other.OwnerName) return false;
+      if (OwnerColour != other.OwnerColour) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -914,6 +932,7 @@ namespace GrpcPawn {
       if (selectedCard_ != null) hash ^= SelectedCard.GetHashCode();
       if (OwnerId.Length != 0) hash ^= OwnerId.GetHashCode();
       if (OwnerName.Length != 0) hash ^= OwnerName.GetHashCode();
+      if (OwnerColour.Length != 0) hash ^= OwnerColour.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -975,6 +994,10 @@ namespace GrpcPawn {
         output.WriteRawTag(114);
         output.WriteString(OwnerName);
       }
+      if (OwnerColour.Length != 0) {
+        output.WriteRawTag(122);
+        output.WriteString(OwnerColour);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1028,6 +1051,10 @@ namespace GrpcPawn {
         output.WriteRawTag(114);
         output.WriteString(OwnerName);
       }
+      if (OwnerColour.Length != 0) {
+        output.WriteRawTag(122);
+        output.WriteString(OwnerColour);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1070,6 +1097,9 @@ namespace GrpcPawn {
       }
       if (OwnerName.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(OwnerName);
+      }
+      if (OwnerColour.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OwnerColour);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1124,6 +1154,9 @@ namespace GrpcPawn {
       }
       if (other.OwnerName.Length != 0) {
         OwnerName = other.OwnerName;
+      }
+      if (other.OwnerColour.Length != 0) {
+        OwnerColour = other.OwnerColour;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1205,6 +1238,10 @@ namespace GrpcPawn {
             OwnerName = input.ReadString();
             break;
           }
+          case 122: {
+            OwnerColour = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -1283,6 +1320,10 @@ namespace GrpcPawn {
           }
           case 114: {
             OwnerName = input.ReadString();
+            break;
+          }
+          case 122: {
+            OwnerColour = input.ReadString();
             break;
           }
         }

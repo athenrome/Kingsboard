@@ -29,10 +29,9 @@ service PawnService {
 
   // Chooses the card one of your pawns will play this turn, replacing its current choice. Errors:
   //   UNAUTHENTICATED     - the session id isn't a joined player (join with PlayerService.JoinGame first)
-  //   FAILED_PRECONDITION - it isn't the Player phase
-  //   NOT_FOUND           - no pawn has that id
-  //   PERMISSION_DENIED   - you don't control that pawn
-  //   INVALID_ARGUMENT    - malformed id, the card isn't in the pawn's hand, or the target is missing or off the board
+  //   INVALID_ARGUMENT    - the pawn or card id isn't a valid id
+  //   FAILED_PRECONDITION - the card wasn't chosen; the status detail says why (not the Player phase, no such pawn,
+  //                         not your pawn, card not in its hand, target missing or off the board)
   rpc SelectCard(SelectCardRequest) returns (google.protobuf.Empty);
 }
 
@@ -64,6 +63,7 @@ message Pawn {
   CardSelection selected_card = 12;     // The card it will play this turn; absent when none is chosen
   string owner_id = 13;                 // Player id of the player who controls it; empty when it acts on its own
   string owner_name = 14;               // That player's name; empty when it acts on its own
+  string owner_colour = 15;             // That player's colour ("#RRGGBB"); empty when it acts on its own
 }
 
 // A pawn's core attributes, rolled when it is spawned, and the Physique stat derived from them

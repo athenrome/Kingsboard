@@ -15,6 +15,12 @@ namespace KingsboardServer.Services
     {
         private const string DefaultName = "Player";
 
+        // Players are given the first of these no joined player has; once all are taken, they're reused in order
+        private static readonly string[] Colours =
+        {
+            "#FF4136", "#0074D9", "#2ECC40", "#FFDC00", "#B10DC9", "#FF851B", "#39CCCC", "#F012BE"
+        };
+
         private readonly Serilog.ILogger _logger;
         private readonly IOptionsMonitor<PlayerSettings> _settings;
         private readonly TimeProvider _timeProvider;
@@ -40,7 +46,7 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Adds a player with a cleaned, unique name and new public and session ids, then raises <see cref="PlayersChanged"/>
+        /// Adds a player with a cleaned, unique name, a colour, and new public and session ids, then raises <see cref="PlayersChanged"/>
         /// </summary>
         public Player Join(string requestedName)
         {
@@ -55,6 +61,7 @@ namespace KingsboardServer.Services
                     Id = Guid.NewGuid(),
                     SessionId = Guid.NewGuid(),
                     Name = MakeUnique(baseName, maxLength),
+                    Colour = PickColour(),
                     JoinedAt = _timeProvider.GetUtcNow()
                 };
                 _players.Add(player);
@@ -118,6 +125,16 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
+        /// The first colour no joined player has, or (when every colour is taken) the next one in turn.
+        /// Caller must hold <see cref="_lock"/>.
+        /// </summary>
+        private string PickColour()
+        {
+            string? free = Colours.FirstOrDefault(c => !_players.Any(p => string.Equals(p.Colour, c, StringComparison.OrdinalIgnoreCase)));
+            return free ?? Colours[_players.Count % Colours.Length];
+        }
+
+        /// <summary>
         /// Adds " (2)", " (3)"... if the name is already in use, keeping it within <paramref name="maxLength"/>.
         /// Caller must hold <see cref="_lock"/>.
         /// </summary>
@@ -168,6 +185,7 @@ namespace KingsboardServer.Services
                 Id = player.Id,
                 SessionId = player.SessionId,
                 Name = player.Name,
+                Colour = player.Colour,
                 JoinedAt = player.JoinedAt
             };
         }

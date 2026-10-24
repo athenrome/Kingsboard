@@ -214,24 +214,24 @@ namespace KingsboardServer.Services
             {
                 if (!_selectionOpen)
                 {
-                    return new CardSelectResult(CardSelectStatus.NotPlayerPhase, "Cards can only be chosen in the Player phase");
+                    return new CardSelectResult(false, "Cards can only be chosen in the Player phase");
                 }
 
                 List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
                 Pawn? pawn = pawns.FirstOrDefault(p => p.Id == pawnId);
                 if (pawn is null)
                 {
-                    return new CardSelectResult(CardSelectStatus.PawnNotFound, $"No pawn has id {pawnId}");
+                    return new CardSelectResult(false, $"No pawn has id {pawnId}");
                 }
                 if (pawn.OwnerId != playerId)
                 {
-                    return new CardSelectResult(CardSelectStatus.NotOwner, $"You don't control {pawn.Name}");
+                    return new CardSelectResult(false, $"You don't control {pawn.Name}");
                 }
 
                 Card? card = pawn.Hand.FirstOrDefault(c => c.Id == cardId);
                 if (card is null)
                 {
-                    return new CardSelectResult(CardSelectStatus.CardNotInHand, $"That card isn't in {pawn.Name}'s hand");
+                    return new CardSelectResult(false, $"That card isn't in {pawn.Name}'s hand");
                 }
 
                 BoardPosition? aim = null;
@@ -239,13 +239,13 @@ namespace KingsboardServer.Services
                 {
                     if (target is null)
                     {
-                        return new CardSelectResult(CardSelectStatus.TargetRequired, $"{card.Name} needs a tile to aim at");
+                        return new CardSelectResult(false, $"{card.Name} needs a tile to aim at");
                     }
 
                     BoardPosition column = _movement.GetColumn(target);
                     if (!_boardService.IsOnBoard(column))
                     {
-                        return new CardSelectResult(CardSelectStatus.TargetOffBoard, "That tile isn't on the board");
+                        return new CardSelectResult(false, "That tile isn't on the board");
                     }
                     aim = _movement.GetStandPosition(column) ?? column;
                 }
@@ -257,7 +257,7 @@ namespace KingsboardServer.Services
                 RaiseChanged(PawnChangeReason.CardSelected, _turnId, new[] { pawn });
 
                 _logger.Debug("Turn {TurnId}: player {PlayerId} chose {Card} for {Pawn}", _turnId, playerId, card.Name, pawn.Name);
-                return new CardSelectResult(CardSelectStatus.Selected);
+                return new CardSelectResult(true);
             }
         }
 
@@ -497,7 +497,8 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Gives each player (in the order they joined) pawns no one controls until they have PlayerSettings:PawnsPerPlayer.
+        /// Gives each player (in the order they joined) pawns no one controls until they have PlayerSettings:PawnsPerPlayer,
+        /// marking each with the player's name and colour.
         /// Pawns of players who have left go back to no one, as do any a player has beyond the limit (if it was lowered).
         /// Returns true if any pawn's owner changed. Caller must hold <see cref="_lock"/>.
         /// </summary>
@@ -516,6 +517,7 @@ namespace KingsboardServer.Services
                 {
                     pawn.OwnerId = null;
                     pawn.OwnerName = string.Empty;
+                    pawn.OwnerColour = string.Empty;
                     changed = true;
                     continue;
                 }
@@ -529,6 +531,7 @@ namespace KingsboardServer.Services
                 {
                     pawn.OwnerId = player.Id;
                     pawn.OwnerName = player.Name;
+                    pawn.OwnerColour = player.Colour;
                     changed = true;
                 }
             }
@@ -664,7 +667,8 @@ namespace KingsboardServer.Services
                 Hand = pawn.Hand.Select(_cardService.Clone).ToArray(),
                 SelectedCard = pawn.SelectedCard,
                 OwnerId = pawn.OwnerId,
-                OwnerName = pawn.OwnerName
+                OwnerName = pawn.OwnerName,
+                OwnerColour = pawn.OwnerColour
             };
         }
     }

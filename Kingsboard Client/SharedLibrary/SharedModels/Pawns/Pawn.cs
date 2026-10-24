@@ -80,5 +80,11 @@ namespace Kingsboard.Shared.Models.Pawns
         /// Display name of the player who controls the pawn. Empty when no player does.
         /// </summary>
         public string OwnerName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Colour ("#RRGGBB") of the player who controls the pawn; clients show the pawn in it instead of
+        /// <see cref="Colour"/> while it is controlled. Empty when no player does.
+        /// </summary>
+        public string OwnerColour { get; set; } = string.Empty;
     }
 }

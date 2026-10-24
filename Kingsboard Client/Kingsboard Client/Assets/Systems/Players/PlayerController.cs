@@ -68,7 +68,7 @@ namespace Kingsboard.Players
         private void OnJoined(PlayerInfo player)
         {
             Player = player;
-            Debug.Log($"[Players] Joined the game as {player.Name}");
+            Debug.Log($"[Players] Joined the game as {player.Name} ({player.Colour})");
             Joined?.Invoke(player);
         }
 
