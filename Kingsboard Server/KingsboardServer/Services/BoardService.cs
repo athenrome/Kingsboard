@@ -1,5 +1,6 @@
 using Kingsboard.Shared.Models.Board;
 using Kingsboard.Shared.Models.Enumerations;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Configuration;
@@ -29,8 +30,15 @@ namespace KingsboardServer.Services
         private readonly IBoardRepository _repository;
 
         // Guards every read and change of the stored board, and keeps changes and their events
-        // in the same order so clients can apply them as they arrive. Everything inside it is non-blocking.
+        // in the same order so clients can apply them as they arrive. Everything inside it is non-blocking
+        // apart from the database writes, which are small except when a whole new board is created.
         private readonly object _lock = new();
+
+        // The working copy of the stored board, read from the database the first time it's needed and kept in step with
+        // every change saved since. Board queries are run many times a turn (e.g. by pathfinding), so they use this
+        // instead of reading tens of thousands of tiles back each time. Only touched under _lock.
+        private GameBoard? _board;
+        private bool _boardLoaded;
 
         /// <summary>
         /// Raised with a snapshot when a new board is created. Handlers must be quick and non-blocking.
@@ -76,7 +84,9 @@ namespace KingsboardServer.Services
 
             lock (_lock)
             {
-                _repository.SaveBoard(board);
+                _repository.ReplaceBoard(ToRecord(board));
+                _board = board;
+                _boardLoaded = true;
                 BoardCreated?.Invoke(this, Clone(board));
             }
 
@@ -91,7 +101,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is null ? null : Clone(board);
             }
         }
@@ -107,7 +117,7 @@ namespace KingsboardServer.Services
 
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is null ? null : CutSection(board, region);
             }
         }
@@ -123,7 +133,7 @@ namespace KingsboardServer.Services
 
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 read(board is null ? null : CutSection(board, region));
             }
         }
@@ -135,7 +145,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is not null && Contains(board, position);
             }
         }
@@ -147,7 +157,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is not null && Contains(board, position) && board.Tiles[IndexOf(board, position)] is null;
             }
         }
@@ -159,7 +169,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is not null && Contains(board, position) ? board.Tiles[IndexOf(board, position)] : null;
             }
         }
@@ -172,7 +182,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 if (board is null || !ContainsColumn(board, column))
                 {
                     return null;
@@ -191,7 +201,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 if (board is null || !ContainsColumn(board, column))
                 {
                     return Array.Empty<MapTile>();
@@ -215,7 +225,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 if (board is null || !ContainsColumn(board, column))
                 {
                     return null;
@@ -233,7 +243,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is not null && CanPlace(board, position);
             }
         }
@@ -245,7 +255,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                GameBoard? board = _repository.GetBoard();
+                GameBoard? board = GetLoadedBoard();
                 return board is not null && CanRemove(board, position);
             }
         }
@@ -363,14 +373,88 @@ namespace KingsboardServer.Services
             }
 
             updated.Version++;
-            _repository.SaveBoard(updated);
+            // Save first, so a failed write leaves the working copy matching the database
+            _repository.SaveTileChanges(updated.Id, updated.Version, placed.Select(t => ToRecord(updated.Id, t)).ToArray(), removed);
+            _board = updated;
 
             TilesChanged?.Invoke(this, new TilesChangeEvent(updated.Id, updated.Version, placed.ToArray(), removed.ToArray()));
         }
 
         private GameBoard GetStoredBoard()
         {
-            return _repository.GetBoard() ?? throw new InvalidOperationException("No board has been created yet");
+            return GetLoadedBoard() ?? throw new InvalidOperationException("No board has been created yet");
+        }
+
+        /// <summary>
+        /// The working copy of the stored board, reading it from the database the first time.
+        /// Null if no board has been saved yet. Caller must hold <see cref="_lock"/>, and must not change it.
+        /// </summary>
+        private GameBoard? GetLoadedBoard()
+        {
+            if (!_boardLoaded)
+            {
+                BoardRecord? record = _repository.GetBoard();
+                _board = record is null ? null : FromRecord(record);
+                _boardLoaded = true;
+            }
+            return _board;
+        }
+
+        /// <summary>
+        /// Turns a board into the record it's stored as, with a record for every tile
+        /// </summary>
+        private static BoardRecord ToRecord(GameBoard board)
+        {
+            return new BoardRecord()
+            {
+                Id = board.Id,
+                Version = board.Version,
+                Width = board.Width,
+                Depth = board.Depth,
+                Height = board.Height,
+                Tiles = board.Tiles.OfType<MapTile>().Select(t => ToRecord(board.Id, t)).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Turns a tile into the record it's stored as, with a new record id
+        /// </summary>
+        private static BoardTileRecord ToRecord(Guid boardId, MapTile tile)
+        {
+            return new BoardTileRecord()
+            {
+                Id = Guid.NewGuid(),
+                BoardId = boardId,
+                X = tile.Position.X,
+                Y = tile.Position.Y,
+                Z = tile.Position.Z,
+                Type = tile.Type
+            };
+        }
+
+        /// <summary>
+        /// Turns a stored board back into a board, checking it the same way as a newly generated one.
+        /// Throws if the stored board is malformed.
+        /// </summary>
+        private static GameBoard FromRecord(BoardRecord record)
+        {
+            GameBoard board = new GameBoard()
+            {
+                Id = record.Id,
+                Version = record.Version,
+                Width = record.Width,
+                Depth = record.Depth,
+                Height = record.Height,
+                Tiles = new MapTile?[record.Width * record.Depth * record.Height]
+            };
+            foreach (BoardTileRecord tile in record.Tiles)
+            {
+                BoardPosition position = new BoardPosition(tile.X, tile.Y, tile.Z);
+                RequireOnBoard(board, position);
+                board.Tiles[IndexOf(board, position)] = new MapTile(position, tile.Type);
+            }
+            Validate(board);
+            return board;
         }
 
         private static bool Contains(GameBoard board, BoardPosition position)

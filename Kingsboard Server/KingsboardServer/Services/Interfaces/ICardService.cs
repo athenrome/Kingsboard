@@ -1,6 +1,8 @@
 using Kingsboard.Shared.Models.Cards;
 using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Models.Cards;
+using KingsboardServer.Models.Enumerations;
 
 namespace KingsboardServer.Services.Interfaces
 {
@@ -52,5 +54,16 @@ namespace KingsboardServer.Services.Interfaces
         /// A copy of the card, so callers can't change the original
         /// </summary>
         Card Clone(Card card);
+
+        /// <summary>
+        /// Turns a card into the record it's stored as: held by the pawn <paramref name="pawnId"/>, in
+        /// <paramref name="pile"/> at position <paramref name="order"/> (0 = first)
+        /// </summary>
+        CardRecord ToRecord(Card card, Guid pawnId, CardPile pile, int order);
+
+        /// <summary>
+        /// Turns a stored card back into a card
+        /// </summary>
+        Card FromRecord(CardRecord record);
     }
 }

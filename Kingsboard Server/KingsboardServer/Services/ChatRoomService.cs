@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.Channels;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Models.Enumerations;
 using KingsboardServer.Subscriptions.Chat;
 using KingsboardServer.Models.Chat;
@@ -35,7 +36,8 @@ namespace KingsboardServer.Services
         // so a joining player never misses or duplicates a message. Everything inside it is non-blocking.
         private readonly object _lock = new();
         private readonly Dictionary<Guid, Participant> _participants = new();
-        private long _nextMessageId = 1;
+        // Null until the first message is sent, when it's read from the stored history
+        private long? _nextMessageId;
 
         /// <summary>
         /// Creates an empty chat room that stores its messages in <paramref name="repository"/>
@@ -69,9 +71,9 @@ namespace KingsboardServer.Services
                 string username = MakeUnique(baseName, settings.MaxUsernameLength);
                 participant = new Participant(Guid.NewGuid(), username, outbox);
 
-                foreach (ChatEntry entry in _repository.GetRecent(settings.HistorySize))
+                foreach (ChatMessageRecord record in _repository.GetRecent(settings.HistorySize))
                 {
-                    outbox.Writer.TryWrite(entry with { IsHistory = true });
+                    outbox.Writer.TryWrite(FromRecord(record) with { IsHistory = true });
                 }
 
                 _participants.Add(participant.SessionId, participant);
@@ -164,8 +166,12 @@ namespace KingsboardServer.Services
         /// </summary>
         private void BroadcastLocked(ChatEntryType type, string username, string text)
         {
-            ChatEntry entry = new ChatEntry(_nextMessageId++, type, username, text, _timeProvider.GetUtcNow());
-            _repository.Add(entry);
+            // Message numbers carry on from the stored history, so they keep going up across restarts
+            _nextMessageId ??= _repository.GetLatestSequence() + 1;
+
+            ChatEntry entry = new ChatEntry(_nextMessageId.Value, type, username, text, _timeProvider.GetUtcNow());
+            _repository.Add(ToRecord(entry));
+            _nextMessageId++;
             _repository.TrimTo(Math.Max(1, _settings.CurrentValue.MaxStoredMessages));
 
             foreach (Participant participant in _participants.Values)
@@ -174,6 +180,30 @@ namespace KingsboardServer.Services
             }
 
             _logger.Debug("[Chat] {Username}: {Text}", username, text);
+        }
+
+        /// <summary>
+        /// Turns a message into the record it's stored as, with a new record id
+        /// </summary>
+        private static ChatMessageRecord ToRecord(ChatEntry entry)
+        {
+            return new ChatMessageRecord()
+            {
+                Id = Guid.NewGuid(),
+                Sequence = entry.Id,
+                Type = entry.Type,
+                Username = entry.Username,
+                Text = entry.Text,
+                SentAt = entry.SentAt
+            };
+        }
+
+        /// <summary>
+        /// Turns a stored message back into a message
+        /// </summary>
+        private static ChatEntry FromRecord(ChatMessageRecord record)
+        {
+            return new ChatEntry(record.Sequence, record.Type, record.Username, record.Text, record.SentAt);
         }
 
         /// <summary>

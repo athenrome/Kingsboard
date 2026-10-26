@@ -2,6 +2,7 @@ using Kingsboard.Shared.Models.Board;
 using Kingsboard.Shared.Models.Cards;
 using Kingsboard.Shared.Models.Enumerations;
 using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Events.Players;
 using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models;
@@ -65,6 +66,11 @@ namespace KingsboardServer.Services
         private readonly object _lock = new();
         private Random _random = new Random();
 
+        // The working copy of the stored pawns, read from the database the first time it's needed and replaced by every
+        // save since, so reads don't go back to the database. Only touched under _lock, and never changed in place.
+        private IReadOnlyList<Pawn> _pawns = Array.Empty<Pawn>();
+        private bool _pawnsLoaded;
+
         // The turn in progress, and whether players may change their pawns' cards (only during its Player phase)
         private int _turnId;
         private bool _selectionOpen;
@@ -106,7 +112,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                return CloneAll(_repository.GetPawns());
+                return CloneAll(GetLoadedPawns());
             }
         }
 
@@ -117,7 +123,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                Pawn? pawn = _repository.GetPawns().FirstOrDefault(p => p.Id == id);
+                Pawn? pawn = GetLoadedPawns().FirstOrDefault(p => p.Id == id);
                 return pawn is null ? null : Clone(pawn);
             }
         }
@@ -130,7 +136,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                read(CloneAll(_repository.GetPawns()));
+                read(CloneAll(GetLoadedPawns()));
             }
         }
 
@@ -184,7 +190,7 @@ namespace KingsboardServer.Services
                     }
 
                     AssignOwners(pawns, players);
-                    _repository.SavePawns(pawns);
+                    SavePawns(pawns);
                     RaiseChanged(PawnChangeReason.Spawned, 0, pawns);
 
                     _logger.Information("Spawned {Count} pawns", count);
@@ -217,7 +223,7 @@ namespace KingsboardServer.Services
                     return new CardSelectResult(false, "Cards can only be chosen in the Player phase");
                 }
 
-                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
                 Pawn? pawn = pawns.FirstOrDefault(p => p.Id == pawnId);
                 if (pawn is null)
                 {
@@ -253,7 +259,7 @@ namespace KingsboardServer.Services
                 pawn.SelectedCard = new CardSelection(card.Id, aim);
                 pawn.PlannedPath = PlanPath(pawn, card, aim, OccupiedBy(pawns, pawn));
 
-                _repository.SavePawns(pawns);
+                SavePawns(pawns);
                 RaiseChanged(PawnChangeReason.CardSelected, _turnId, new[] { pawn });
 
                 _logger.Debug("Turn {TurnId}: player {PlayerId} chose {Card} for {Pawn}", _turnId, playerId, card.Name, pawn.Name);
@@ -300,7 +306,7 @@ namespace KingsboardServer.Services
                 _turnId = turnId;
                 _selectionOpen = false;
 
-                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
                 if (pawns.Count == 0)
                 {
                     return;
@@ -311,7 +317,7 @@ namespace KingsboardServer.Services
                     _cardService.DrawCards(pawn, handSize - pawn.Hand.Count);
                 }
 
-                _repository.SavePawns(pawns);
+                SavePawns(pawns);
                 RaiseChanged(PawnChangeReason.CardsDrawn, turnId, pawns);
             }
         }
@@ -325,7 +331,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
                 if (pawns.Count == 0)
                 {
                     return;
@@ -363,7 +369,7 @@ namespace KingsboardServer.Services
                     }
                 }
 
-                _repository.SavePawns(pawns);
+                SavePawns(pawns);
                 RaiseChanged(PawnChangeReason.Planned, turnId, pawns);
 
                 _logger.Debug("Turn {TurnId}: {Chosen} of {Count} pawns chose a card", turnId, pawns.Count(p => p.SelectedCard is not null), pawns.Count);
@@ -393,7 +399,7 @@ namespace KingsboardServer.Services
             {
                 _selectionOpen = false;
 
-                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
                 if (pawns.Count == 0)
                 {
                     return;
@@ -442,7 +448,7 @@ namespace KingsboardServer.Services
                     }
                 }
 
-                _repository.SavePawns(pawns);
+                SavePawns(pawns);
                 RaiseChanged(PawnChangeReason.Resolved, turnId, pawns, movements, speeches);
 
                 _logger.Debug("Turn {TurnId}: {Moved} pawns moved ({Blocked} blocked), {Spoke} spoke",
@@ -459,7 +465,7 @@ namespace KingsboardServer.Services
             {
                 _selectionOpen = false;
 
-                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
                 if (pawns.Count == 0)
                 {
                     return;
@@ -471,7 +477,7 @@ namespace KingsboardServer.Services
                     pawn.PlannedPath = Array.Empty<BoardPosition>();
                 }
 
-                _repository.SavePawns(pawns);
+                SavePawns(pawns);
                 RaiseChanged(PawnChangeReason.CardsReturned, turnId, pawns);
             }
         }
@@ -483,13 +489,13 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                List<Pawn> pawns = CloneAll(_repository.GetPawns()).ToList();
+                List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
                 if (!AssignOwners(pawns, change.Players))
                 {
                     return;
                 }
 
-                _repository.SavePawns(pawns);
+                SavePawns(pawns);
                 RaiseChanged(PawnChangeReason.OwnersChanged, 0, pawns);
 
                 _logger.Information("Pawn owners changed: {Owned} of {Count} pawns are controlled by players", pawns.Count(p => p.OwnerId is not null), pawns.Count);
@@ -630,6 +636,121 @@ namespace KingsboardServer.Services
         {
             PawnsChanged?.Invoke(this, new PawnsChangeEvent(reason, turnId, CloneAll(pawns),
                 movements ?? Array.Empty<PawnMovement>(), speeches ?? Array.Empty<PawnSpeech>()));
+        }
+
+        /// <summary>
+        /// The working copy of the stored pawns, reading them from the database the first time.
+        /// Caller must hold <see cref="_lock"/>, and must not change them.
+        /// </summary>
+        private IReadOnlyList<Pawn> GetLoadedPawns()
+        {
+            if (!_pawnsLoaded)
+            {
+                _pawns = _repository.GetPawns().Select(FromRecord).ToArray();
+                _pawnsLoaded = true;
+            }
+            return _pawns;
+        }
+
+        /// <summary>
+        /// Stores the pawns in place of all the current ones and makes them the working copy. The caller must not change
+        /// them afterwards. Saves first, so a failed write leaves the working copy matching the database.
+        /// Caller must hold <see cref="_lock"/>.
+        /// </summary>
+        private void SavePawns(IReadOnlyList<Pawn> pawns)
+        {
+            _repository.SavePawns(pawns.Select((pawn, i) => ToRecord(pawn, i)).ToArray());
+            _pawns = pawns;
+            _pawnsLoaded = true;
+        }
+
+        /// <summary>
+        /// Turns a pawn into the record it's stored as, with records for its cards and planned path.
+        /// <paramref name="order"/> is the pawn's place in the list of pawns.
+        /// </summary>
+        private PawnRecord ToRecord(Pawn pawn, int order)
+        {
+            return new PawnRecord()
+            {
+                Id = pawn.Id,
+                Order = order,
+                Name = pawn.Name,
+                Colour = pawn.Colour,
+                PositionX = pawn.Position.X,
+                PositionY = pawn.Position.Y,
+                PositionZ = pawn.Position.Z,
+                Strength = pawn.Attributes.Strength,
+                Dexterity = pawn.Attributes.Dexterity,
+                Intelligence = pawn.Attributes.Intelligence,
+                Wisdom = pawn.Attributes.Wisdom,
+                Constitution = pawn.Attributes.Constitution,
+                Physique = pawn.Attributes.Physique,
+                Health = pawn.Health,
+                MaxHealth = pawn.MaxHealth,
+                SelectedCardId = pawn.SelectedCard?.CardId,
+                SelectedTargetX = pawn.SelectedCard?.Target?.X,
+                SelectedTargetY = pawn.SelectedCard?.Target?.Y,
+                SelectedTargetZ = pawn.SelectedCard?.Target?.Z,
+                OwnerId = pawn.OwnerId,
+                OwnerName = pawn.OwnerName,
+                OwnerColour = pawn.OwnerColour,
+                Cards = pawn.Deck.Select((card, i) => _cardService.ToRecord(card, pawn.Id, CardPile.Deck, i))
+                    .Concat(pawn.Hand.Select((card, i) => _cardService.ToRecord(card, pawn.Id, CardPile.Hand, i)))
+                    .ToList(),
+                PlannedPath = pawn.PlannedPath.Select((step, i) => new PawnPathStepRecord()
+                {
+                    Id = Guid.NewGuid(),
+                    PawnId = pawn.Id,
+                    Order = i,
+                    X = step.X,
+                    Y = step.Y,
+                    Z = step.Z
+                }).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Turns a stored pawn, with its cards and planned path, back into a pawn
+        /// </summary>
+        private Pawn FromRecord(PawnRecord record)
+        {
+            BoardPosition? target = record is { SelectedTargetX: int x, SelectedTargetY: int y, SelectedTargetZ: int z }
+                ? new BoardPosition(x, y, z)
+                : null;
+
+            return new Pawn()
+            {
+                Id = record.Id,
+                Name = record.Name,
+                Colour = record.Colour,
+                Position = new BoardPosition(record.PositionX, record.PositionY, record.PositionZ),
+                Attributes = new PawnAttributes()
+                {
+                    Strength = record.Strength,
+                    Dexterity = record.Dexterity,
+                    Intelligence = record.Intelligence,
+                    Wisdom = record.Wisdom,
+                    Constitution = record.Constitution,
+                    Physique = record.Physique
+                },
+                Health = record.Health,
+                MaxHealth = record.MaxHealth,
+                PlannedPath = record.PlannedPath.OrderBy(s => s.Order).Select(s => new BoardPosition(s.X, s.Y, s.Z)).ToArray(),
+                Deck = CardsInPile(record, CardPile.Deck),
+                Hand = CardsInPile(record, CardPile.Hand),
+                SelectedCard = record.SelectedCardId is Guid cardId ? new CardSelection(cardId, target) : null,
+                OwnerId = record.OwnerId,
+                OwnerName = record.OwnerName,
+                OwnerColour = record.OwnerColour
+            };
+        }
+
+        /// <summary>
+        /// The stored pawn's cards in one pile, in order
+        /// </summary>
+        private IReadOnlyList<Card> CardsInPile(PawnRecord record, CardPile pile)
+        {
+            return record.Cards.Where(c => c.Pile == pile).OrderBy(c => c.Order).Select(_cardService.FromRecord).ToArray();
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using Kingsboard.Shared.Models.Cards;
 using Kingsboard.Shared.Models.Enumerations;
 using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Models.Cards;
 using KingsboardServer.Models.Enumerations;
 using KingsboardServer.Services.Interfaces;
@@ -188,6 +189,42 @@ namespace KingsboardServer.Services
                 Description = card.Description,
                 ImageId = card.ImageId,
                 TargetType = card.TargetType
+            };
+        }
+
+        /// <summary>
+        /// Turns a card into the record it's stored as: held by the pawn <paramref name="pawnId"/>, in
+        /// <paramref name="pile"/> at position <paramref name="order"/> (0 = first). The record keeps the card's own id.
+        /// </summary>
+        public CardRecord ToRecord(Card card, Guid pawnId, CardPile pile, int order)
+        {
+            return new CardRecord()
+            {
+                Id = card.Id,
+                PawnId = pawnId,
+                Pile = pile,
+                Order = order,
+                DefinitionId = card.DefinitionId,
+                Name = card.Name,
+                Description = card.Description,
+                ImageId = card.ImageId,
+                TargetType = card.TargetType
+            };
+        }
+
+        /// <summary>
+        /// Turns a stored card back into a card, as it was when it was stored
+        /// </summary>
+        public Card FromRecord(CardRecord record)
+        {
+            return new Card()
+            {
+                Id = record.Id,
+                DefinitionId = record.DefinitionId,
+                Name = record.Name,
+                Description = record.Description,
+                ImageId = record.ImageId,
+                TargetType = record.TargetType
             };
         }
     }

@@ -1,3 +1,4 @@
+using KingsboardServer.Data;
 using KingsboardServer.Handlers;
 using KingsboardServer.Models.Configuration;
 using KingsboardServer.Repositories;
@@ -5,6 +6,9 @@ using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services;
 using KingsboardServer.Services.CardActions;
 using KingsboardServer.Services.Interfaces;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace KingsboardServer
@@ -48,6 +52,26 @@ namespace KingsboardServer
 
 
                 builder.Services.AddSingleton(TimeProvider.System);
+
+                //Database settings (appsettings.json -> "DatabaseSettings"). All database access goes through Entity Framework:
+                //repositories create a short-lived KingsboardDbContext per operation from this factory.
+                builder.Services.AddOptions<DatabaseSettings>()
+                    .Bind(builder.Configuration.GetSection(DatabaseSettings.SectionName))
+                    .Validate(s => !string.IsNullOrWhiteSpace(s.ConnectionString), "DatabaseSettings:ConnectionString must be set")
+                    .ValidateOnStart();
+
+                builder.Services.AddDbContextFactory<KingsboardDbContext>((services, options) =>
+                {
+                    DatabaseSettings settings = services.GetRequiredService<IOptions<DatabaseSettings>>().Value;
+                    SqliteConnectionStringBuilder connection = new SqliteConnectionStringBuilder(settings.ConnectionString);
+
+                    // Keep the database next to the server rather than wherever it happened to be started from
+                    if (!string.IsNullOrEmpty(connection.DataSource) && connection.DataSource != ":memory:" && !Path.IsPathRooted(connection.DataSource))
+                    {
+                        connection.DataSource = Path.Combine(builder.Environment.ContentRootPath, connection.DataSource);
+                    }
+                    options.UseSqlite(connection.ToString());
+                });
 
                 //Global turn timer settings (appsettings.json -> "TurnSettings")
                 builder.Services.AddOptions<TurnSettings>()
@@ -115,6 +139,12 @@ namespace KingsboardServer
                 //Build & Run
                 var app = builder.Build();
 
+                //Create the database, or bring its tables up to date, before anything reads or writes it
+                using (KingsboardDbContext db = app.Services.GetRequiredService<IDbContextFactory<KingsboardDbContext>>().CreateDbContext())
+                {
+                    db.Database.Migrate();
+                }
+
                 //Configure GRPC Services
                 app.MapGrpcService<ChatGrpcHandler>();
                 app.MapGrpcService<TurnTimerGrpcHandler>();
@@ -132,7 +162,11 @@ namespace KingsboardServer
                 app.Run();
 
             }
-            catch (Exception e) 
+            catch (HostAbortedException)
+            {
+                //The Entity Framework tools (e.g. "dotnet ef migrations add") stop the host on purpose once they've read its setup
+            }
+            catch (Exception e)
             {
                 Log.Fatal($"Application start-up failed due to: {e.Message}", e);
             }

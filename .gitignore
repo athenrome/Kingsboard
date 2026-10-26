@@ -94,3 +94,8 @@ $RECYCLE.BIN/
 appsettings.*.local.json
 *.env
 .env*
+
+# SQLite database the server stores its data in
+*.db
+*.db-shm
+*.db-wal

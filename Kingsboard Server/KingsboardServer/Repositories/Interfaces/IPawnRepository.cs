@@ -1,22 +1,22 @@
-
-using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Data.Records;
 
 namespace KingsboardServer.Repositories.Interfaces
 {
     /// <summary>
-    /// Stores the pawns. All access to stored pawn data goes through here.
-    /// This is plain storage: pawn rules, copying and locking are done by the PawnService, its only user.
+    /// Stores the pawns in the database. All access to stored pawn data goes through here.
+    /// This is plain storage: pawn rules, copying, locking and turning records into pawns are done by the
+    /// PawnService, its only user.
     /// </summary>
     public interface IPawnRepository
     {
         /// <summary>
-        /// Returns the stored pawns (empty if none have been saved yet)
+        /// Reads the stored pawns with their cards and planned paths (empty if none have been saved yet)
         /// </summary>
-        IReadOnlyList<Pawn> GetPawns();
+        IReadOnlyList<PawnRecord> GetPawns();
 
         /// <summary>
-        /// Stores pawns in place of all the current ones
+        /// Stores pawns, with their cards and planned paths, in place of all the current ones, in a single transaction
         /// </summary>
-        void SavePawns(IReadOnlyList<Pawn> pawns);
+        void SavePawns(IReadOnlyList<PawnRecord> pawns);
     }
 }

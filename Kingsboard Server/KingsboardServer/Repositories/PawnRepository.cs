@@ -1,29 +1,57 @@
-using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Data;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace KingsboardServer.Repositories
 {
     /// <summary>
-    /// Keeps the pawns in memory. They are lost when the server restarts.
+    /// Stores the pawns in the SQLite database through Entity Framework, so they outlive a server restart.
+    /// Thread-safe: each call uses its own short-lived <see cref="KingsboardDbContext"/>.
     /// </summary>
     public class PawnRepository : IPawnRepository
     {
-        private IReadOnlyList<Pawn> _pawns = Array.Empty<Pawn>();
+        private readonly IDbContextFactory<KingsboardDbContext> _contextFactory;
 
         /// <summary>
-        /// Returns the stored pawns (empty if none have been saved yet)
+        /// Creates a repository that opens database sessions from <paramref name="contextFactory"/>
         /// </summary>
-        public IReadOnlyList<Pawn> GetPawns()
+        public PawnRepository(IDbContextFactory<KingsboardDbContext> contextFactory)
         {
-            return Volatile.Read(ref _pawns);
+            _contextFactory = contextFactory;
         }
 
         /// <summary>
-        /// Stores pawns in place of all the current ones
+        /// Reads the stored pawns with their cards and planned paths, in <see cref="PawnRecord.Order"/>
+        /// (empty if none have been saved yet). Cards and steps come back in no particular order.
         /// </summary>
-        public void SavePawns(IReadOnlyList<Pawn> pawns)
+        public IReadOnlyList<PawnRecord> GetPawns()
         {
-            Volatile.Write(ref _pawns, pawns);
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+            return context.Pawns
+                .AsNoTracking()
+                .Include(p => p.Cards)
+                .Include(p => p.PlannedPath)
+                .AsSplitQuery()
+                .OrderBy(p => p.Order)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Stores pawns, with their cards and planned paths, in place of all the current ones, in a single transaction
+        /// </summary>
+        public void SavePawns(IReadOnlyList<PawnRecord> pawns)
+        {
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+            using var transaction = context.Database.BeginTransaction();
+
+            context.PawnPathSteps.ExecuteDelete();
+            context.Cards.ExecuteDelete();
+            context.Pawns.ExecuteDelete();
+            context.Pawns.AddRange(pawns);
+            context.SaveChanges();
+
+            transaction.Commit();
         }
     }
 }
