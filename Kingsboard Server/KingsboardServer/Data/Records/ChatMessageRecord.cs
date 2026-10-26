@@ -6,12 +6,12 @@ namespace KingsboardServer.Data.Records
     /// The stored form of one chat message.
     /// Storage only: <c>ChatRoomService</c> turns it into a <c>ChatEntry</c> and back.
     /// </summary>
-    public class ChatMessageRecord
+    public class ChatMessageRecord : BaseModel
     {
         /// <summary>
         /// Unique id of the stored message
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid MessageId { get; set; }
 
         /// <summary>
         /// The message number shown to clients. Goes up by one with each message, and carries on after a restart.

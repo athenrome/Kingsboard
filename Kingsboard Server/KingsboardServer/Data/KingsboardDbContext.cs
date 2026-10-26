@@ -49,60 +49,55 @@ namespace KingsboardServer.Data
         public DbSet<ChatMessageRecord> ChatMessages => Set<ChatMessageRecord>();
 
         /// <summary>
-        /// Sets up the tables: ids are GUIDs the server assigns, a board holds one tile per position, and a board's
-        /// tiles and a pawn's cards and path steps are deleted with it
+        /// Sets up the tables: every row's key is its <see cref="BaseModel.Id"/>, numbered by the database; each record's
+        /// GUID is unique; a board holds one tile per position; and a board's tiles and a pawn's cards and path steps are
+        /// deleted with it
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BoardRecord>(board =>
             {
-                board.HasKey(b => b.Id);
-                board.Property(b => b.Id).ValueGeneratedNever();
+                board.HasIndex(b => b.BoardId).IsUnique();
                 board.HasMany(b => b.Tiles)
                     .WithOne()
-                    .HasForeignKey(t => t.BoardId)
+                    .HasForeignKey(t => t.BoardRecordId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<BoardTileRecord>(tile =>
             {
-                tile.HasKey(t => t.Id);
-                tile.Property(t => t.Id).ValueGeneratedNever();
-                tile.HasIndex(t => new { t.BoardId, t.X, t.Y, t.Z }).IsUnique();
+                tile.HasIndex(t => t.TileId).IsUnique();
+                tile.HasIndex(t => new { t.BoardRecordId, t.X, t.Y, t.Z }).IsUnique();
             });
 
             modelBuilder.Entity<PawnRecord>(pawn =>
             {
-                pawn.HasKey(p => p.Id);
-                pawn.Property(p => p.Id).ValueGeneratedNever();
+                pawn.HasIndex(p => p.PawnId).IsUnique();
                 pawn.HasMany(p => p.Cards)
                     .WithOne()
-                    .HasForeignKey(c => c.PawnId)
+                    .HasForeignKey(c => c.PawnRecordId)
                     .OnDelete(DeleteBehavior.Cascade);
                 pawn.HasMany(p => p.PlannedPath)
                     .WithOne()
-                    .HasForeignKey(s => s.PawnId)
+                    .HasForeignKey(s => s.PawnRecordId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<CardRecord>(card =>
             {
-                card.HasKey(c => c.Id);
-                card.Property(c => c.Id).ValueGeneratedNever();
-                card.HasIndex(c => new { c.PawnId, c.Pile, c.Order });
+                card.HasIndex(c => c.CardId).IsUnique();
+                card.HasIndex(c => new { c.PawnRecordId, c.Pile, c.Order });
             });
 
             modelBuilder.Entity<PawnPathStepRecord>(step =>
             {
-                step.HasKey(s => s.Id);
-                step.Property(s => s.Id).ValueGeneratedNever();
-                step.HasIndex(s => new { s.PawnId, s.Order });
+                step.HasIndex(s => s.StepId).IsUnique();
+                step.HasIndex(s => new { s.PawnRecordId, s.Order });
             });
 
             modelBuilder.Entity<ChatMessageRecord>(message =>
             {
-                message.HasKey(m => m.Id);
-                message.Property(m => m.Id).ValueGeneratedNever();
+                message.HasIndex(m => m.MessageId).IsUnique();
                 message.HasIndex(m => m.Sequence).IsUnique();
             });
         }

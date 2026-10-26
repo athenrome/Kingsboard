@@ -193,15 +193,14 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Turns a card into the record it's stored as: held by the pawn <paramref name="pawnId"/>, in
-        /// <paramref name="pile"/> at position <paramref name="order"/> (0 = first). The record keeps the card's own id.
+        /// Turns a card into the record it's stored as, in <paramref name="pile"/> at position <paramref name="order"/>
+        /// (0 = first). The record keeps the card's own id, and is linked to its pawn when the pawn's record is saved.
         /// </summary>
-        public CardRecord ToRecord(Card card, Guid pawnId, CardPile pile, int order)
+        public CardRecord ToRecord(Card card, CardPile pile, int order)
         {
             return new CardRecord()
             {
-                Id = card.Id,
-                PawnId = pawnId,
+                CardId = card.Id,
                 Pile = pile,
                 Order = order,
                 DefinitionId = card.DefinitionId,
@@ -219,7 +218,7 @@ namespace KingsboardServer.Services
         {
             return new Card()
             {
-                Id = record.Id,
+                Id = record.CardId,
                 DefinitionId = record.DefinitionId,
                 Name = record.Name,
                 Description = record.Description,

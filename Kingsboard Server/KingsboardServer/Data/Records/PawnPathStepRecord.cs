@@ -4,17 +4,17 @@ namespace KingsboardServer.Data.Records
     /// The stored form of one step of the path a pawn plans to walk.
     /// Storage only: <c>PawnService</c> turns a pawn's steps into its planned path and back.
     /// </summary>
-    public class PawnPathStepRecord
+    public class PawnPathStepRecord : BaseModel
     {
         /// <summary>
         /// Unique id of the stored step
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid StepId { get; set; }
 
         /// <summary>
-        /// The pawn whose path this is
+        /// <see cref="BaseModel.Id"/> of the pawn whose path this is. Set when the pawn is saved.
         /// </summary>
-        public Guid PawnId { get; set; }
+        public int PawnRecordId { get; set; }
 
         /// <summary>
         /// Where the step comes in the path, from 0 (the first step)

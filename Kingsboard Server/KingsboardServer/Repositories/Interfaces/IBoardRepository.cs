@@ -23,7 +23,8 @@ namespace KingsboardServer.Repositories.Interfaces
         /// <summary>
         /// Saves one change to the stored board in a single transaction: deletes the tiles at <paramref name="removed"/>,
         /// stores <paramref name="placed"/> (in place of any tile already at the same position) and sets the board's version.
-        /// Throws if the board isn't stored.
+        /// <paramref name="boardId"/> is the board's own id (<see cref="BoardRecord.BoardId"/>); the placed tiles are linked
+        /// to it here. Throws if the board isn't stored.
         /// </summary>
         void SaveTileChanges(Guid boardId, long version, IReadOnlyCollection<BoardTileRecord> placed, IReadOnlyCollection<BoardPosition> removed);
     }

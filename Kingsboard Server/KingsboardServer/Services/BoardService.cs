@@ -374,7 +374,7 @@ namespace KingsboardServer.Services
 
             updated.Version++;
             // Save first, so a failed write leaves the working copy matching the database
-            _repository.SaveTileChanges(updated.Id, updated.Version, placed.Select(t => ToRecord(updated.Id, t)).ToArray(), removed);
+            _repository.SaveTileChanges(updated.Id, updated.Version, placed.Select(ToRecord).ToArray(), removed);
             _board = updated;
 
             TilesChanged?.Invoke(this, new TilesChangeEvent(updated.Id, updated.Version, placed.ToArray(), removed.ToArray()));
@@ -407,24 +407,23 @@ namespace KingsboardServer.Services
         {
             return new BoardRecord()
             {
-                Id = board.Id,
+                BoardId = board.Id,
                 Version = board.Version,
                 Width = board.Width,
                 Depth = board.Depth,
                 Height = board.Height,
-                Tiles = board.Tiles.OfType<MapTile>().Select(t => ToRecord(board.Id, t)).ToList()
+                Tiles = board.Tiles.OfType<MapTile>().Select(ToRecord).ToList()
             };
         }
 
         /// <summary>
-        /// Turns a tile into the record it's stored as, with a new record id
+        /// Turns a tile into the record it's stored as, with a new tile id. The repository links it to its board when it's saved.
         /// </summary>
-        private static BoardTileRecord ToRecord(Guid boardId, MapTile tile)
+        private static BoardTileRecord ToRecord(MapTile tile)
         {
             return new BoardTileRecord()
             {
-                Id = Guid.NewGuid(),
-                BoardId = boardId,
+                TileId = Guid.NewGuid(),
                 X = tile.Position.X,
                 Y = tile.Position.Y,
                 Z = tile.Position.Z,
@@ -440,7 +439,7 @@ namespace KingsboardServer.Services
         {
             GameBoard board = new GameBoard()
             {
-                Id = record.Id,
+                Id = record.BoardId,
                 Version = record.Version,
                 Width = record.Width,
                 Depth = record.Depth,

@@ -189,7 +189,7 @@ namespace KingsboardServer.Services
         {
             return new ChatMessageRecord()
             {
-                Id = Guid.NewGuid(),
+                MessageId = Guid.NewGuid(),
                 Sequence = entry.Id,
                 Type = entry.Type,
                 Username = entry.Username,

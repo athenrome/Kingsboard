@@ -4,12 +4,12 @@ namespace KingsboardServer.Data.Records
     /// The stored form of a pawn. Its cards and planned path are stored as <see cref="CardRecord"/>s and
     /// <see cref="PawnPathStepRecord"/>s. Storage only: <c>PawnService</c> turns it into a <c>Pawn</c> and back.
     /// </summary>
-    public class PawnRecord
+    public class PawnRecord : BaseModel
     {
         /// <summary>
-        /// The pawn's id
+        /// The pawn's own id
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid PawnId { get; set; }
 
         /// <summary>
         /// Where the pawn comes in the list of pawns, from 0. Keeps the pawns in spawn order when they are read back.

@@ -7,17 +7,17 @@ namespace KingsboardServer.Data.Records
     /// The stored form of one card a pawn holds, in its deck or its hand.
     /// Storage only: <c>CardService</c> turns it into a <c>Card</c> and back.
     /// </summary>
-    public class CardRecord
+    public class CardRecord : BaseModel
     {
         /// <summary>
-        /// Unique id of this copy of the card (the same as the card's own id)
+        /// The card's own id: unique to this copy of the card
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid CardId { get; set; }
 
         /// <summary>
-        /// The pawn holding the card
+        /// <see cref="BaseModel.Id"/> of the pawn holding the card. Set when the pawn is saved.
         /// </summary>
-        public Guid PawnId { get; set; }
+        public int PawnRecordId { get; set; }
 
         /// <summary>
         /// Whether the card is in the pawn's deck or its hand

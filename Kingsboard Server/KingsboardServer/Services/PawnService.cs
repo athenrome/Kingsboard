@@ -672,7 +672,7 @@ namespace KingsboardServer.Services
         {
             return new PawnRecord()
             {
-                Id = pawn.Id,
+                PawnId = pawn.Id,
                 Order = order,
                 Name = pawn.Name,
                 Colour = pawn.Colour,
@@ -694,13 +694,12 @@ namespace KingsboardServer.Services
                 OwnerId = pawn.OwnerId,
                 OwnerName = pawn.OwnerName,
                 OwnerColour = pawn.OwnerColour,
-                Cards = pawn.Deck.Select((card, i) => _cardService.ToRecord(card, pawn.Id, CardPile.Deck, i))
-                    .Concat(pawn.Hand.Select((card, i) => _cardService.ToRecord(card, pawn.Id, CardPile.Hand, i)))
+                Cards = pawn.Deck.Select((card, i) => _cardService.ToRecord(card, CardPile.Deck, i))
+                    .Concat(pawn.Hand.Select((card, i) => _cardService.ToRecord(card, CardPile.Hand, i)))
                     .ToList(),
                 PlannedPath = pawn.PlannedPath.Select((step, i) => new PawnPathStepRecord()
                 {
-                    Id = Guid.NewGuid(),
-                    PawnId = pawn.Id,
+                    StepId = Guid.NewGuid(),
                     Order = i,
                     X = step.X,
                     Y = step.Y,
@@ -720,7 +719,7 @@ namespace KingsboardServer.Services
 
             return new Pawn()
             {
-                Id = record.Id,
+                Id = record.PawnId,
                 Name = record.Name,
                 Colour = record.Colour,
                 Position = new BoardPosition(record.PositionX, record.PositionY, record.PositionZ),

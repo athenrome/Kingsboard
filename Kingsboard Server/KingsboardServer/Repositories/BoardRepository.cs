@@ -62,23 +62,29 @@ namespace KingsboardServer.Repositories
             using KingsboardDbContext context = _contextFactory.CreateDbContext();
             using var transaction = context.Database.BeginTransaction();
 
-            int updated = context.Boards
-                .Where(b => b.Id == boardId)
+            int boardRecordId = context.Boards
+                .Where(b => b.BoardId == boardId)
+                .Select(b => (int?)b.Id)
+                .FirstOrDefault()
+                ?? throw new InvalidOperationException($"Board {boardId} isn't stored");
+
+            context.Boards
+                .Where(b => b.Id == boardRecordId)
                 .ExecuteUpdate(setters => setters.SetProperty(b => b.Version, version));
-            if (updated == 0)
-            {
-                throw new InvalidOperationException($"Board {boardId} isn't stored");
-            }
 
             // A position holds at most one tile, so clear every position being placed on as well as those being removed
             IEnumerable<BoardPosition> cleared = removed.Concat(placed.Select(t => new BoardPosition(t.X, t.Y, t.Z))).Distinct();
             foreach (BoardPosition position in cleared)
             {
                 context.BoardTiles
-                    .Where(t => t.BoardId == boardId && t.X == position.X && t.Y == position.Y && t.Z == position.Z)
+                    .Where(t => t.BoardRecordId == boardRecordId && t.X == position.X && t.Y == position.Y && t.Z == position.Z)
                     .ExecuteDelete();
             }
 
+            foreach (BoardTileRecord tile in placed)
+            {
+                tile.BoardRecordId = boardRecordId;
+            }
             context.BoardTiles.AddRange(placed);
             context.SaveChanges();
 

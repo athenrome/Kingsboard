@@ -56,10 +56,10 @@ namespace KingsboardServer.Services.Interfaces
         Card Clone(Card card);
 
         /// <summary>
-        /// Turns a card into the record it's stored as: held by the pawn <paramref name="pawnId"/>, in
-        /// <paramref name="pile"/> at position <paramref name="order"/> (0 = first)
+        /// Turns a card into the record it's stored as, in <paramref name="pile"/> at position <paramref name="order"/>
+        /// (0 = first). It's linked to its pawn when the pawn's record is saved.
         /// </summary>
-        CardRecord ToRecord(Card card, Guid pawnId, CardPile pile, int order);
+        CardRecord ToRecord(Card card, CardPile pile, int order);
 
         /// <summary>
         /// Turns a stored card back into a card

@@ -4,12 +4,12 @@ namespace KingsboardServer.Data.Records
     /// The stored form of the game board: its size and version. Its tiles are stored as <see cref="BoardTileRecord"/>s.
     /// Storage only: <c>BoardService</c> turns it into a <c>GameBoard</c> and back.
     /// </summary>
-    public class BoardRecord
+    public class BoardRecord : BaseModel
     {
         /// <summary>
-        /// The board's id, which changes whenever the board is recreated
+        /// The board's own id, which changes whenever the board is recreated
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid BoardId { get; set; }
 
         /// <summary>
         /// The board's version, which goes up by one with every change

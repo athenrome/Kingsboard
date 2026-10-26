@@ -15,7 +15,9 @@ namespace KingsboardServer.Data.Migrations
                 name: "Boards",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    BoardId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Version = table.Column<long>(type: "INTEGER", nullable: false),
                     Width = table.Column<int>(type: "INTEGER", nullable: false),
                     Depth = table.Column<int>(type: "INTEGER", nullable: false),
@@ -30,7 +32,9 @@ namespace KingsboardServer.Data.Migrations
                 name: "ChatMessages",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    MessageId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Sequence = table.Column<long>(type: "INTEGER", nullable: false),
                     Type = table.Column<int>(type: "INTEGER", nullable: false),
                     Username = table.Column<string>(type: "TEXT", nullable: false),
@@ -46,7 +50,9 @@ namespace KingsboardServer.Data.Migrations
                 name: "Pawns",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PawnId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Order = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Colour = table.Column<string>(type: "TEXT", nullable: false),
@@ -78,8 +84,10 @@ namespace KingsboardServer.Data.Migrations
                 name: "BoardTiles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    BoardId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TileId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    BoardRecordId = table.Column<int>(type: "INTEGER", nullable: false),
                     X = table.Column<int>(type: "INTEGER", nullable: false),
                     Y = table.Column<int>(type: "INTEGER", nullable: false),
                     Z = table.Column<int>(type: "INTEGER", nullable: false),
@@ -89,8 +97,8 @@ namespace KingsboardServer.Data.Migrations
                 {
                     table.PrimaryKey("PK_BoardTiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BoardTiles_Boards_BoardId",
-                        column: x => x.BoardId,
+                        name: "FK_BoardTiles_Boards_BoardRecordId",
+                        column: x => x.BoardRecordId,
                         principalTable: "Boards",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -100,8 +108,10 @@ namespace KingsboardServer.Data.Migrations
                 name: "Cards",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PawnId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CardId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PawnRecordId = table.Column<int>(type: "INTEGER", nullable: false),
                     Pile = table.Column<int>(type: "INTEGER", nullable: false),
                     Order = table.Column<int>(type: "INTEGER", nullable: false),
                     DefinitionId = table.Column<string>(type: "TEXT", nullable: false),
@@ -114,8 +124,8 @@ namespace KingsboardServer.Data.Migrations
                 {
                     table.PrimaryKey("PK_Cards", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Cards_Pawns_PawnId",
-                        column: x => x.PawnId,
+                        name: "FK_Cards_Pawns_PawnRecordId",
+                        column: x => x.PawnRecordId,
                         principalTable: "Pawns",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -125,8 +135,10 @@ namespace KingsboardServer.Data.Migrations
                 name: "PawnPathSteps",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PawnId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    StepId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PawnRecordId = table.Column<int>(type: "INTEGER", nullable: false),
                     Order = table.Column<int>(type: "INTEGER", nullable: false),
                     X = table.Column<int>(type: "INTEGER", nullable: false),
                     Y = table.Column<int>(type: "INTEGER", nullable: false),
@@ -136,23 +148,47 @@ namespace KingsboardServer.Data.Migrations
                 {
                     table.PrimaryKey("PK_PawnPathSteps", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PawnPathSteps_Pawns_PawnId",
-                        column: x => x.PawnId,
+                        name: "FK_PawnPathSteps_Pawns_PawnRecordId",
+                        column: x => x.PawnRecordId,
                         principalTable: "Pawns",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BoardTiles_BoardId_X_Y_Z",
-                table: "BoardTiles",
-                columns: new[] { "BoardId", "X", "Y", "Z" },
+                name: "IX_Boards_BoardId",
+                table: "Boards",
+                column: "BoardId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cards_PawnId_Pile_Order",
+                name: "IX_BoardTiles_BoardRecordId_X_Y_Z",
+                table: "BoardTiles",
+                columns: new[] { "BoardRecordId", "X", "Y", "Z" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BoardTiles_TileId",
+                table: "BoardTiles",
+                column: "TileId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cards_CardId",
                 table: "Cards",
-                columns: new[] { "PawnId", "Pile", "Order" });
+                column: "CardId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cards_PawnRecordId_Pile_Order",
+                table: "Cards",
+                columns: new[] { "PawnRecordId", "Pile", "Order" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessages_MessageId",
+                table: "ChatMessages",
+                column: "MessageId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChatMessages_Sequence",
@@ -161,9 +197,21 @@ namespace KingsboardServer.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PawnPathSteps_PawnId_Order",
+                name: "IX_PawnPathSteps_PawnRecordId_Order",
                 table: "PawnPathSteps",
-                columns: new[] { "PawnId", "Order" });
+                columns: new[] { "PawnRecordId", "Order" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PawnPathSteps_StepId",
+                table: "PawnPathSteps",
+                column: "StepId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pawns_PawnId",
+                table: "Pawns",
+                column: "PawnId",
+                unique: true);
         }
 
         /// <inheritdoc />
