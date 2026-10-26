@@ -1,12 +1,11 @@
 using System.Text;
 using System.Threading.Channels;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Models.Enumerations;
 using KingsboardServer.Subscriptions.Chat;
 using KingsboardServer.Models.Chat;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -27,7 +26,7 @@ namespace KingsboardServer.Services
         private const int OutboxHeadroom = 64;
 
         private readonly Serilog.ILogger _logger;
-        private readonly IOptionsMonitor<ChatSettings> _settings;
+        private readonly IConfiguration _configuration;
         private readonly TimeProvider _timeProvider;
         private readonly IChatRepository _repository;
 
@@ -35,28 +34,45 @@ namespace KingsboardServer.Services
         // so a joining player never misses or duplicates a message. Everything inside it is non-blocking.
         private readonly object _lock = new();
         private readonly Dictionary<Guid, Participant> _participants = new();
-        private long _nextMessageId = 1;
+        // Null until the first message is sent, when it's read from the stored history
+        private long? _nextMessageId;
 
         /// <summary>
-        /// Creates an empty chat room that stores its messages in <paramref name="repository"/>
+        /// Creates an empty chat room that stores its messages in <paramref name="repository"/> and reads its settings from
+        /// the "ChatSettings" section of <paramref name="configuration"/>
         /// </summary>
-        public ChatRoomService(Serilog.ILogger logger, IOptionsMonitor<ChatSettings> settings, TimeProvider timeProvider, IChatRepository repository)
+        public ChatRoomService(Serilog.ILogger logger, IConfiguration configuration, TimeProvider timeProvider, IChatRepository repository)
         {
             _logger = logger;
-            _settings = settings;
+            _configuration = configuration;
             _timeProvider = timeProvider;
             _repository = repository;
         }
+
+        // Settings are read each time they're used, so changes to appsettings.json apply without a restart.
+        // Longest message, in characters (at least 1)
+        private int MaxMessageLength => Math.Max(1, _configuration.GetValue("ChatSettings:MaxMessageLength", 256));
+
+        // Longest username, in characters; longer names are cut (at least 1)
+        private int MaxUsernameLength => Math.Max(1, _configuration.GetValue("ChatSettings:MaxUsernameLength", 24));
+
+        // How many recent messages a newly joined player is sent
+        private int HistorySize => Math.Max(0, _configuration.GetValue("ChatSettings:HistorySize", 50));
+
+        // How many messages are kept in the database; older ones are deleted
+        private int MaxStoredMessages => _configuration.GetValue("ChatSettings:MaxStoredMessages", 1000);
+
+        // Shortest gap allowed between one player's messages, in seconds
+        private double MinSecondsBetweenMessages => _configuration.GetValue("ChatSettings:MinSecondsBetweenMessages", 0.25);
 
         /// <summary>
         /// Adds a player with a cleaned, unique name, queues recent history for them and announces that they joined
         /// </summary>
         public ChatSubscription Join(string requestedUsername)
         {
-            ChatSettings settings = _settings.CurrentValue;
-            string baseName = CleanUsername(requestedUsername, settings.MaxUsernameLength);
+            string baseName = CleanUsername(requestedUsername, MaxUsernameLength);
 
-            Channel<ChatEntry> outbox = Channel.CreateBounded<ChatEntry>(new BoundedChannelOptions(Math.Max(0, settings.HistorySize) + OutboxHeadroom)
+            Channel<ChatEntry> outbox = Channel.CreateBounded<ChatEntry>(new BoundedChannelOptions(Math.Max(0, HistorySize) + OutboxHeadroom)
             {
                 FullMode = BoundedChannelFullMode.DropOldest,
                 SingleReader = true,
@@ -66,12 +82,12 @@ namespace KingsboardServer.Services
             Participant participant;
             lock (_lock)
             {
-                string username = MakeUnique(baseName, settings.MaxUsernameLength);
+                string username = MakeUnique(baseName, MaxUsernameLength);
                 participant = new Participant(Guid.NewGuid(), username, outbox);
 
-                foreach (ChatEntry entry in _repository.GetRecent(settings.HistorySize))
+                foreach (ChatMessageRecord record in _repository.GetRecent(HistorySize))
                 {
-                    outbox.Writer.TryWrite(entry with { IsHistory = true });
+                    outbox.Writer.TryWrite(FromRecord(record) with { IsHistory = true });
                 }
 
                 _participants.Add(participant.SessionId, participant);
@@ -107,7 +123,6 @@ namespace KingsboardServer.Services
         /// </summary>
         public ChatSendResult SendMessage(Guid sessionId, string text)
         {
-            ChatSettings settings = _settings.CurrentValue;
             string cleaned = CleanText(text);
 
             if (cleaned.Length == 0)
@@ -115,9 +130,9 @@ namespace KingsboardServer.Services
                 return new ChatSendResult(ChatSendStatus.EmptyMessage, "Message is empty");
             }
 
-            if (cleaned.Length > settings.MaxMessageLength)
+            if (cleaned.Length > MaxMessageLength)
             {
-                return new ChatSendResult(ChatSendStatus.MessageTooLong, $"Message is too long (max {settings.MaxMessageLength} characters)");
+                return new ChatSendResult(ChatSendStatus.MessageTooLong, $"Message is too long (max {MaxMessageLength} characters)");
             }
 
             lock (_lock)
@@ -128,7 +143,7 @@ namespace KingsboardServer.Services
                 }
 
                 DateTimeOffset now = _timeProvider.GetUtcNow();
-                TimeSpan minInterval = TimeSpan.FromSeconds(Math.Max(0, settings.MinSecondsBetweenMessages));
+                TimeSpan minInterval = TimeSpan.FromSeconds(Math.Max(0, MinSecondsBetweenMessages));
                 if (participant.LastMessageAt is DateTimeOffset last && now - last < minInterval)
                 {
                     return new ChatSendResult(ChatSendStatus.RateLimited, "You're sending messages too quickly");
@@ -164,9 +179,13 @@ namespace KingsboardServer.Services
         /// </summary>
         private void BroadcastLocked(ChatEntryType type, string username, string text)
         {
-            ChatEntry entry = new ChatEntry(_nextMessageId++, type, username, text, _timeProvider.GetUtcNow());
-            _repository.Add(entry);
-            _repository.TrimTo(Math.Max(1, _settings.CurrentValue.MaxStoredMessages));
+            // Message numbers carry on from the stored history, so they keep going up across restarts
+            _nextMessageId ??= _repository.GetLatestSequence() + 1;
+
+            ChatEntry entry = new ChatEntry(_nextMessageId.Value, type, username, text, _timeProvider.GetUtcNow());
+            _repository.Add(ToRecord(entry));
+            _nextMessageId++;
+            _repository.TrimTo(Math.Max(1, MaxStoredMessages));
 
             foreach (Participant participant in _participants.Values)
             {
@@ -174,6 +193,29 @@ namespace KingsboardServer.Services
             }
 
             _logger.Debug("[Chat] {Username}: {Text}", username, text);
+        }
+
+        /// <summary>
+        /// Turns a message into the record it's stored as, with a new record id
+        /// </summary>
+        private static ChatMessageRecord ToRecord(ChatEntry entry)
+        {
+            return new ChatMessageRecord()
+            {
+                Sequence = entry.Id,
+                Type = entry.Type,
+                Username = entry.Username,
+                Text = entry.Text,
+                SentAt = entry.SentAt
+            };
+        }
+
+        /// <summary>
+        /// Turns a stored message back into a message
+        /// </summary>
+        private static ChatEntry FromRecord(ChatMessageRecord record)
+        {
+            return new ChatEntry(record.Sequence, record.Type, record.Username, record.Text, record.SentAt);
         }
 
         /// <summary>

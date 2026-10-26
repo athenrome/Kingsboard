@@ -7,15 +7,10 @@ namespace Kingsboard.Shared.Models.Pawns
 {
     /// <summary>
     /// A character on the board that acts by playing action cards from its hand. The server decides everything it does;
-    /// clients only display it.
+    /// clients only display it. Identified by its <see cref="PublicBaseModel.PublicId"/>.
     /// </summary>
-    public class Pawn
+    public class Pawn : PublicBaseModel
     {
-        /// <summary>
-        /// Unique id for the pawn
-        /// </summary>
-        public Guid Id { get; set; }
-
         /// <summary>
         /// Display name
         /// </summary>

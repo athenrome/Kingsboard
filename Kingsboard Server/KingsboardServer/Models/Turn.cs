@@ -1,18 +1,14 @@
-
+using Kingsboard.Shared.Models;
 using Kingsboard.Shared.Models.Enumerations;
 
 namespace KingsboardServer.Models
 {
     /// <summary>
-    /// One round of the game, run on the global turn timer
+    /// One round of the game, run on the global turn timer. Its <see cref="BaseModel.Id"/> is the turn number, starting at 1
+    /// and going up by one each turn.
     /// </summary>
-    public class Turn
+    public class Turn : BaseModel
     {
-        /// <summary>
-        /// Turn number, starting at 1 and going up by one each turn
-        /// </summary>
-        public int Id { get; set; }
-
         /// <summary>
         /// The phase the turn is currently in
         /// </summary>

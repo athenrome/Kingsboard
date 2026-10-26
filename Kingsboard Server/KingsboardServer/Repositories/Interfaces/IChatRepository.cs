@@ -1,25 +1,31 @@
-using KingsboardServer.Models.Chat;
+using KingsboardServer.Data.Records;
 
 namespace KingsboardServer.Repositories.Interfaces
 {
     /// <summary>
-    /// Stores chat messages. All access to stored chat data goes through here.
+    /// Stores chat messages in the database. All access to stored chat data goes through here.
     /// </summary>
     public interface IChatRepository
     {
         /// <summary>
-        /// Stores a message after the ones already stored
+        /// Stores a message
         /// </summary>
-        void Add(ChatEntry entry);
+        void Add(ChatMessageRecord message);
 
         /// <summary>
-        /// Removes the oldest messages until at most <paramref name="maxCount"/> remain
+        /// Deletes the oldest messages (lowest <see cref="ChatMessageRecord.Sequence"/>) until at most
+        /// <paramref name="maxCount"/> remain
         /// </summary>
         void TrimTo(int maxCount);
 
         /// <summary>
-        /// Returns the most recent messages, oldest first
+        /// Reads the most recent messages, oldest first
         /// </summary>
-        IReadOnlyList<ChatEntry> GetRecent(int count);
+        IReadOnlyList<ChatMessageRecord> GetRecent(int count);
+
+        /// <summary>
+        /// The highest stored message number, or 0 if no messages are stored
+        /// </summary>
+        long GetLatestSequence();
     }
 }

@@ -42,7 +42,7 @@ namespace KingsboardServer.Handlers
                 {
                     Joined = new PlayerJoinedEvent()
                     {
-                        PlayerId = player.Id.ToString(),
+                        PlayerId = player.PublicId.ToString(),
                         SessionId = player.SessionId.ToString(),
                         Name = player.Name,
                         Colour = player.Colour

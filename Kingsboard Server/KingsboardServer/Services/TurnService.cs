@@ -1,8 +1,6 @@
 using Kingsboard.Shared.Models.Enumerations;
 using KingsboardServer.Models;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -17,15 +15,18 @@ namespace KingsboardServer.Services
         private static readonly TurnPhase[] PhasesBeforePlayer = { TurnPhase.Upkeep, TurnPhase.Planning };
         private static readonly TurnPhase[] PhasesAfterPlayer = { TurnPhase.Resolution, TurnPhase.End };
 
+        // Turn length used when TurnSettings:TurnDurationSeconds isn't configured, or isn't valid
+        private const double DefaultTurnDurationSeconds = 4;
+
         private readonly Serilog.ILogger _logger;
-        private readonly IOptionsMonitor<TurnSettings> _settings;
+        private readonly IConfiguration _configuration;
         private readonly TimeProvider _timeProvider;
         private readonly IReadOnlyList<ITurnPhaseHandler> _phaseHandlers;
 
         private readonly object _turnLock = new();
         private Turn? _currentTurn;
 
-        private TimeSpan _lastValidDuration = TimeSpan.FromSeconds(TurnSettings.DefaultTurnDurationSeconds);
+        private TimeSpan _lastValidDuration = TimeSpan.FromSeconds(DefaultTurnDurationSeconds);
 
         /// <summary>
         /// Raised with a snapshot when a new turn begins. Handlers must be quick and non-blocking.
@@ -45,10 +46,10 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Creates the service with the handlers that do each phase's work. No turns run until <see cref="RunTurnLoopAsync"/> is called.
         /// </summary>
-        public TurnService(Serilog.ILogger logger, IOptionsMonitor<TurnSettings> settings, TimeProvider timeProvider, IEnumerable<ITurnPhaseHandler> phaseHandlers)
+        public TurnService(Serilog.ILogger logger, IConfiguration configuration, TimeProvider timeProvider, IEnumerable<ITurnPhaseHandler> phaseHandlers)
         {
             _logger = logger;
-            _settings = settings;
+            _configuration = configuration;
             _timeProvider = timeProvider;
             _phaseHandlers = phaseHandlers.ToArray();
         }
@@ -192,7 +193,7 @@ namespace KingsboardServer.Services
         {
             try
             {
-                double seconds = _settings.CurrentValue.TurnDurationSeconds;
+                double seconds = _configuration.GetValue("TurnSettings:TurnDurationSeconds", DefaultTurnDurationSeconds);
                 if (seconds > 0)
                 {
                     _lastValidDuration = TimeSpan.FromSeconds(seconds);
@@ -203,8 +204,9 @@ namespace KingsboardServer.Services
                         seconds, _lastValidDuration.TotalSeconds);
                 }
             }
-            catch (OptionsValidationException ex)
+            catch (InvalidOperationException ex)
             {
+                // The configured value isn't a number
                 _logger.Warning("Invalid TurnSettings ({Reason}); using {Fallback}s", ex.Message, _lastValidDuration.TotalSeconds);
             }
 

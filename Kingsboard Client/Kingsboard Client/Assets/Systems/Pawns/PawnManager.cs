@@ -149,7 +149,7 @@ namespace Kingsboard.Pawns
             }
             else
             {
-                error = await _handler.SelectCardAsync(_player.Player.SessionId, pawn.Pawn.Id, card.Id, target);
+                error = await _handler.SelectCardAsync(_player.Player.SessionId, pawn.Pawn.PublicId, card.PublicId, target);
             }
 
             if (error != null && this != null)
@@ -295,7 +295,7 @@ namespace Kingsboard.Pawns
         {
             CancelTargeting();
 
-            HashSet<Guid> ids = new HashSet<Guid>(pawns.Select(p => p.Id));
+            HashSet<Guid> ids = new HashSet<Guid>(pawns.Select(p => p.PublicId));
             foreach (Guid gone in _pawns.Keys.Where(id => !ids.Contains(id)).ToList())
             {
                 Despawn(gone);
@@ -304,7 +304,7 @@ namespace Kingsboard.Pawns
             BoardController board = FindBoard();
             foreach (Pawn pawn in pawns)
             {
-                if (_pawns.TryGetValue(pawn.Id, out PawnController existing))
+                if (_pawns.TryGetValue(pawn.PublicId, out PawnController existing))
                 {
                     existing.Initialise(pawn, board);
                 }
@@ -319,7 +319,7 @@ namespace Kingsboard.Pawns
         {
             foreach (Pawn pawn in pawns)
             {
-                if (_pawns.TryGetValue(pawn.Id, out PawnController controller))
+                if (_pawns.TryGetValue(pawn.PublicId, out PawnController controller))
                 {
                     controller.UpdatePawn(pawn);
                 }
@@ -336,7 +336,7 @@ namespace Kingsboard.Pawns
         {
             foreach (Pawn pawn in pawns)
             {
-                if (_pawns.TryGetValue(pawn.Id, out PawnController controller))
+                if (_pawns.TryGetValue(pawn.PublicId, out PawnController controller))
                 {
                     controller.PlanMove(pawn);
                 }
@@ -351,12 +351,12 @@ namespace Kingsboard.Pawns
             Dictionary<Guid, PawnMovement> moved = movements.ToDictionary(m => m.PawnId);
             foreach (Pawn pawn in pawns)
             {
-                if (!_pawns.TryGetValue(pawn.Id, out PawnController controller))
+                if (!_pawns.TryGetValue(pawn.PublicId, out PawnController controller))
                 {
                     continue;
                 }
 
-                if (moved.TryGetValue(pawn.Id, out PawnMovement movement))
+                if (moved.TryGetValue(pawn.PublicId, out PawnMovement movement))
                 {
                     controller.Move(movement, pawn);
                 }
@@ -381,7 +381,7 @@ namespace Kingsboard.Pawns
 
             foreach (Pawn pawn in pawns)
             {
-                if (_pawns.TryGetValue(pawn.Id, out PawnController controller))
+                if (_pawns.TryGetValue(pawn.PublicId, out PawnController controller))
                 {
                     controller.UpdatePawn(pawn);
                     controller.EndTurn(turnId);
@@ -430,7 +430,7 @@ namespace Kingsboard.Pawns
             controller.LocalPlayerId = LocalPlayerId;
             controller.Selected += OnPawnSelected;
             controller.Deselected += OnPawnDeselected;
-            _pawns[pawn.Id] = controller;
+            _pawns[pawn.PublicId] = controller;
             PawnSpawned?.Invoke(controller);
         }
 

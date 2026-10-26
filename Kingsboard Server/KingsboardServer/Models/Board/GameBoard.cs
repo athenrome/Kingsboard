@@ -1,4 +1,5 @@
 
+using Kingsboard.Shared.Models;
 using Kingsboard.Shared.Models.Board;
 
 namespace KingsboardServer.Models.Board
@@ -6,15 +7,11 @@ namespace KingsboardServer.Models.Board
     /// <summary>
     /// The game board: a 3D grid of <see cref="Width"/> x <see cref="Depth"/> columns, each a stack of up to
     /// <see cref="Height"/> <see cref="MapTile"/>s. x is the column, y the row and z the level (0 = bottom).
-    /// Every stack is solid from z = 0 up to its top tile.
+    /// Every stack is solid from z = 0 up to its top tile. Its <see cref="PublicBaseModel.PublicId"/> changes whenever the
+    /// board is recreated (e.g. a new game).
     /// </summary>
-    public class GameBoard
+    public class GameBoard : PublicBaseModel
     {
-        /// <summary>
-        /// Changes whenever the board is recreated (e.g. a new game)
-        /// </summary>
-        public Guid Id { get; set; }
-
         /// <summary>
         /// Goes up by one with every change to the board
         /// </summary>

@@ -1,43 +1,78 @@
-using KingsboardServer.Models.Chat;
+using KingsboardServer.Data;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace KingsboardServer.Repositories
 {
     /// <summary>
-    /// Keeps chat messages in memory. Messages are lost when the server restarts.
-    /// Not thread-safe: <see cref="Services.ChatRoomService"/> calls it only under its own lock.
+    /// Stores chat messages in the SQLite database through Entity Framework, so chat history outlives a server restart.
+    /// Thread-safe: each call uses its own short-lived <see cref="KingsboardDbContext"/>.
     /// </summary>
     public class ChatRepository : IChatRepository
     {
-        private readonly List<ChatEntry> _messages = new();
+        private readonly IDbContextFactory<KingsboardDbContext> _contextFactory;
 
         /// <summary>
-        /// Stores a message after the ones already stored
+        /// Creates a repository that opens database sessions from <paramref name="contextFactory"/>
         /// </summary>
-        public void Add(ChatEntry entry)
+        public ChatRepository(IDbContextFactory<KingsboardDbContext> contextFactory)
         {
-            _messages.Add(entry);
+            _contextFactory = contextFactory;
         }
 
         /// <summary>
-        /// Removes the oldest messages until at most <paramref name="maxCount"/> remain. A negative count is treated as 0.
+        /// Stores a message
+        /// </summary>
+        public void Add(ChatMessageRecord message)
+        {
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+            context.ChatMessages.Add(message);
+            context.SaveChanges();
+        }
+
+        /// <summary>
+        /// Deletes the oldest messages until at most <paramref name="maxCount"/> remain. A negative count is treated as 0.
         /// </summary>
         public void TrimTo(int maxCount)
         {
-            int excess = _messages.Count - Math.Max(0, maxCount);
-            if (excess > 0)
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+
+            // The newest message that has to go, if any; it and everything older are deleted
+            long? cutoff = context.ChatMessages
+                .OrderByDescending(m => m.Sequence)
+                .Skip(Math.Max(0, maxCount))
+                .Select(m => (long?)m.Sequence)
+                .FirstOrDefault();
+
+            if (cutoff is long sequence)
             {
-                _messages.RemoveRange(0, excess);
+                context.ChatMessages.Where(m => m.Sequence <= sequence).ExecuteDelete();
             }
         }
 
         /// <summary>
-        /// Returns up to <paramref name="count"/> of the most recent messages, oldest first
+        /// Reads up to <paramref name="count"/> of the most recent messages, oldest first
         /// </summary>
-        public IReadOnlyList<ChatEntry> GetRecent(int count)
+        public IReadOnlyList<ChatMessageRecord> GetRecent(int count)
         {
-            int take = Math.Clamp(count, 0, _messages.Count);
-            return _messages.GetRange(_messages.Count - take, take);
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+            List<ChatMessageRecord> newestFirst = context.ChatMessages
+                .AsNoTracking()
+                .OrderByDescending(m => m.Sequence)
+                .Take(Math.Max(0, count))
+                .ToList();
+            newestFirst.Reverse();
+            return newestFirst;
+        }
+
+        /// <summary>
+        /// The highest stored message number, or 0 if no messages are stored
+        /// </summary>
+        public long GetLatestSequence()
+        {
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+            return context.ChatMessages.Max(m => (long?)m.Sequence) ?? 0;
         }
     }
 }

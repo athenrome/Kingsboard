@@ -230,7 +230,7 @@ namespace Kingsboard.Pawns
         {
             return new Pawn()
             {
-                Id = ToGuid(pawn.Id),
+                PublicId = ToGuid(pawn.Id),
                 Name = pawn.Name,
                 Colour = pawn.Colour,
                 Position = ToBoardPosition(pawn.Position),
@@ -251,7 +251,7 @@ namespace Kingsboard.Pawns
         {
             return new Card()
             {
-                Id = ToGuid(card.Id),
+                PublicId = ToGuid(card.Id),
                 DefinitionId = card.DefinitionId,
                 Name = card.Name,
                 Description = card.Description,

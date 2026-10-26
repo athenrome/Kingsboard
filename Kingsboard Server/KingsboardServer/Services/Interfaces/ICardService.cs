@@ -1,6 +1,8 @@
 using Kingsboard.Shared.Models.Cards;
 using Kingsboard.Shared.Models.Pawns;
+using KingsboardServer.Data.Records;
 using KingsboardServer.Models.Cards;
+using KingsboardServer.Models.Enumerations;
 
 namespace KingsboardServer.Services.Interfaces
 {
@@ -52,5 +54,17 @@ namespace KingsboardServer.Services.Interfaces
         /// A copy of the card, so callers can't change the original
         /// </summary>
         Card Clone(Card card);
+
+        /// <summary>
+        /// Turns a card into the record of who holds it and where: in <paramref name="location"/> at position
+        /// <paramref name="order"/> (0 = first). It points at the card's stored definition, and is linked to its pawn when
+        /// the pawn is saved. Throws if the card's definition isn't known.
+        /// </summary>
+        PawnCardRecord ToRecord(Card card, CardLocation location, int order);
+
+        /// <summary>
+        /// Combines a stored card with its stored definition into a card. Throws if the definition isn't stored.
+        /// </summary>
+        Card FromRecord(PawnCardRecord record);
     }
 }

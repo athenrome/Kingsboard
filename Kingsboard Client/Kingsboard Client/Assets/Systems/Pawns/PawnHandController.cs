@@ -222,8 +222,8 @@ namespace Kingsboard.Pawns
         private VisualElement CreateCard(PawnController pawn, Card card, bool canChoose)
         {
             Pawn state = pawn.Pawn;
-            bool chosen = state.SelectedCard != null && state.SelectedCard.CardId == card.Id;
-            bool targeting = _pawnManager.IsTargeting && _pawnManager.TargetingPawn == pawn && _pawnManager.TargetingCard.Id == card.Id;
+            bool chosen = state.SelectedCard != null && state.SelectedCard.CardId == card.PublicId;
+            bool targeting = _pawnManager.IsTargeting && _pawnManager.TargetingPawn == pawn && _pawnManager.TargetingCard.PublicId == card.PublicId;
 
             VisualElement element = new VisualElement();
             element.pickingMode = canChoose ? PickingMode.Position : PickingMode.Ignore;

@@ -1,9 +1,7 @@
 using System.Text;
 using KingsboardServer.Events.Players;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Players;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -22,7 +20,7 @@ namespace KingsboardServer.Services
         };
 
         private readonly Serilog.ILogger _logger;
-        private readonly IOptionsMonitor<PlayerSettings> _settings;
+        private readonly IConfiguration _configuration;
         private readonly TimeProvider _timeProvider;
 
         // Guards the players and keeps joins, leaves and their events in order.
@@ -38,10 +36,10 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Creates the service with no players
         /// </summary>
-        public PlayerService(Serilog.ILogger logger, IOptionsMonitor<PlayerSettings> settings, TimeProvider timeProvider)
+        public PlayerService(Serilog.ILogger logger, IConfiguration configuration, TimeProvider timeProvider)
         {
             _logger = logger;
-            _settings = settings;
+            _configuration = configuration;
             _timeProvider = timeProvider;
         }
 
@@ -50,7 +48,7 @@ namespace KingsboardServer.Services
         /// </summary>
         public Player Join(string requestedName)
         {
-            int maxLength = _settings.CurrentValue.MaxNameLength;
+            int maxLength = Math.Max(1, _configuration.GetValue("PlayerSettings:MaxNameLength", 24));
             string baseName = CleanName(requestedName, maxLength);
 
             Player player;
@@ -58,7 +56,7 @@ namespace KingsboardServer.Services
             {
                 player = new Player()
                 {
-                    Id = Guid.NewGuid(),
+                    PublicId = Guid.NewGuid(),
                     SessionId = Guid.NewGuid(),
                     Name = MakeUnique(baseName, maxLength),
                     Colour = PickColour(),
@@ -183,6 +181,7 @@ namespace KingsboardServer.Services
             return new Player()
             {
                 Id = player.Id,
+                PublicId = player.PublicId,
                 SessionId = player.SessionId,
                 Name = player.Name,
                 Colour = player.Colour,
