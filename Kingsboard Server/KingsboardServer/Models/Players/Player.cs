@@ -1,15 +1,14 @@
+using Kingsboard.Shared.Models;
+
 namespace KingsboardServer.Models.Players
 {
     /// <summary>
     /// A person connected to the game. They stay joined while their player stream is open.
+    /// Its <see cref="PublicBaseModel.PublicId"/> is public: pawns the player controls carry it as their owner id, so every
+    /// client can see it.
     /// </summary>
-    public class Player
+    public class Player : PublicBaseModel
     {
-        /// <summary>
-        /// Public id. Pawns the player controls carry it as their owner id, so every client can see it.
-        /// </summary>
-        public Guid Id { get; set; }
-
         /// <summary>
         /// Secret id the player sends with requests that act as them. Only ever sent to that player.
         /// </summary>

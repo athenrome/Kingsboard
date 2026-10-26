@@ -90,7 +90,7 @@ namespace Kingsboard.Pawns
         /// </summary>
         private async void LoadDetails(PawnController pawn)
         {
-            Guid id = pawn.Pawn != null ? pawn.Pawn.Id : Guid.Empty;
+            Guid id = pawn.Pawn != null ? pawn.Pawn.PublicId : Guid.Empty;
             Pawn details = await _pawnManager.GetPawnById(id);
 
             // The panel may have been destroyed or the selection changed while waiting

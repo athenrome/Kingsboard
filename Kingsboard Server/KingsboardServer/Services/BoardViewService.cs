@@ -3,9 +3,7 @@ using Kingsboard.Shared.Models.Board;
 using KingsboardServer.Subscriptions.Board;
 using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -20,8 +18,12 @@ namespace KingsboardServer.Services
         // and it is sent a fresh section instead, so it never misses a change.
         private const int OutboxCapacity = 256;
 
+        // Section sizes used when BoardSettings:MaxSectionSize or DefaultSectionSize isn't configured
+        private const int FallbackMaxSectionSize = 64;
+        private const int FallbackDefaultSectionSize = 24;
+
         private readonly Serilog.ILogger _logger;
-        private readonly IOptionsMonitor<BoardSettings> _settings;
+        private readonly IConfiguration _configuration;
         private readonly IBoardService _boardService;
 
         // Guards the viewers. Always taken inside the board lock (never the other way round), and everything inside it is non-blocking.
@@ -29,12 +31,13 @@ namespace KingsboardServer.Services
         private readonly Dictionary<Guid, Viewer> _viewers = new();
 
         /// <summary>
-        /// Creates the service and starts listening for board changes
+        /// Creates the service, reading section sizes from the "BoardSettings" section of <paramref name="configuration"/>,
+        /// and starts listening for board changes
         /// </summary>
-        public BoardViewService(Serilog.ILogger logger, IOptionsMonitor<BoardSettings> settings, IBoardService boardService)
+        public BoardViewService(Serilog.ILogger logger, IConfiguration configuration, IBoardService boardService)
         {
             _logger = logger;
-            _settings = settings;
+            _configuration = configuration;
             _boardService = boardService;
 
             _boardService.BoardCreated += OnBoardCreated;
@@ -44,12 +47,12 @@ namespace KingsboardServer.Services
         /// <summary>
         /// Largest width or depth of a section a client may view at once (BoardSettings:MaxSectionSize)
         /// </summary>
-        public int MaxSectionSize => Math.Max(1, _settings.CurrentValue.MaxSectionSize);
+        public int MaxSectionSize => Math.Max(1, _configuration.GetValue("BoardSettings:MaxSectionSize", FallbackMaxSectionSize));
 
         /// <summary>
         /// Width and depth of the default section (BoardSettings:DefaultSectionSize, capped at <see cref="MaxSectionSize"/>)
         /// </summary>
-        public int DefaultSectionSize => Math.Clamp(_settings.CurrentValue.DefaultSectionSize, 1, MaxSectionSize);
+        public int DefaultSectionSize => Math.Clamp(_configuration.GetValue("BoardSettings:DefaultSectionSize", FallbackDefaultSectionSize), 1, MaxSectionSize);
 
         /// <summary>
         /// The section a client views when it doesn't ask for a particular one: the board's front-left corner

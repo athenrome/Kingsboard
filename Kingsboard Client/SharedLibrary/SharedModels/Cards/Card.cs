@@ -1,20 +1,14 @@
-using System;
 using Kingsboard.Shared.Models.Enumerations;
 
 namespace Kingsboard.Shared.Models.Cards
 {
     /// <summary>
     /// One action card in a pawn's deck or hand. A pawn plays a card from its hand to choose what it does in the
-    /// Resolution phase. Each card is its own copy with its own id, so a deck can hold several copies of the same card.
-    /// The server decides what a card does; clients only show it.
+    /// Resolution phase. Each card is its own copy with its own <see cref="PublicBaseModel.PublicId"/>, so a deck can hold
+    /// several copies of the same card. The server decides what a card does; clients only show it.
     /// </summary>
-    public class Card
+    public class Card : PublicBaseModel
     {
-        /// <summary>
-        /// Unique id of this copy of the card
-        /// </summary>
-        public Guid Id { get; set; }
-
         /// <summary>
         /// Which card this is a copy of (e.g. "move"). Every copy of the same card shares it.
         /// </summary>

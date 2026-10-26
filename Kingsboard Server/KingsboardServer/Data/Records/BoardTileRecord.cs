@@ -1,18 +1,14 @@
+using Kingsboard.Shared.Models;
 using Kingsboard.Shared.Models.Enumerations;
 
 namespace KingsboardServer.Data.Records
 {
     /// <summary>
     /// The stored form of one tile on the board. A board holds at most one tile per position.
-    /// Storage only: <c>BoardService</c> turns it into a <c>MapTile</c> and back.
+    /// Storage only: <c>BoardService</c> combines a board's tiles with its <see cref="BoardRecord"/> into a <c>GameBoard</c>.
     /// </summary>
     public class BoardTileRecord : BaseModel
     {
-        /// <summary>
-        /// Unique id of the stored tile. A tile placed again at the same position gets a new id.
-        /// </summary>
-        public Guid TileId { get; set; }
-
         /// <summary>
         /// <see cref="BaseModel.Id"/> of the board the tile is on. Set by the repository when the tile is saved.
         /// </summary>

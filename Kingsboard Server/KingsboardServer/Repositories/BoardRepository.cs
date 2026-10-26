@@ -23,21 +23,31 @@ namespace KingsboardServer.Repositories
         }
 
         /// <summary>
-        /// Reads the stored board with all its tiles, or null if no board has been saved yet
+        /// Reads the stored board's definition, without its tiles, or null if no board has been saved yet
         /// </summary>
         public BoardRecord? GetBoard()
         {
             using KingsboardDbContext context = _contextFactory.CreateDbContext();
-            return context.Boards
-                .AsNoTracking()
-                .Include(b => b.Tiles)
-                .FirstOrDefault();
+            return context.Boards.AsNoTracking().FirstOrDefault();
         }
 
         /// <summary>
-        /// Stores a board, with its tiles, in place of the current one
+        /// Reads every tile on the board whose id is <paramref name="boardRecordId"/>
         /// </summary>
-        public void ReplaceBoard(BoardRecord board)
+        public IReadOnlyList<BoardTileRecord> GetTiles(int boardRecordId)
+        {
+            using KingsboardDbContext context = _contextFactory.CreateDbContext();
+            return context.BoardTiles
+                .AsNoTracking()
+                .Where(t => t.BoardRecordId == boardRecordId)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Stores a board and its tiles in place of the current ones, in a single transaction. Sets the board's and tiles'
+        /// ids, and links the tiles to the board.
+        /// </summary>
+        public void ReplaceBoard(BoardRecord board, IReadOnlyCollection<BoardTileRecord> tiles)
         {
             using KingsboardDbContext context = _contextFactory.CreateDbContext();
             // A board holds tens of thousands of tiles; there's nothing to compare against, so skip change detection
@@ -46,7 +56,16 @@ namespace KingsboardServer.Repositories
 
             context.BoardTiles.ExecuteDelete();
             context.Boards.ExecuteDelete();
+
+            // Save the board first, so the database numbers it and the tiles can be linked to it
             context.Boards.Add(board);
+            context.SaveChanges();
+
+            foreach (BoardTileRecord tile in tiles)
+            {
+                tile.BoardRecordId = board.Id;
+            }
+            context.BoardTiles.AddRange(tiles);
             context.SaveChanges();
 
             transaction.Commit();
@@ -63,7 +82,7 @@ namespace KingsboardServer.Repositories
             using var transaction = context.Database.BeginTransaction();
 
             int boardRecordId = context.Boards
-                .Where(b => b.BoardId == boardId)
+                .Where(b => b.PublicId == boardId)
                 .Select(b => (int?)b.Id)
                 .FirstOrDefault()
                 ?? throw new InvalidOperationException($"Board {boardId} isn't stored");

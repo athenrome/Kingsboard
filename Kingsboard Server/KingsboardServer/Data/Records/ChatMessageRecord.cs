@@ -1,3 +1,4 @@
+using Kingsboard.Shared.Models;
 using KingsboardServer.Models.Enumerations;
 
 namespace KingsboardServer.Data.Records
@@ -8,11 +9,6 @@ namespace KingsboardServer.Data.Records
     /// </summary>
     public class ChatMessageRecord : BaseModel
     {
-        /// <summary>
-        /// Unique id of the stored message
-        /// </summary>
-        public Guid MessageId { get; set; }
-
         /// <summary>
         /// The message number shown to clients. Goes up by one with each message, and carries on after a restart.
         /// </summary>

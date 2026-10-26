@@ -97,7 +97,7 @@ namespace KingsboardServer.Handlers
             }
 
             BoardPosition? target = request.Target is null ? null : ToBoardPosition(request.Target);
-            CardSelectResult result = _pawnService.SelectCard(player.Id, pawnId, cardId, target);
+            CardSelectResult result = _pawnService.SelectCard(player.PublicId, pawnId, cardId, target);
 
             if (!result.Selected)
             {
@@ -222,7 +222,7 @@ namespace KingsboardServer.Handlers
         {
             ProtoPawn message = new ProtoPawn()
             {
-                Id = pawn.Id.ToString(),
+                Id = pawn.PublicId.ToString(),
                 Name = pawn.Name,
                 Colour = pawn.Colour,
                 Position = ToProto(pawn.Position),
@@ -244,7 +244,7 @@ namespace KingsboardServer.Handlers
         {
             return new ProtoCard()
             {
-                Id = card.Id.ToString(),
+                Id = card.PublicId.ToString(),
                 DefinitionId = card.DefinitionId,
                 Name = card.Name,
                 Description = card.Description,

@@ -1,16 +1,14 @@
+using Kingsboard.Shared.Models;
+
 namespace KingsboardServer.Data.Records
 {
     /// <summary>
-    /// The stored form of the game board: its size and version. Its tiles are stored as <see cref="BoardTileRecord"/>s.
-    /// Storage only: <c>BoardService</c> turns it into a <c>GameBoard</c> and back.
+    /// The stored definition of the game board: its size and version. Its <see cref="PublicBaseModel.PublicId"/> is the
+    /// board's own id, which changes whenever the board is recreated. Its tiles are stored separately as
+    /// <see cref="BoardTileRecord"/>s. Storage only: <c>BoardService</c> combines the two into a <c>GameBoard</c>.
     /// </summary>
-    public class BoardRecord : BaseModel
+    public class BoardRecord : PublicBaseModel
     {
-        /// <summary>
-        /// The board's own id, which changes whenever the board is recreated
-        /// </summary>
-        public Guid BoardId { get; set; }
-
         /// <summary>
         /// The board's version, which goes up by one with every change
         /// </summary>
@@ -30,10 +28,5 @@ namespace KingsboardServer.Data.Records
         /// Most tiles a stack can hold (z)
         /// </summary>
         public int Height { get; set; }
-
-        /// <summary>
-        /// Every tile on the board. Positions without a record are empty space.
-        /// </summary>
-        public List<BoardTileRecord> Tiles { get; set; } = new();
     }
 }

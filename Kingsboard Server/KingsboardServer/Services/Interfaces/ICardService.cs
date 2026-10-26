@@ -56,14 +56,15 @@ namespace KingsboardServer.Services.Interfaces
         Card Clone(Card card);
 
         /// <summary>
-        /// Turns a card into the record it's stored as, in <paramref name="pile"/> at position <paramref name="order"/>
-        /// (0 = first). It's linked to its pawn when the pawn's record is saved.
+        /// Turns a card into the record of who holds it and where: in <paramref name="location"/> at position
+        /// <paramref name="order"/> (0 = first). It points at the card's stored definition, and is linked to its pawn when
+        /// the pawn is saved. Throws if the card's definition isn't known.
         /// </summary>
-        CardRecord ToRecord(Card card, CardPile pile, int order);
+        PawnCardRecord ToRecord(Card card, CardLocation location, int order);
 
         /// <summary>
-        /// Turns a stored card back into a card
+        /// Combines a stored card with its stored definition into a card. Throws if the definition isn't stored.
         /// </summary>
-        Card FromRecord(CardRecord record);
+        Card FromRecord(PawnCardRecord record);
     }
 }

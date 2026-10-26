@@ -3,10 +3,8 @@ using Kingsboard.Shared.Models.Enumerations;
 using KingsboardServer.Data.Records;
 using KingsboardServer.Events.Board;
 using KingsboardServer.Models.Board;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -25,8 +23,13 @@ namespace KingsboardServer.Services
         // Heightmap values below this are water; everything above is land that rises with the heightmap
         private const double SeaLevel = 0.25;
 
+        // Board size used for any BoardSettings value that isn't configured
+        private const int DefaultWidth = 128;
+        private const int DefaultDepth = 128;
+        private const int DefaultHeight = 8;
+
         private readonly Serilog.ILogger _logger;
-        private readonly IOptionsMonitor<BoardSettings> _settings;
+        private readonly IConfiguration _configuration;
         private readonly IBoardRepository _repository;
 
         // Guards every read and change of the stored board, and keeps changes and their events
@@ -51,32 +54,36 @@ namespace KingsboardServer.Services
         public event EventHandler<TilesChangeEvent>? TilesChanged;
 
         /// <summary>
-        /// Creates the service. No board exists until <see cref="CreateBoard"/> is called.
+        /// Creates the service, reading its settings from the "BoardSettings" section of <paramref name="configuration"/>.
+        /// No board exists until <see cref="CreateBoard"/> is called.
         /// </summary>
-        public BoardService(Serilog.ILogger logger, IOptionsMonitor<BoardSettings> settings, IBoardRepository repository)
+        public BoardService(Serilog.ILogger logger, IConfiguration configuration, IBoardRepository repository)
         {
             _logger = logger;
-            _settings = settings;
+            _configuration = configuration;
             _repository = repository;
         }
 
         /// <summary>
-        /// Generates a new board from BoardSettings, stores it in place of the current one and raises <see cref="BoardCreated"/>
+        /// Generates a new board from BoardSettings (Width, Depth, Height, and a Seed to get the same terrain each time),
+        /// stores it in place of the current one and raises <see cref="BoardCreated"/>. A size below 1 is treated as 1.
         /// </summary>
         public GameBoard CreateBoard()
         {
-            BoardSettings settings = _settings.CurrentValue;
-            int seed = settings.Seed ?? Random.Shared.Next();
+            int width = Math.Max(1, _configuration.GetValue("BoardSettings:Width", DefaultWidth));
+            int depth = Math.Max(1, _configuration.GetValue("BoardSettings:Depth", DefaultDepth));
+            int height = Math.Max(1, _configuration.GetValue("BoardSettings:Height", DefaultHeight));
+            int seed = _configuration.GetValue<int?>("BoardSettings:Seed") ?? Random.Shared.Next();
 
             GameBoard board = new GameBoard()
             {
-                Id = Guid.NewGuid(),
-                Width = settings.Width,
-                Depth = settings.Depth,
-                Height = settings.Height,
-                Tiles = new MapTile?[settings.Width * settings.Depth * settings.Height]
+                PublicId = Guid.NewGuid(),
+                Width = width,
+                Depth = depth,
+                Height = height,
+                Tiles = new MapTile?[width * depth * height]
             };
-            foreach (MapTile tile in GenerateTiles(settings.Width, settings.Depth, settings.Height, seed))
+            foreach (MapTile tile in GenerateTiles(width, depth, height, seed))
             {
                 board.Tiles[IndexOf(board, tile.Position)] = tile;
             }
@@ -84,7 +91,9 @@ namespace KingsboardServer.Services
 
             lock (_lock)
             {
-                _repository.ReplaceBoard(ToRecord(board));
+                BoardRecord record = ToRecord(board);
+                _repository.ReplaceBoard(record, board.Tiles.OfType<MapTile>().Select(ToRecord).ToArray());
+                board.Id = record.Id;
                 _board = board;
                 _boardLoaded = true;
                 BoardCreated?.Invoke(this, Clone(board));
@@ -374,10 +383,10 @@ namespace KingsboardServer.Services
 
             updated.Version++;
             // Save first, so a failed write leaves the working copy matching the database
-            _repository.SaveTileChanges(updated.Id, updated.Version, placed.Select(ToRecord).ToArray(), removed);
+            _repository.SaveTileChanges(updated.PublicId, updated.Version, placed.Select(ToRecord).ToArray(), removed);
             _board = updated;
 
-            TilesChanged?.Invoke(this, new TilesChangeEvent(updated.Id, updated.Version, placed.ToArray(), removed.ToArray()));
+            TilesChanged?.Invoke(this, new TilesChangeEvent(updated.PublicId, updated.Version, placed.ToArray(), removed.ToArray()));
         }
 
         private GameBoard GetStoredBoard()
@@ -394,36 +403,35 @@ namespace KingsboardServer.Services
             if (!_boardLoaded)
             {
                 BoardRecord? record = _repository.GetBoard();
-                _board = record is null ? null : FromRecord(record);
+                _board = record is null ? null : FromRecord(record, _repository.GetTiles(record.Id));
                 _boardLoaded = true;
             }
             return _board;
         }
 
         /// <summary>
-        /// Turns a board into the record it's stored as, with a record for every tile
+        /// Turns a board into the record of its definition. Its tiles are stored separately.
         /// </summary>
         private static BoardRecord ToRecord(GameBoard board)
         {
             return new BoardRecord()
             {
-                BoardId = board.Id,
+                Id = board.Id,
+                PublicId = board.PublicId,
                 Version = board.Version,
                 Width = board.Width,
                 Depth = board.Depth,
-                Height = board.Height,
-                Tiles = board.Tiles.OfType<MapTile>().Select(ToRecord).ToList()
+                Height = board.Height
             };
         }
 
         /// <summary>
-        /// Turns a tile into the record it's stored as, with a new tile id. The repository links it to its board when it's saved.
+        /// Turns a tile into the record it's stored as. The repository links it to its board when it's saved.
         /// </summary>
         private static BoardTileRecord ToRecord(MapTile tile)
         {
             return new BoardTileRecord()
             {
-                TileId = Guid.NewGuid(),
                 X = tile.Position.X,
                 Y = tile.Position.Y,
                 Z = tile.Position.Z,
@@ -432,21 +440,22 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Turns a stored board back into a board, checking it the same way as a newly generated one.
+        /// Combines a stored board with its stored tiles into a board, checking it the same way as a newly generated one.
         /// Throws if the stored board is malformed.
         /// </summary>
-        private static GameBoard FromRecord(BoardRecord record)
+        private static GameBoard FromRecord(BoardRecord record, IReadOnlyList<BoardTileRecord> tiles)
         {
             GameBoard board = new GameBoard()
             {
-                Id = record.BoardId,
+                Id = record.Id,
+                PublicId = record.PublicId,
                 Version = record.Version,
                 Width = record.Width,
                 Depth = record.Depth,
                 Height = record.Height,
                 Tiles = new MapTile?[record.Width * record.Depth * record.Height]
             };
-            foreach (BoardTileRecord tile in record.Tiles)
+            foreach (BoardTileRecord tile in tiles)
             {
                 BoardPosition position = new BoardPosition(tile.X, tile.Y, tile.Z);
                 RequireOnBoard(board, position);
@@ -535,7 +544,7 @@ namespace KingsboardServer.Services
                 }
             }
 
-            return new BoardSection(board.Id, board.Version, board.Width, board.Depth, board.Height, fitted, tiles);
+            return new BoardSection(board.PublicId, board.Version, board.Width, board.Depth, board.Height, fitted, tiles);
         }
 
         private static string Describe(BoardPosition position) => $"({position.X}, {position.Y}, {position.Z})";
@@ -588,6 +597,7 @@ namespace KingsboardServer.Services
             return new GameBoard()
             {
                 Id = board.Id,
+                PublicId = board.PublicId,
                 Version = board.Version,
                 Width = board.Width,
                 Depth = board.Depth,

@@ -1,16 +1,14 @@
+using Kingsboard.Shared.Models;
+
 namespace KingsboardServer.Data.Records
 {
     /// <summary>
-    /// The stored form of a pawn. Its cards and planned path are stored as <see cref="CardRecord"/>s and
-    /// <see cref="PawnPathStepRecord"/>s. Storage only: <c>PawnService</c> turns it into a <c>Pawn</c> and back.
+    /// The stored form of a pawn. Its <see cref="PublicBaseModel.PublicId"/> is the pawn's own id. The cards it holds are
+    /// stored separately as <see cref="PawnCardRecord"/>s, and its planned path isn't stored (it only lasts a turn).
+    /// Storage only: <c>PawnService</c> combines it with its cards into a <c>Pawn</c>.
     /// </summary>
-    public class PawnRecord : BaseModel
+    public class PawnRecord : PublicBaseModel
     {
-        /// <summary>
-        /// The pawn's own id
-        /// </summary>
-        public Guid PawnId { get; set; }
-
         /// <summary>
         /// Where the pawn comes in the list of pawns, from 0. Keeps the pawns in spawn order when they are read back.
         /// </summary>
@@ -82,7 +80,7 @@ namespace KingsboardServer.Data.Records
         public int MaxHealth { get; set; }
 
         /// <summary>
-        /// Id of the card in the pawn's hand that it will play, or null when it has none chosen
+        /// <see cref="PublicBaseModel.PublicId"/> of the card in the pawn's hand that it will play, or null when it has none chosen
         /// </summary>
         public Guid? SelectedCardId { get; set; }
 
@@ -115,15 +113,5 @@ namespace KingsboardServer.Data.Records
         /// Colour ("#RRGGBB") of the player who controls the pawn. Empty when no player does.
         /// </summary>
         public string OwnerColour { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Every card the pawn holds, in its deck or its hand
-        /// </summary>
-        public List<CardRecord> Cards { get; set; } = new();
-
-        /// <summary>
-        /// The steps of the path the pawn plans to walk this turn. Empty when it has no plan.
-        /// </summary>
-        public List<PawnPathStepRecord> PlannedPath { get; set; } = new();
     }
 }

@@ -23,14 +23,14 @@ namespace KingsboardServer.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("BoardId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Depth")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("TEXT");
 
                     b.Property<long>("Version")
                         .HasColumnType("INTEGER");
@@ -40,7 +40,7 @@ namespace KingsboardServer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BoardId")
+                    b.HasIndex("PublicId")
                         .IsUnique();
 
                     b.ToTable("Boards");
@@ -54,9 +54,6 @@ namespace KingsboardServer.Data.Migrations
 
                     b.Property<int>("BoardRecordId")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("TileId")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
@@ -72,9 +69,6 @@ namespace KingsboardServer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TileId")
-                        .IsUnique();
-
                     b.HasIndex("BoardRecordId", "X", "Y", "Z")
                         .IsUnique();
 
@@ -87,8 +81,8 @@ namespace KingsboardServer.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("CardId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Action")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("DefinitionId")
                         .IsRequired()
@@ -106,24 +100,13 @@ namespace KingsboardServer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("PawnRecordId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Pile")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("TargetType")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CardId")
+                    b.HasIndex("DefinitionId")
                         .IsUnique();
-
-                    b.HasIndex("PawnRecordId", "Pile", "Order");
 
                     b.ToTable("Cards");
                 });
@@ -133,9 +116,6 @@ namespace KingsboardServer.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset>("SentAt")
                         .HasColumnType("TEXT");
@@ -156,19 +136,22 @@ namespace KingsboardServer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MessageId")
-                        .IsUnique();
-
                     b.HasIndex("Sequence")
                         .IsUnique();
 
                     b.ToTable("ChatMessages");
                 });
 
-            modelBuilder.Entity("KingsboardServer.Data.Records.PawnPathStepRecord", b =>
+            modelBuilder.Entity("KingsboardServer.Data.Records.PawnCardRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CardRecordId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Location")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Order")
@@ -177,26 +160,19 @@ namespace KingsboardServer.Data.Migrations
                     b.Property<int>("PawnRecordId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("StepId")
+                    b.Property<Guid>("PublicId")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("X")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Y")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Z")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StepId")
+                    b.HasIndex("CardRecordId");
+
+                    b.HasIndex("PublicId")
                         .IsUnique();
 
-                    b.HasIndex("PawnRecordId", "Order");
+                    b.HasIndex("PawnRecordId", "Location", "Order");
 
-                    b.ToTable("PawnPathSteps");
+                    b.ToTable("PawnCards");
                 });
 
             modelBuilder.Entity("KingsboardServer.Data.Records.PawnRecord", b =>
@@ -242,9 +218,6 @@ namespace KingsboardServer.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("PawnId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Physique")
                         .HasColumnType("INTEGER");
 
@@ -256,6 +229,9 @@ namespace KingsboardServer.Data.Migrations
 
                     b.Property<int>("PositionZ")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("SelectedCardId")
                         .HasColumnType("TEXT");
@@ -277,7 +253,7 @@ namespace KingsboardServer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PawnId")
+                    b.HasIndex("PublicId")
                         .IsUnique();
 
                     b.ToTable("Pawns");
@@ -286,40 +262,25 @@ namespace KingsboardServer.Data.Migrations
             modelBuilder.Entity("KingsboardServer.Data.Records.BoardTileRecord", b =>
                 {
                     b.HasOne("KingsboardServer.Data.Records.BoardRecord", null)
-                        .WithMany("Tiles")
+                        .WithMany()
                         .HasForeignKey("BoardRecordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("KingsboardServer.Data.Records.CardRecord", b =>
+            modelBuilder.Entity("KingsboardServer.Data.Records.PawnCardRecord", b =>
                 {
+                    b.HasOne("KingsboardServer.Data.Records.CardRecord", null)
+                        .WithMany()
+                        .HasForeignKey("CardRecordId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("KingsboardServer.Data.Records.PawnRecord", null)
-                        .WithMany("Cards")
+                        .WithMany()
                         .HasForeignKey("PawnRecordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("KingsboardServer.Data.Records.PawnPathStepRecord", b =>
-                {
-                    b.HasOne("KingsboardServer.Data.Records.PawnRecord", null)
-                        .WithMany("PlannedPath")
-                        .HasForeignKey("PawnRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("KingsboardServer.Data.Records.BoardRecord", b =>
-                {
-                    b.Navigation("Tiles");
-                });
-
-            modelBuilder.Entity("KingsboardServer.Data.Records.PawnRecord", b =>
-                {
-                    b.Navigation("Cards");
-
-                    b.Navigation("PlannedPath");
                 });
 #pragma warning restore 612, 618
         }

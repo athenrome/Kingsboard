@@ -4,6 +4,7 @@ using Kingsboard.Shared.Models.Pawns;
 using KingsboardServer.Data.Records;
 using KingsboardServer.Models.Cards;
 using KingsboardServer.Models.Enumerations;
+using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
 
 namespace KingsboardServer.Services
@@ -72,13 +73,21 @@ namespace KingsboardServer.Services
 
         private readonly Serilog.ILogger _logger;
         private readonly IReadOnlyDictionary<CardActionType, ICardAction> _actions;
+        private readonly ICardRepository _repository;
+
+        // The definitions as stored in the database, read (after storing the ones in code) the first time a card is
+        // stored or read back. Guarded by _storedLock.
+        private readonly object _storedLock = new();
+        private StoredDefinitions? _stored;
 
         /// <summary>
         /// Creates the service with every registered card action. Throws if two actions claim the same <see cref="CardActionType"/>.
+        /// The definitions are stored in <paramref name="repository"/> the first time they're needed.
         /// </summary>
-        public CardService(Serilog.ILogger logger, IEnumerable<ICardAction> actions)
+        public CardService(Serilog.ILogger logger, IEnumerable<ICardAction> actions, ICardRepository repository)
         {
             _logger = logger;
+            _repository = repository;
             _actions = actions.ToDictionary(a => a.Action);
 
             foreach (CardDefinition definition in Definitions.Where(d => !_actions.ContainsKey(d.Action)))
@@ -119,7 +128,7 @@ namespace KingsboardServer.Services
 
                 deck.Add(new Card()
                 {
-                    Id = Guid.NewGuid(),
+                    PublicId = Guid.NewGuid(),
                     DefinitionId = definition.Id,
                     Name = definition.Name,
                     Description = definition.Description,
@@ -184,6 +193,7 @@ namespace KingsboardServer.Services
             return new Card()
             {
                 Id = card.Id,
+                PublicId = card.PublicId,
                 DefinitionId = card.DefinitionId,
                 Name = card.Name,
                 Description = card.Description,
@@ -193,38 +203,90 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// Turns a card into the record it's stored as, in <paramref name="pile"/> at position <paramref name="order"/>
-        /// (0 = first). The record keeps the card's own id, and is linked to its pawn when the pawn's record is saved.
+        /// Turns a card into the record of who holds it and where: in <paramref name="location"/> at position
+        /// <paramref name="order"/> (0 = first). The record keeps the card's PublicId and points at its stored definition;
+        /// it's linked to its pawn when the pawn is saved. Throws if the card's definition isn't in code.
         /// </summary>
-        public CardRecord ToRecord(Card card, CardPile pile, int order)
+        public PawnCardRecord ToRecord(Card card, CardLocation location, int order)
+        {
+            StoredDefinitions stored = GetStoredDefinitions();
+            if (!stored.RecordIds.TryGetValue(card.DefinitionId, out int cardRecordId))
+            {
+                throw new InvalidOperationException($"Card {card.PublicId} is a copy of {card.DefinitionId}, which isn't a known card");
+            }
+
+            return new PawnCardRecord()
+            {
+                Id = card.Id,
+                PublicId = card.PublicId,
+                CardRecordId = cardRecordId,
+                Location = location,
+                Order = order
+            };
+        }
+
+        /// <summary>
+        /// Combines a stored card with its stored definition into a card. Throws if the definition isn't stored.
+        /// </summary>
+        public Card FromRecord(PawnCardRecord record)
+        {
+            StoredDefinitions stored = GetStoredDefinitions();
+            if (!stored.Records.TryGetValue(record.CardRecordId, out CardRecord? definition))
+            {
+                throw new InvalidOperationException($"Card {record.PublicId} is a copy of card definition {record.CardRecordId}, which isn't stored");
+            }
+
+            return new Card()
+            {
+                Id = record.Id,
+                PublicId = record.PublicId,
+                DefinitionId = definition.DefinitionId,
+                Name = definition.Name,
+                Description = definition.Description,
+                ImageId = definition.ImageId,
+                TargetType = definition.TargetType
+            };
+        }
+
+        /// <summary>
+        /// The stored card definitions, storing the ones in code first if this is the first time they're needed
+        /// </summary>
+        private StoredDefinitions GetStoredDefinitions()
+        {
+            lock (_storedLock)
+            {
+                if (_stored is null)
+                {
+                    IReadOnlyList<CardRecord> records = _repository.SaveDefinitions(Definitions.Select(ToRecord).ToArray());
+                    _stored = new StoredDefinitions(
+                        records.ToDictionary(r => r.DefinitionId, r => r.Id, StringComparer.OrdinalIgnoreCase),
+                        records.ToDictionary(r => r.Id));
+                }
+                return _stored;
+            }
+        }
+
+        /// <summary>
+        /// Turns a definition in code into the record it's stored as
+        /// </summary>
+        private static CardRecord ToRecord(CardDefinition definition)
         {
             return new CardRecord()
             {
-                CardId = card.Id,
-                Pile = pile,
-                Order = order,
-                DefinitionId = card.DefinitionId,
-                Name = card.Name,
-                Description = card.Description,
-                ImageId = card.ImageId,
-                TargetType = card.TargetType
+                DefinitionId = definition.Id,
+                Name = definition.Name,
+                Description = definition.Description,
+                ImageId = definition.ImageId,
+                TargetType = definition.TargetType,
+                Action = definition.Action
             };
         }
 
         /// <summary>
-        /// Turns a stored card back into a card, as it was when it was stored
+        /// The stored card definitions, looked up both ways
         /// </summary>
-        public Card FromRecord(CardRecord record)
-        {
-            return new Card()
-            {
-                Id = record.CardId,
-                DefinitionId = record.DefinitionId,
-                Name = record.Name,
-                Description = record.Description,
-                ImageId = record.ImageId,
-                TargetType = record.TargetType
-            };
-        }
+        /// <param name="RecordIds">Each stored definition's id, by its DefinitionId</param>
+        /// <param name="Records">Each stored definition, by its id</param>
+        private record StoredDefinitions(IReadOnlyDictionary<string, int> RecordIds, IReadOnlyDictionary<int, CardRecord> Records);
     }
 }

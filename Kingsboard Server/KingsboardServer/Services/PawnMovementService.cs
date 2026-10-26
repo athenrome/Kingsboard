@@ -1,7 +1,5 @@
 using Kingsboard.Shared.Models.Board;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -13,16 +11,16 @@ namespace KingsboardServer.Services
         // The four neighbouring columns a pawn can step to
         private static readonly (int X, int Y)[] Steps = { (1, 0), (-1, 0), (0, 1), (0, -1) };
 
-        private readonly IOptionsMonitor<PawnSettings> _settings;
+        private readonly IConfiguration _configuration;
         private readonly IBoardService _boardService;
         private readonly ITileService _tileService;
 
         /// <summary>
         /// Creates the service, which reads the board through <paramref name="boardService"/>
         /// </summary>
-        public PawnMovementService(IOptionsMonitor<PawnSettings> settings, IBoardService boardService, ITileService tileService)
+        public PawnMovementService(IConfiguration configuration, IBoardService boardService, ITileService tileService)
         {
-            _settings = settings;
+            _configuration = configuration;
             _boardService = boardService;
             _tileService = tileService;
         }
@@ -46,7 +44,7 @@ namespace KingsboardServer.Services
         /// </summary>
         public IReadOnlyDictionary<BoardPosition, IReadOnlyList<BoardPosition>> FindReachable(BoardPosition from, int range, IReadOnlySet<BoardPosition> blocked)
         {
-            int maxClimb = Math.Max(0, _settings.CurrentValue.MaxClimb);
+            int maxClimb = Math.Max(0, _configuration.GetValue("PawnSettings:MaxClimb", 1));
             range = Math.Max(0, range);
 
             Dictionary<BoardPosition, IReadOnlyList<BoardPosition>> paths = new Dictionary<BoardPosition, IReadOnlyList<BoardPosition>>()

@@ -8,12 +8,10 @@ using KingsboardServer.Events.Pawns;
 using KingsboardServer.Models;
 using KingsboardServer.Models.Board;
 using KingsboardServer.Models.Cards;
-using KingsboardServer.Models.Configuration;
 using KingsboardServer.Models.Enumerations;
 using KingsboardServer.Models.Players;
 using KingsboardServer.Repositories.Interfaces;
 using KingsboardServer.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace KingsboardServer.Services
 {
@@ -52,8 +50,7 @@ namespace KingsboardServer.Services
         private const int MaxAttribute = 10;
 
         private readonly Serilog.ILogger _logger;
-        private readonly IOptionsMonitor<PawnSettings> _settings;
-        private readonly IOptionsMonitor<PlayerSettings> _playerSettings;
+        private readonly IConfiguration _configuration;
         private readonly IPawnRepository _repository;
         private readonly IBoardService _boardService;
         private readonly IPawnMovementService _movement;
@@ -84,12 +81,11 @@ namespace KingsboardServer.Services
         /// Creates the service and starts following players joining and leaving. There are no pawns until
         /// <see cref="SpawnPawns"/> is called.
         /// </summary>
-        public PawnService(Serilog.ILogger logger, IOptionsMonitor<PawnSettings> settings, IOptionsMonitor<PlayerSettings> playerSettings,
+        public PawnService(Serilog.ILogger logger, IConfiguration configuration,
             IPawnRepository repository, IBoardService boardService, IPawnMovementService movement, ICardService cardService, IPlayerService playerService)
         {
             _logger = logger;
-            _settings = settings;
-            _playerSettings = playerSettings;
+            _configuration = configuration;
             _repository = repository;
             _boardService = boardService;
             _movement = movement;
@@ -123,7 +119,7 @@ namespace KingsboardServer.Services
         {
             lock (_lock)
             {
-                Pawn? pawn = GetLoadedPawns().FirstOrDefault(p => p.Id == id);
+                Pawn? pawn = GetLoadedPawns().FirstOrDefault(p => p.PublicId == id);
                 return pawn is null ? null : Clone(pawn);
             }
         }
@@ -147,7 +143,10 @@ namespace KingsboardServer.Services
         /// </summary>
         public IReadOnlyList<Pawn> SpawnPawns()
         {
-            PawnSettings settings = _settings.CurrentValue;
+            int wanted = _configuration.GetValue("PawnSettings:Count", 8);
+            int spawnAreaSize = _configuration.GetValue("PawnSettings:SpawnAreaSize", 24);
+            int? spawnSeed = _configuration.GetValue<int?>("PawnSettings:Seed");
+            string[]? configuredDeck = _configuration.GetSection("PawnSettings:StartingDeck").Get<string[]>();
             GameBoard board = _boardService.GetBoard() ?? throw new InvalidOperationException("No board has been created yet");
 
             IReadOnlyList<Pawn> spawned = Array.Empty<Pawn>();
@@ -157,10 +156,10 @@ namespace KingsboardServer.Services
             {
                 lock (_lock)
                 {
-                    _random = settings.Seed is int seed ? new Random(seed) : new Random();
+                    _random = spawnSeed is int seed ? new Random(seed) : new Random();
 
-                    int areaWidth = Math.Clamp(settings.SpawnAreaSize, 1, board.Width);
-                    int areaDepth = Math.Clamp(settings.SpawnAreaSize, 1, board.Depth);
+                    int areaWidth = Math.Clamp(spawnAreaSize, 1, board.Width);
+                    int areaDepth = Math.Clamp(spawnAreaSize, 1, board.Depth);
 
                     List<BoardPosition> candidates = new List<BoardPosition>();
                     for (int y = 0; y < areaDepth; y++)
@@ -175,8 +174,8 @@ namespace KingsboardServer.Services
                     }
 
                     Shuffle(candidates);
-                    int count = Math.Min(Math.Max(0, settings.Count), candidates.Count);
-                    IReadOnlyList<string> startingDeck = settings.StartingDeck is { Length: > 0 } deck ? deck : DefaultStartingDeck;
+                    int count = Math.Min(Math.Max(0, wanted), candidates.Count);
+                    IReadOnlyList<string> startingDeck = configuredDeck is { Length: > 0 } deck ? deck : DefaultStartingDeck;
 
                     List<Pawn> pawns = new List<Pawn>(count);
                     for (int i = 0; i < count; i++)
@@ -184,9 +183,9 @@ namespace KingsboardServer.Services
                         pawns.Add(CreatePawn(i, candidates[i], startingDeck));
                     }
 
-                    if (count < settings.Count)
+                    if (count < wanted)
                     {
-                        _logger.Warning("Only room for {Count} of {Wanted} pawns in the spawn area", count, settings.Count);
+                        _logger.Warning("Only room for {Count} of {Wanted} pawns in the spawn area", count, wanted);
                     }
 
                     AssignOwners(pawns, players);
@@ -224,7 +223,7 @@ namespace KingsboardServer.Services
                 }
 
                 List<Pawn> pawns = CloneAll(GetLoadedPawns()).ToList();
-                Pawn? pawn = pawns.FirstOrDefault(p => p.Id == pawnId);
+                Pawn? pawn = pawns.FirstOrDefault(p => p.PublicId == pawnId);
                 if (pawn is null)
                 {
                     return new CardSelectResult(false, $"No pawn has id {pawnId}");
@@ -234,7 +233,7 @@ namespace KingsboardServer.Services
                     return new CardSelectResult(false, $"You don't control {pawn.Name}");
                 }
 
-                Card? card = pawn.Hand.FirstOrDefault(c => c.Id == cardId);
+                Card? card = pawn.Hand.FirstOrDefault(c => c.PublicId == cardId);
                 if (card is null)
                 {
                     return new CardSelectResult(false, $"That card isn't in {pawn.Name}'s hand");
@@ -256,7 +255,7 @@ namespace KingsboardServer.Services
                     aim = _movement.GetStandPosition(column) ?? column;
                 }
 
-                pawn.SelectedCard = new CardSelection(card.Id, aim);
+                pawn.SelectedCard = new CardSelection(card.PublicId, aim);
                 pawn.PlannedPath = PlanPath(pawn, card, aim, OccupiedBy(pawns, pawn));
 
                 SavePawns(pawns);
@@ -299,7 +298,7 @@ namespace KingsboardServer.Services
         /// </summary>
         private void DrawHands(int turnId)
         {
-            int handSize = Math.Max(0, _settings.CurrentValue.HandSize);
+            int handSize = Math.Max(0, _configuration.GetValue("PawnSettings:HandSize", 5));
 
             lock (_lock)
             {
@@ -358,7 +357,7 @@ namespace KingsboardServer.Services
                             continue;
                         }
 
-                        pawn.SelectedCard = new CardSelection(card.Id, target);
+                        pawn.SelectedCard = new CardSelection(card.PublicId, target);
                         context.Target = target;
                         pawn.PlannedPath = action.PlanPath(context);
                         if (pawn.PlannedPath.Count > 0)
@@ -418,7 +417,7 @@ namespace KingsboardServer.Services
                 foreach (Pawn pawn in order)
                 {
                     CardSelection? selection = pawn.SelectedCard;
-                    Card? card = selection is null ? null : pawn.Hand.FirstOrDefault(c => c.Id == selection.CardId);
+                    Card? card = selection is null ? null : pawn.Hand.FirstOrDefault(c => c.PublicId == selection.CardId);
 
                     pawn.SelectedCard = null;
                     pawn.PlannedPath = Array.Empty<BoardPosition>();
@@ -438,13 +437,13 @@ namespace KingsboardServer.Services
 
                     if (result.Path.Count > 0 || result.Blocked || result.Position != pawn.Position)
                     {
-                        movements.Add(new PawnMovement(pawn.Id, result.Path, result.Position, result.Blocked));
+                        movements.Add(new PawnMovement(pawn.PublicId, result.Path, result.Position, result.Blocked));
                     }
                     pawn.Position = result.Position;
 
                     if (result.Speech is string speech)
                     {
-                        speeches.Add(new PawnSpeech(pawn.Id, speech));
+                        speeches.Add(new PawnSpeech(pawn.PublicId, speech));
                     }
                 }
 
@@ -510,8 +509,8 @@ namespace KingsboardServer.Services
         /// </summary>
         private bool AssignOwners(List<Pawn> pawns, IReadOnlyList<Player> players)
         {
-            int perPlayer = Math.Max(0, _playerSettings.CurrentValue.PawnsPerPlayer);
-            Dictionary<Guid, Player> joined = players.ToDictionary(p => p.Id);
+            int perPlayer = Math.Max(0, _configuration.GetValue("PlayerSettings:PawnsPerPlayer", 2));
+            Dictionary<Guid, Player> joined = players.ToDictionary(p => p.PublicId);
             Dictionary<Guid, int> owned = new Dictionary<Guid, int>();
             bool changed = false;
 
@@ -532,10 +531,10 @@ namespace KingsboardServer.Services
 
             foreach (Player player in players)
             {
-                int count = owned.GetValueOrDefault(player.Id);
+                int count = owned.GetValueOrDefault(player.PublicId);
                 foreach (Pawn pawn in pawns.Where(p => p.OwnerId is null).Take(perPlayer - count))
                 {
-                    pawn.OwnerId = player.Id;
+                    pawn.OwnerId = player.PublicId;
                     pawn.OwnerName = player.Name;
                     pawn.OwnerColour = player.Colour;
                     changed = true;
@@ -569,7 +568,7 @@ namespace KingsboardServer.Services
         /// </summary>
         private IReadOnlySet<BoardPosition> OccupiedBy(IEnumerable<Pawn> pawns, Pawn pawn)
         {
-            return pawns.Where(p => p.Id != pawn.Id).Select(p => _movement.GetColumn(p.Position)).ToHashSet();
+            return pawns.Where(p => p.PublicId != pawn.PublicId).Select(p => _movement.GetColumn(p.Position)).ToHashSet();
         }
 
         /// <summary>
@@ -581,7 +580,7 @@ namespace KingsboardServer.Services
         {
             Pawn pawn = new Pawn()
             {
-                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
                 Name = index < Names.Length ? Names[index] : $"{Names[index % Names.Length]} {index / Names.Length + 1}",
                 Colour = Colours[index % Colours.Length],
                 Position = position,
@@ -646,33 +645,56 @@ namespace KingsboardServer.Services
         {
             if (!_pawnsLoaded)
             {
-                _pawns = _repository.GetPawns().Select(FromRecord).ToArray();
+                ILookup<int, PawnCardRecord> cardsByPawn = _repository.GetPawnCards().ToLookup(c => c.PawnRecordId);
+                _pawns = _repository.GetPawns().Select(record => FromRecord(record, cardsByPawn[record.Id])).ToArray();
                 _pawnsLoaded = true;
             }
             return _pawns;
         }
 
         /// <summary>
-        /// Stores the pawns in place of all the current ones and makes them the working copy. The caller must not change
-        /// them afterwards. Saves first, so a failed write leaves the working copy matching the database.
-        /// Caller must hold <see cref="_lock"/>.
+        /// Stores the pawns and their cards in place of all the current ones and makes them the working copy, with their
+        /// stored ids. The caller must not change them afterwards. Saves first, so a failed write leaves the working copy
+        /// matching the database. Planned paths aren't stored. Caller must hold <see cref="_lock"/>.
         /// </summary>
         private void SavePawns(IReadOnlyList<Pawn> pawns)
         {
-            _repository.SavePawns(pawns.Select((pawn, i) => ToRecord(pawn, i)).ToArray());
+            PawnRecord[] pawnRecords = pawns.Select((pawn, i) => ToRecord(pawn, i)).ToArray();
+            Dictionary<Guid, PawnCardRecord[]> cardRecords = pawns.ToDictionary(
+                pawn => pawn.PublicId,
+                pawn => pawn.Deck.Select((card, i) => _cardService.ToRecord(card, CardLocation.Deck, i))
+                    .Concat(pawn.Hand.Select((card, i) => _cardService.ToRecord(card, CardLocation.Hand, i)))
+                    .ToArray());
+
+            _repository.SavePawns(pawnRecords, cardRecords.ToDictionary(c => c.Key, c => (IReadOnlyList<PawnCardRecord>)c.Value));
+
+            // Keep the ids the database gave them
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                Pawn pawn = pawns[i];
+                pawn.Id = pawnRecords[i].Id;
+                PawnCardRecord[] cards = cardRecords[pawn.PublicId];
+                int c = 0;
+                foreach (Card card in pawn.Deck.Concat(pawn.Hand))
+                {
+                    card.Id = cards[c++].Id;
+                }
+            }
+
             _pawns = pawns;
             _pawnsLoaded = true;
         }
 
         /// <summary>
-        /// Turns a pawn into the record it's stored as, with records for its cards and planned path.
+        /// Turns a pawn into the record it's stored as, without its cards or planned path.
         /// <paramref name="order"/> is the pawn's place in the list of pawns.
         /// </summary>
         private PawnRecord ToRecord(Pawn pawn, int order)
         {
             return new PawnRecord()
             {
-                PawnId = pawn.Id,
+                Id = pawn.Id,
+                PublicId = pawn.PublicId,
                 Order = order,
                 Name = pawn.Name,
                 Colour = pawn.Colour,
@@ -693,25 +715,14 @@ namespace KingsboardServer.Services
                 SelectedTargetZ = pawn.SelectedCard?.Target?.Z,
                 OwnerId = pawn.OwnerId,
                 OwnerName = pawn.OwnerName,
-                OwnerColour = pawn.OwnerColour,
-                Cards = pawn.Deck.Select((card, i) => _cardService.ToRecord(card, CardPile.Deck, i))
-                    .Concat(pawn.Hand.Select((card, i) => _cardService.ToRecord(card, CardPile.Hand, i)))
-                    .ToList(),
-                PlannedPath = pawn.PlannedPath.Select((step, i) => new PawnPathStepRecord()
-                {
-                    StepId = Guid.NewGuid(),
-                    Order = i,
-                    X = step.X,
-                    Y = step.Y,
-                    Z = step.Z
-                }).ToList()
+                OwnerColour = pawn.OwnerColour
             };
         }
 
         /// <summary>
-        /// Turns a stored pawn, with its cards and planned path, back into a pawn
+        /// Combines a stored pawn with the cards it holds into a pawn. Its planned path isn't stored, so it comes back empty.
         /// </summary>
-        private Pawn FromRecord(PawnRecord record)
+        private Pawn FromRecord(PawnRecord record, IEnumerable<PawnCardRecord> cards)
         {
             BoardPosition? target = record is { SelectedTargetX: int x, SelectedTargetY: int y, SelectedTargetZ: int z }
                 ? new BoardPosition(x, y, z)
@@ -719,7 +730,8 @@ namespace KingsboardServer.Services
 
             return new Pawn()
             {
-                Id = record.PawnId,
+                Id = record.Id,
+                PublicId = record.PublicId,
                 Name = record.Name,
                 Colour = record.Colour,
                 Position = new BoardPosition(record.PositionX, record.PositionY, record.PositionZ),
@@ -734,9 +746,8 @@ namespace KingsboardServer.Services
                 },
                 Health = record.Health,
                 MaxHealth = record.MaxHealth,
-                PlannedPath = record.PlannedPath.OrderBy(s => s.Order).Select(s => new BoardPosition(s.X, s.Y, s.Z)).ToArray(),
-                Deck = CardsInPile(record, CardPile.Deck),
-                Hand = CardsInPile(record, CardPile.Hand),
+                Deck = CardsIn(cards, CardLocation.Deck),
+                Hand = CardsIn(cards, CardLocation.Hand),
                 SelectedCard = record.SelectedCardId is Guid cardId ? new CardSelection(cardId, target) : null,
                 OwnerId = record.OwnerId,
                 OwnerName = record.OwnerName,
@@ -745,11 +756,11 @@ namespace KingsboardServer.Services
         }
 
         /// <summary>
-        /// The stored pawn's cards in one pile, in order
+        /// The stored cards in one location, in order
         /// </summary>
-        private IReadOnlyList<Card> CardsInPile(PawnRecord record, CardPile pile)
+        private IReadOnlyList<Card> CardsIn(IEnumerable<PawnCardRecord> cards, CardLocation location)
         {
-            return record.Cards.Where(c => c.Pile == pile).OrderBy(c => c.Order).Select(_cardService.FromRecord).ToArray();
+            return cards.Where(c => c.Location == location).OrderBy(c => c.Order).Select(_cardService.FromRecord).ToArray();
         }
 
         /// <summary>
@@ -768,6 +779,7 @@ namespace KingsboardServer.Services
             return new Pawn()
             {
                 Id = pawn.Id,
+                PublicId = pawn.PublicId,
                 Name = pawn.Name,
                 Colour = pawn.Colour,
                 Position = pawn.Position,
