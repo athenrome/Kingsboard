@@ -39,6 +39,12 @@ namespace Kingsboard.Pawns
         [Tooltip("How high the pawn hops on each step, in world units")]
         [SerializeField, FormerlySerializedAs("hopHeight")] private float _hopHeight = 0.15f;
 
+        [Tooltip("Seconds the pawn takes to turn to face a new step; capped at the time the step takes")]
+        [SerializeField] private float _secondsPerTurn = 0.1f;
+
+        [Tooltip("Degrees to turn the pawn about its up axis so the model faces the way it walks (the miniature model faces -Z, hence 180)")]
+        [SerializeField] private float _modelFacingYaw = 180f;
+
         [Tooltip("Show the pawn's planned path as a line")]
         [SerializeField, FormerlySerializedAs("showPlannedPath")] private bool _showPlannedPath = true;
 
@@ -207,13 +213,20 @@ namespace Kingsboard.Pawns
         }
 
         /// <summary>
-        /// Shows the pawn only while it stands inside the loaded board section (pawns elsewhere have no ground drawn under them).
-        /// Call when a new section loads.
+        /// Puts the pawn back on the board after a new section loads. The board slides to centre each section, so this
+        /// cuts short any walk, stands the pawn where it is now, redraws its plan, and shows it only while it stands inside
+        /// the loaded section (pawns elsewhere have no ground drawn under them).
         /// </summary>
-        public void RefreshVisibility()
+        public void RefreshPlacement()
         {
-            BoardPosition position = Pawn != null ? Pawn.Position : new BoardPosition(0, 0, 0);
-            SetInSection(IsInLoadedSection(position));
+            if (_walk != null)
+            {
+                StopCoroutine(_walk);
+                _walk = null;
+            }
+
+            StandAt(Pawn != null ? Pawn.Position : new BoardPosition(0, 0, 0));
+            ShowPlan();
         }
 
         private void LateUpdate()
@@ -245,22 +258,29 @@ namespace Kingsboard.Pawns
         }
 
         /// <summary>
-        /// Steps through each position of the path, hiding the pawn when it walks out of the loaded section
+        /// Steps through each position of the path, turning to face each step, and hides the pawn when it walks out of the
+        /// loaded section. The pawn keeps facing its last step once it stops.
         /// </summary>
         private IEnumerator Walk(PawnMovement movement)
         {
+            float stepSeconds = Mathf.Max(0.01f, _secondsPerStep);
+            float turnFraction = Mathf.Clamp(_secondsPerTurn / stepSeconds, 0.01f, 1f);
             foreach (BoardPosition step in movement.Path)
             {
                 Vector3 from = transform.position;
                 Vector3 to = StandingPointOf(step);
-                for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(0.01f, _secondsPerStep))
+                Quaternion fromRotation = transform.rotation;
+                Quaternion toRotation = FacingRotation(to - from, fromRotation);
+                for (float t = 0f; t < 1f; t += Time.deltaTime / stepSeconds)
                 {
                     // A small hop on each step, so movement between levels reads clearly
                     transform.position = Vector3.Lerp(from, to, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * _hopHeight;
+                    transform.rotation = Quaternion.Slerp(fromRotation, toRotation, t / turnFraction);
                     yield return null;
                 }
 
                 transform.position = to;
+                transform.rotation = toRotation;
                 if (!IsInLoadedSection(step))
                 {
                     break;
@@ -269,6 +289,21 @@ namespace Kingsboard.Pawns
 
             _walk = null;
             StandAt(movement.Position);
+        }
+
+        /// <summary>
+        /// Rotation that faces the pawn along <paramref name="movement"/>, ignoring any climb or drop.
+        /// A purely vertical move has no direction to face, so it keeps <paramref name="current"/>.
+        /// </summary>
+        private Quaternion FacingRotation(Vector3 movement, Quaternion current)
+        {
+            Vector3 up = _board != null ? _board.transform.up : Vector3.up;
+            Vector3 flat = Vector3.ProjectOnPlane(movement, up);
+            if (flat.sqrMagnitude < 0.0001f)
+            {
+                return current;
+            }
+            return Quaternion.LookRotation(flat, up) * Quaternion.Euler(0f, _modelFacingYaw, 0f);
         }
 
         private void StandAt(BoardPosition position)

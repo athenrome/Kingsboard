@@ -419,7 +419,7 @@ namespace Kingsboard.Pawns
         {
             foreach (PawnController pawn in _pawns.Values)
             {
-                pawn.RefreshVisibility();
+                pawn.RefreshPlacement();
             }
         }
 

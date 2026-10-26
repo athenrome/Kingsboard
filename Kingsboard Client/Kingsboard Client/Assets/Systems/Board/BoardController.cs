@@ -14,6 +14,8 @@ namespace Kingsboard.Board
     /// <see cref="PanSection"/>. It draws one block per tile, stacked into columns.
     /// Tiles are drawn at their position on the whole board: board x maps to world x, board y to world z, and board z
     /// (the level) to world y, so tile (x, y, z) is centred at local position (x, (z + 0.5) * <see cref="LevelHeight"/>, y).
+    /// Where the Board is placed in the scene marks where the centre of the loaded section sits (e.g. the middle of the
+    /// table top): each time a section loads, the board slides so that section is centred there again.
     /// Lives on the Board prefab (Assets/Prefabs/Board/Board.prefab), placed in the scene. Every tile block is an
     /// instance of the BoardTile prefab, created under the prefab's Tiles child.
     /// </summary>
@@ -41,6 +43,7 @@ namespace Kingsboard.Board
         private BoardGrpcHandler _handler;
         private readonly Dictionary<TileType, Material> _materials = new Dictionary<TileType, Material>();
         private GameObject[] _tileObjects = Array.Empty<GameObject>();
+        private Vector3 _anchor;
 
         /// <summary>
         /// The section of the board currently loaded, or null before one has arrived
@@ -120,6 +123,11 @@ namespace Kingsboard.Board
             return new BoardPosition(Mathf.RoundToInt(local.x), Mathf.RoundToInt(local.z), Mathf.FloorToInt(local.y / LevelHeight));
         }
 
+        private void Awake()
+        {
+            _anchor = transform.localPosition;
+        }
+
         private void Start()
         {
             if (_tilePrefab == null || _tileRoot == null)
@@ -163,6 +171,7 @@ namespace Kingsboard.Board
         private void OnSectionReceived(BoardSection section)
         {
             Section = section;
+            CentreOnAnchor(section.Region);
             RebuildTiles();
 
             BoardRegion region = section.Region;
@@ -202,6 +211,17 @@ namespace Kingsboard.Board
         {
             // Keep showing the last section; the server sends it again in full when we reconnect
             Debug.LogWarning("[Board] Disconnected from the board server. Reconnecting...");
+        }
+
+        /// <summary>
+        /// Slides the board so the middle of <paramref name="region"/> sits where the Board was placed in the scene.
+        /// Runs before <see cref="SectionLoaded"/> is raised, so anything placed from board positions on that event lands
+        /// in the right spot.
+        /// </summary>
+        private void CentreOnAnchor(BoardRegion region)
+        {
+            Vector3 centre = new Vector3(region.Origin.X + (region.Width - 1) / 2f, 0f, region.Origin.Y + (region.Depth - 1) / 2f);
+            transform.localPosition = _anchor - transform.localRotation * Vector3.Scale(transform.localScale, centre);
         }
 
         private void RebuildTiles()

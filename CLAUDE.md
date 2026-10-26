@@ -164,7 +164,7 @@ Pawns act by playing action cards. All card logic is on the server.
 | `Prefabs/Pawns/Pawns.prefab` | `PawnManager`, with a `Pawn Views` child that pawns are spawned under and nested `PawnDetails` and `PawnHand` |
 | `Prefabs/Pawns/PawnDetails.prefab` | `PawnDetailsController` and its `UIDocument` (`Prefabs/Pawns/PawnDetailsPanelSettings.asset`), the selected-pawn panel |
 | `Prefabs/Pawns/PawnHand.prefab` | `PawnHandController` and its `UIDocument` (`Prefabs/Pawns/PawnHandPanelSettings.asset`), the selected pawn's hand. Nested in `Pawns`. |
-| `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` capsule, a `Name` label, a nested `PawnPath`, a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`) and a nested, hidden `SpeechBubble`. Its pivot is at its feet. |
+| `Prefabs/Pawns/Pawn.prefab` | One pawn: a `PawnController`, a `Body` (the miniature figure from `Models/Pawns/PawnMiniature.obj`, tinted in the pawn's colour, with the capsule collider clicks select it by), a dark `Base` plinth (`Materials/Pawns/PawnBase.mat`), a `Name` label, a nested `PawnPath`, a hidden `SelectionRing` (`Materials/Pawns/PawnSelection.mat`) and a nested, hidden `SpeechBubble`. Its pivot is at its feet. |
 | `Prefabs/Pawns/SpeechBubble.prefab` | `SpeechBubbleController`, a `Background` quad (`Materials/Pawns/SpeechBubble.mat`) and a `Text` TextMesh. Starts hidden; nested in `Pawn`. |
 | `Prefabs/Pawns/PawnPath.prefab` | `LineRenderer` for a planned path (`Materials/Pawns/PawnPath.mat`), nested in `Pawn`. It draws in world space, so it stays put while the pawn walks. |
 | `Prefabs/Chat/Chat.prefab` | `ChatController` and its `UIDocument` (`Prefabs/Chat/ChatPanelSettings.asset`) |
