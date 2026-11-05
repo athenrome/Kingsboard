@@ -19,6 +19,8 @@ namespace Kingsboard.Pawns
     /// plans, moves, speech and turn ends, and keeps one pawn selected at a time (click a pawn to select it, click elsewhere
     /// to deselect). It also sends our card choices to the server, including asking for a tile first for cards that need
     /// one (<see cref="BeginTargeting"/>). Everything an individual pawn does is up to its <see cref="PawnController"/>.
+    /// Pawns can only be selected and aimed while the local player is seated at the table
+    /// (<see cref="PlayerMode.InGame"/>); going back to the avatar deselects and stops any aiming.
     /// Lives on the Pawns prefab (Assets/Prefabs/Pawns/Pawns.prefab), placed in the scene. Every pawn is an instance of the
     /// Pawn prefab, created under the prefab's Pawn Views child.
     /// </summary>
@@ -73,6 +75,12 @@ namespace Kingsboard.Pawns
         /// Our player id, or null while we aren't joined to the game
         /// </summary>
         public Guid? LocalPlayerId => _player != null && _player.Player != null ? _player.Player.PlayerId : (Guid?)null;
+
+        /// <summary>
+        /// True while pawns can be selected and aimed: the local player is in the game at the table (or there's no player in
+        /// the scene to ask)
+        /// </summary>
+        public bool CanInteract => _player == null || _player.State.IsInGame;
 
         /// <summary>
         /// Raised after a pawn is spawned
@@ -165,6 +173,11 @@ namespace Kingsboard.Pawns
         /// </summary>
         public void BeginTargeting(PawnController pawn, Card card)
         {
+            if (!CanInteract)
+            {
+                return;
+            }
+
             TargetingPawn = pawn;
             TargetingCard = card;
             if (_player != null)
@@ -207,6 +220,7 @@ namespace Kingsboard.Pawns
             {
                 _player.Joined += OnPlayerJoined;
                 _player.Left += OnPlayerLeft;
+                _player.State.Changed += OnPlayerStateChanged;
             }
             else
             {
@@ -225,6 +239,11 @@ namespace Kingsboard.Pawns
 
         private void Update()
         {
+            if (!CanInteract)
+            {
+                return;
+            }
+
             Mouse mouse = Mouse.current;
             if (IsTargeting)
             {
@@ -279,6 +298,7 @@ namespace Kingsboard.Pawns
             {
                 _player.Joined -= OnPlayerJoined;
                 _player.Left -= OnPlayerLeft;
+                _player.State.Changed -= OnPlayerStateChanged;
                 _player.State.End(PlayerAction.TargetingCard);
             }
 
@@ -398,6 +418,22 @@ namespace Kingsboard.Pawns
         private void OnPlayerJoined(PlayerInfo player)
         {
             RefreshLocalPlayer();
+        }
+
+        /// <summary>
+        /// Leaving the game for the avatar puts the pawns down: stop aiming and deselect
+        /// </summary>
+        private void OnPlayerStateChanged(PlayerStateTracker state)
+        {
+            if (state.IsInGame)
+            {
+                return;
+            }
+            CancelTargeting();
+            if (SelectedPawn != null)
+            {
+                Select(null);
+            }
         }
 
         private void OnPlayerLeft()

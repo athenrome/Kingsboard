@@ -914,6 +914,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6272343205691517093}
+  - component: {fileID: 7552760943142551937}
   m_Layer: 0
   m_Name: Pillar Southwest
   m_TagString: Untagged
@@ -939,6 +940,22 @@ Transform:
   - {fileID: 1758177227235338703}
   m_Father: {fileID: 1414073488028723098}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7552760943142551937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 694691869981614318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3008f05c2d92f9445b93b122551f3823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomObjectController
+  _footprint: {x: 24, y: 24}
+  _pivotOffset: {x: 0, y: 0, z: 0}
+  _blocksMovement: 1
+  _room: {fileID: 0}
 --- !u!1 &903418607691512547
 GameObject:
   m_ObjectHideFlags: 0
@@ -2100,6 +2117,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 780676695167228791}
+  - component: {fileID: 9192972283132299143}
   m_Layer: 0
   m_Name: Pillar Northeast
   m_TagString: Untagged
@@ -2125,6 +2143,22 @@ Transform:
   - {fileID: 3464444310639004}
   m_Father: {fileID: 1414073488028723098}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9192972283132299143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078662167274464423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3008f05c2d92f9445b93b122551f3823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomObjectController
+  _footprint: {x: 24, y: 24}
+  _pivotOffset: {x: 0, y: 0, z: 0}
+  _blocksMovement: 1
+  _room: {fileID: 0}
 --- !u!1 &2353476512413784145
 GameObject:
   m_ObjectHideFlags: 0
@@ -2404,6 +2438,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7084841095134583742}
+  - component: {fileID: 6239554009597657550}
   m_Layer: 0
   m_Name: Room
   m_TagString: Untagged
@@ -2437,6 +2472,24 @@ Transform:
   - {fileID: 574692869761525016}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6239554009597657550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473708040313589471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b5bff7910c7be4d91109cfa63a347d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomController
+  _cellSize: 8
+  _width: 26
+  _depth: 26
+  _centre: {x: 0, y: -14, z: 0}
+  _headroom: 100
+  _drawGrid: 1
 --- !u!1 &2474398517348654595
 GameObject:
   m_ObjectHideFlags: 0
@@ -9058,6 +9111,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4689232098552661764}
+  - component: {fileID: 7027806308829764506}
   m_Layer: 0
   m_Name: Fireplace
   m_TagString: Untagged
@@ -9088,6 +9142,22 @@ Transform:
   - {fileID: 6136581593218157456}
   m_Father: {fileID: 7084841095134583742}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7027806308829764506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7776712142995634947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3008f05c2d92f9445b93b122551f3823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomObjectController
+  _footprint: {x: 64, y: 16}
+  _pivotOffset: {x: 0, y: 0, z: 12}
+  _blocksMovement: 1
+  _room: {fileID: 0}
 --- !u!1 &7872036848865882263
 GameObject:
   m_ObjectHideFlags: 0
@@ -9312,6 +9382,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3952114431637885701}
+  - component: {fileID: 2280795539357872585}
   m_Layer: 0
   m_Name: Pillar Northwest
   m_TagString: Untagged
@@ -9337,6 +9408,22 @@ Transform:
   - {fileID: 5634019250614546886}
   m_Father: {fileID: 1414073488028723098}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2280795539357872585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8009547287799912525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3008f05c2d92f9445b93b122551f3823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomObjectController
+  _footprint: {x: 24, y: 24}
+  _pivotOffset: {x: 0, y: 0, z: 0}
+  _blocksMovement: 1
+  _room: {fileID: 0}
 --- !u!1 &8084589106425998151
 GameObject:
   m_ObjectHideFlags: 0
@@ -9741,6 +9828,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 943871392247550506}
+  - component: {fileID: 3298144721812654561}
   m_Layer: 0
   m_Name: Pillar Southeast
   m_TagString: Untagged
@@ -9766,6 +9854,22 @@ Transform:
   - {fileID: 1444337048335133783}
   m_Father: {fileID: 1414073488028723098}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3298144721812654561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8271861098447280533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3008f05c2d92f9445b93b122551f3823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomObjectController
+  _footprint: {x: 24, y: 24}
+  _pivotOffset: {x: 0, y: 0, z: 0}
+  _blocksMovement: 1
+  _room: {fileID: 0}
 --- !u!1 &8471733003628305994
 GameObject:
   m_ObjectHideFlags: 0
@@ -10317,6 +10421,7 @@ GameObject:
   - component: {fileID: 7813687468190993333}
   - component: {fileID: 7484309165648774966}
   - component: {fileID: 4977924003611916085}
+  - component: {fileID: 4360373779323674673}
   m_Layer: 0
   m_Name: Rug
   m_TagString: Untagged
@@ -10334,7 +10439,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -13.85, z: 0}
-  m_LocalScale: {x: 76, y: 0.3, z: 64}
+  m_LocalScale: {x: 80, y: 0.3, z: 64}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7084841095134583742}
@@ -10396,6 +10501,22 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4360373779323674673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9057776362481749786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3008f05c2d92f9445b93b122551f3823, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Kingsboard.Room.RoomObjectController
+  _footprint: {x: 80, y: 64}
+  _pivotOffset: {x: 0, y: 0, z: 0}
+  _blocksMovement: 0
+  _room: {fileID: 0}
 --- !u!1 &9101161318152709050
 GameObject:
   m_ObjectHideFlags: 0
