@@ -10,18 +10,19 @@ using UnityEngine.UIElements;
 namespace Kingsboard.CameraControl
 {
     /// <summary>
-    /// Moves the main camera. It has two views:
+    /// Moves the main camera. It has two views, picked by the local player's mode (<see cref="PlayerStateTracker.Mode"/>):
     /// <list type="bullet">
-    /// <item><b>Room view</b> (while the local player isn't seated at the table): follows the room avatar
-    /// (<see cref="RoomAvatarController"/>) from behind and above, and stays inside the room's walls and under its beams.
-    /// The avatar takes the movement keys; the mouse wheel zooms.</item>
-    /// <item><b>Board view</b> (while seated, <see cref="PlayerStateTracker.IsAtTable"/>): looks down at a focus point on
-    /// the board from a fixed angle. WASD (or the arrow keys) slides the focus point across the board, and the mouse wheel
-    /// zooms in and out by moving the camera closer to or further from it. Hold Shift to move faster. The focus point
-    /// stays inside the loaded board section, and the camera frames a new section when one arrives that the focus point
-    /// isn't in.</item>
+    /// <item><b>First person</b> (<see cref="PlayerMode.Avatar"/>): looks out of the room avatar's eyes
+    /// (<see cref="RoomAvatarController.EyePoint"/>). The mouse looks around while the cursor is captured; the avatar takes
+    /// the movement keys and steps the way the camera faces. Esc frees the cursor (e.g. to click the chat box), and a click
+    /// on the game captures it again. The cursor is also freed while typing.</item>
+    /// <item><b>Board view</b> (<see cref="PlayerMode.InGame"/>): looks down at a focus point on the board from a fixed
+    /// angle. WASD (or the arrow keys) slides the focus point across the board, and the mouse wheel zooms in and out by
+    /// moving the camera closer to or further from it. Hold Shift to move faster. The focus point stays inside the loaded
+    /// board section, and the camera frames a new section when one arrives that the focus point isn't in.</item>
     /// </list>
-    /// The camera glides between the two. With no avatar in the scene it always uses the board view.
+    /// Switching between the two glides the camera from one to the other. With no avatar in the scene it always uses the
+    /// board view.
     /// Keys are ignored while the local player's state says text entry blocks the camera
     /// (<see cref="PlayerStateTracker.BlocksCameraMovement"/>, e.g. while typing in chat), and the wheel is ignored over UI.
     /// Lives on the Camera prefab (Assets/Prefabs/Camera/Camera.prefab), placed in the scene.
@@ -31,6 +32,7 @@ namespace Kingsboard.CameraControl
         [Tooltip("The camera this moves (the Camera on this prefab)")]
         [SerializeField] private Camera _camera;
 
+        [Header("Board view")]
         [Tooltip("How far the camera tilts down from the horizon, in degrees")]
         [SerializeField, Range(10f, 90f)] private float _pitch = 50f;
 
@@ -55,67 +57,98 @@ namespace Kingsboard.CameraControl
         [Tooltip("How quickly the camera catches up with panning and zooming. Higher is snappier.")]
         [SerializeField] private float _smoothing = 12f;
 
-        [Header("Room view")]
-        [Tooltip("How far the camera tilts down from the horizon while following the avatar, in degrees")]
-        [SerializeField, Range(10f, 90f)] private float _roomPitch = 40f;
+        [Header("First person")]
+        [Tooltip("Degrees the view turns per pixel the mouse moves")]
+        [SerializeField, Min(0f)] private float _lookSensitivity = 0.12f;
 
-        [Tooltip("How far the camera starts from the avatar, in world units")]
-        [SerializeField] private float _roomDistance = 110f;
+        [Tooltip("How far up or down the view can tilt from level, in degrees")]
+        [SerializeField, Range(0f, 89f)] private float _maxLookPitch = 80f;
 
-        [Tooltip("Closest the camera can get to the avatar, in world units")]
-        [SerializeField] private float _roomMinDistance = 30f;
+        [Tooltip("How far down the view tilts when the game starts, in degrees")]
+        [SerializeField, Range(-89f, 89f)] private float _startLookPitch = 10f;
 
-        [Tooltip("Furthest the camera can get from the avatar, in world units")]
-        [SerializeField] private float _roomMaxDistance = 220f;
-
-        [Tooltip("How far the camera keeps from the floor and the top of the room, in world units")]
-        [SerializeField] private float _roomMargin = 2f;
+        [Tooltip("Seconds the camera takes to glide between first person and the board view")]
+        [SerializeField, Min(0f)] private float _transitionDuration = 0.6f;
 
         private BoardController _board;
         private PlayerController _player;
         private RoomAvatarController _avatar;
-        private RoomController _room;
-        private float _currentPitch;
         private readonly List<UIDocument> _documents = new List<UIDocument>();
         private Vector3 _focus;
         private float _distance = 20f;
         private Vector3 _currentFocus;
         private float _currentDistance;
         private bool _hasFramed;
+        private float _lookYaw;
+        private float _lookPitch;
+        private bool _cursorReleased;
+        private bool _cursorLocked;
+        private bool _wasFirstPerson;
+        private bool _transitioning;
+        private float _transitionTime;
+        private Vector3 _transitionFromPosition;
+        private Quaternion _transitionFromRotation;
 
         /// <summary>
-        /// The world point the camera is looking at
+        /// The world point the board view is looking at
         /// </summary>
         public Vector3 Focus => _focus;
 
         /// <summary>
-        /// How far the camera is (or is heading to be) from <see cref="Focus"/>, in world units
+        /// How far the board view is (or is heading to be) from <see cref="Focus"/>, in world units
         /// </summary>
         public float Distance => _distance;
 
         /// <summary>
-        /// True while the camera follows the avatar around the room, false while it looks at the board
+        /// True while the camera looks out of the avatar's eyes, false while it looks at the board
         /// </summary>
-        public bool IsRoomView => _avatar != null && !(_player != null && _player.State.IsAtTable);
+        public bool IsFirstPerson => _avatar != null && !(_player != null && _player.State.IsInGame);
+
+        /// <summary>
+        /// Which way the first-person view faces around the vertical axis, in degrees (0 looks along +z)
+        /// </summary>
+        public float LookYaw => _lookYaw;
+
+        /// <summary>
+        /// How far the first-person view tilts down from level, in degrees (negative looks up)
+        /// </summary>
+        public float LookPitch => _lookPitch;
+
+        /// <summary>
+        /// True while the mouse cursor is captured for looking around in first person
+        /// </summary>
+        public bool IsCursorCaptured => _cursorLocked;
 
         /// <summary>
         /// Sets where the board view looks: a world point from the given distance (clamped to the zoom limits and kept
-        /// inside the loaded section). In the room view this is remembered for when the player sits down.
+        /// inside the loaded section). In first person this is remembered for when the player sits down.
         /// </summary>
         /// <param name="focus">The world point to look at</param>
         /// <param name="distance">How far back to sit from it, in world units</param>
-        /// <param name="instant">True to jump there at once, false to glide there (ignored in the room view)</param>
+        /// <param name="instant">True to jump there at once, false to glide there (ignored in first person)</param>
         public void LookAt(Vector3 focus, float distance, bool instant)
         {
             _focus = ClampToSection(focus);
             _distance = Mathf.Clamp(distance, _minDistance, _maxDistance);
-            if (instant && !IsRoomView)
+            if (instant)
             {
                 _currentFocus = _focus;
                 _currentDistance = _distance;
-                _currentPitch = _pitch;
-                ApplyTransform();
+                if (!IsFirstPerson)
+                {
+                    _transitioning = false;
+                    ApplyPose(false);
+                }
             }
+        }
+
+        /// <summary>
+        /// Turns the first-person view to face a direction, in degrees (yaw 0 looks along +z; positive pitch looks down)
+        /// </summary>
+        public void SetLook(float yaw, float pitch)
+        {
+            _lookYaw = Mathf.Repeat(yaw, 360f);
+            _lookPitch = Mathf.Clamp(pitch, -_maxLookPitch, _maxLookPitch);
         }
 
         private void Start()
@@ -135,17 +168,20 @@ namespace Kingsboard.CameraControl
                 Debug.LogWarning("[Camera] No PlayerController in the scene, so the camera can't tell when keys are for typing. Place the Player prefab.", this);
             }
 
-            _room = FindAnyObjectByType<RoomController>();
             _avatar = FindAnyObjectByType<RoomAvatarController>();
-            if (_avatar == null)
+            if (_avatar != null)
+            {
+                SetLook(_avatar.transform.eulerAngles.y, _startLookPitch);
+            }
+            else
             {
                 Debug.LogWarning("[Camera] No RoomAvatarController in the scene, so the camera stays on the board. Place the RoomAvatar prefab.", this);
             }
 
-            _currentFocus = TargetFocus();
-            _currentDistance = TargetDistance();
-            _currentPitch = TargetPitch();
-            ApplyTransform();
+            _currentFocus = _focus;
+            _currentDistance = _distance;
+            _wasFirstPerson = IsFirstPerson;
+            ApplyPose(_wasFirstPerson);
 
             _board = FindAnyObjectByType<BoardController>();
             if (_board != null)
@@ -168,16 +204,116 @@ namespace Kingsboard.CameraControl
             {
                 _board.SectionLoaded -= OnSectionLoaded;
             }
+            SetCursorLocked(false);
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            // Unity frees the cursor when the window loses focus; capture it again on the next click
+            if (!hasFocus)
+            {
+                _cursorLocked = false;
+            }
         }
 
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            bool firstPerson = IsFirstPerson;
+            if (firstPerson != _wasFirstPerson)
+            {
+                BeginTransition();
+                _wasFirstPerson = firstPerson;
+                if (firstPerson)
+                {
+                    // Standing up from the table takes the mouse back for looking around
+                    _cursorReleased = false;
+                }
+            }
+
+            UpdateCursor(firstPerson);
+            if (firstPerson)
+            {
+                UpdateLook();
+            }
+            else
+            {
+                UpdateBoardControls(dt);
+            }
+
+            float t = 1f - Mathf.Exp(-_smoothing * dt);
+            _currentFocus = Vector3.Lerp(_currentFocus, _focus, t);
+            _currentDistance = Mathf.Lerp(_currentDistance, _distance, t);
+
+            if (_transitioning)
+            {
+                _transitionTime += dt;
+                if (_transitionTime >= _transitionDuration)
+                {
+                    _transitioning = false;
+                }
+            }
+            ApplyPose(firstPerson);
+        }
+
+        /// <summary>
+        /// Captures the cursor for looking around in first person, unless the player has freed it (Esc), is typing, or
+        /// isn't in first person. A click on the game (not on UI) captures it again after Esc.
+        /// </summary>
+        private void UpdateCursor(bool firstPerson)
+        {
+            bool enteringText = _player != null && _player.State.IsEnteringText;
+            if (firstPerson && !enteringText)
+            {
+                Keyboard keyboard = Keyboard.current;
+                Mouse mouse = Mouse.current;
+                if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+                {
+                    _cursorReleased = true;
+                }
+                else if (mouse != null && mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi(mouse.position.ReadValue()))
+                {
+                    _cursorReleased = false;
+                }
+            }
+
+            SetCursorLocked(firstPerson && !enteringText && !_cursorReleased && Application.isFocused);
+        }
+
+        private void SetCursorLocked(bool locked)
+        {
+            if (_cursorLocked == locked && (UnityEngine.Cursor.lockState == CursorLockMode.Locked) == locked)
+            {
+                return;
+            }
+            _cursorLocked = locked;
+            UnityEngine.Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+            UnityEngine.Cursor.visible = !locked;
+        }
+
+        /// <summary>
+        /// Turns the first-person view with the mouse while the cursor is captured
+        /// </summary>
+        private void UpdateLook()
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse == null || !_cursorLocked)
+            {
+                return;
+            }
+
+            Vector2 delta = mouse.delta.ReadValue() * _lookSensitivity;
+            SetLook(_lookYaw + delta.x, _lookPitch - delta.y);
+        }
+
+        /// <summary>
+        /// Pans and zooms the board view
+        /// </summary>
+        private void UpdateBoardControls(float dt)
+        {
             Keyboard keyboard = Keyboard.current;
-            bool roomView = IsRoomView;
             bool blocked = _player != null && _player.State.BlocksCameraMovement;
-            // In the room view the avatar has the movement keys
-            if (keyboard != null && !blocked && !roomView)
+            if (keyboard != null && !blocked)
             {
                 Vector2 input = Vector2.zero;
                 if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) input.y += 1f;
@@ -207,74 +343,47 @@ namespace Kingsboard.CameraControl
                 if (scroll != 0f && !IsPointerOverUi(mouse.position.ReadValue()))
                 {
                     float factor = scroll > 0f ? 1f - _zoomStep : 1f + _zoomStep;
-                    if (roomView)
-                    {
-                        _roomDistance = Mathf.Clamp(_roomDistance * factor, _roomMinDistance, _roomMaxDistance);
-                    }
-                    else
-                    {
-                        _distance = Mathf.Clamp(_distance * factor, _minDistance, _maxDistance);
-                    }
+                    _distance = Mathf.Clamp(_distance * factor, _minDistance, _maxDistance);
                 }
             }
-
-            float t = 1f - Mathf.Exp(-_smoothing * dt);
-            _currentFocus = Vector3.Lerp(_currentFocus, TargetFocus(), t);
-            _currentDistance = Mathf.Lerp(_currentDistance, TargetDistance(), t);
-            _currentPitch = Mathf.Lerp(_currentPitch, TargetPitch(), t);
-            ApplyTransform();
-        }
-
-        private Vector3 TargetFocus()
-        {
-            return IsRoomView ? _avatar.FocusPoint : _focus;
-        }
-
-        private float TargetDistance()
-        {
-            return IsRoomView ? Mathf.Clamp(_roomDistance, _roomMinDistance, _roomMaxDistance) : _distance;
-        }
-
-        private float TargetPitch()
-        {
-            return IsRoomView ? _roomPitch : _pitch;
-        }
-
-        private void ApplyTransform()
-        {
-            Quaternion rotation = Quaternion.Euler(_currentPitch, _yaw, 0f);
-            Vector3 position = _currentFocus - rotation * Vector3.forward * _currentDistance;
-            Vector3 inside = ClampToRoom(position);
-            if (inside != position)
-            {
-                // Pulled in from a wall or the beams: keep looking at the same point
-                position = inside;
-                Vector3 look = _currentFocus - position;
-                if (look.sqrMagnitude > 0.0001f)
-                {
-                    rotation = Quaternion.LookRotation(look, Vector3.up);
-                }
-            }
-            _camera.transform.SetPositionAndRotation(position, rotation);
         }
 
         /// <summary>
-        /// Keeps a world point inside the room: over its grid, above its floor and below its headroom.
-        /// Returns the point unchanged if there's no room.
+        /// Starts gliding from where the camera is now to the view it's switching to
         /// </summary>
-        private Vector3 ClampToRoom(Vector3 point)
+        private void BeginTransition()
         {
-            if (_room == null)
+            _transitionFromPosition = _camera.transform.position;
+            _transitionFromRotation = _camera.transform.rotation;
+            _transitionTime = 0f;
+            _transitioning = _transitionDuration > 0f;
+        }
+
+        /// <summary>
+        /// Puts the camera where the current view says, partway along the glide if one is under way
+        /// </summary>
+        private void ApplyPose(bool firstPerson)
+        {
+            Vector3 position;
+            Quaternion rotation;
+            if (firstPerson)
             {
-                return point;
+                position = _avatar.EyePoint;
+                rotation = Quaternion.Euler(_lookPitch, _lookYaw, 0f);
+            }
+            else
+            {
+                rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+                position = _currentFocus - rotation * Vector3.forward * _currentDistance;
             }
 
-            RoomGrid grid = _room.Grid;
-            Vector3 local = _room.transform.InverseTransformPoint(point);
-            local.x = Mathf.Clamp(local.x, grid.Origin.x, grid.Origin.x + grid.Width * grid.CellSize);
-            local.z = Mathf.Clamp(local.z, grid.Origin.z, grid.Origin.z + grid.Depth * grid.CellSize);
-            local.y = Mathf.Clamp(local.y, grid.Origin.y + _roomMargin, grid.Origin.y + Mathf.Max(_roomMargin, _room.Headroom - _roomMargin));
-            return _room.transform.TransformPoint(local);
+            if (_transitioning)
+            {
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_transitionTime / _transitionDuration));
+                position = Vector3.Lerp(_transitionFromPosition, position, t);
+                rotation = Quaternion.Slerp(_transitionFromRotation, rotation, t);
+            }
+            _camera.transform.SetPositionAndRotation(position, rotation);
         }
 
         /// <summary>

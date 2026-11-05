@@ -3,8 +3,8 @@ using System;
 namespace Kingsboard.Players
 {
     /// <summary>
-    /// Tracks what the local player is doing right now: whether we're joined to the game, and which actions (such as
-    /// typing in chat) are in progress. Systems report their actions with <see cref="Begin"/> and <see cref="End"/>,
+    /// Tracks what the local player is doing right now: whether we're joined to the game, whether we're controlling the
+    /// avatar or in the game at the table (<see cref="Mode"/>), and which actions (such as typing in chat) are in progress. Systems report their actions with <see cref="Begin"/> and <see cref="End"/>,
     /// and ask it whether something else should hold back, e.g. <see cref="BlocksCameraMovement"/>.
     /// Owned by <see cref="PlayerController"/> and reached through <see cref="PlayerController.State"/>.
     /// </summary>
@@ -36,20 +36,50 @@ namespace Kingsboard.Players
         public bool BlocksCameraMovement => IsEnteringText;
 
         /// <summary>
-        /// True while we're seated at the table (<see cref="PlayerAction.AtTable"/>), the only time the board and our
-        /// pawns can be used
+        /// What we're controlling: the avatar in the room (<see cref="PlayerMode.Avatar"/>, the default) or the game at the
+        /// table (<see cref="PlayerMode.InGame"/>). Changed with <see cref="SetMode"/>.
         /// </summary>
-        public bool IsAtTable => IsDoing(PlayerAction.AtTable);
+        public PlayerMode Mode { get; private set; } = PlayerMode.Avatar;
 
         /// <summary>
-        /// True while the avatar mustn't walk around the room: the keys are going to text entry, or we're seated at the table
+        /// True while we're seated at the table interacting with the board (<see cref="PlayerMode.InGame"/>), the only
+        /// time the board and our pawns can be used
         /// </summary>
-        public bool BlocksRoomMovement => IsEnteringText || IsAtTable;
+        public bool IsInGame => Mode == PlayerMode.InGame;
 
         /// <summary>
-        /// Raised after <see cref="Connection"/> or <see cref="Actions"/> changes, with the tracker itself
+        /// True while we're walking around the room as the avatar (<see cref="PlayerMode.Avatar"/>)
+        /// </summary>
+        public bool IsControllingAvatar => Mode == PlayerMode.Avatar;
+
+        /// <summary>
+        /// True while the avatar mustn't walk around the room: the keys are going to text entry, or we're in the game
+        /// </summary>
+        public bool BlocksRoomMovement => IsEnteringText || IsInGame;
+
+        /// <summary>
+        /// Raised after <see cref="Connection"/>, <see cref="Mode"/> or <see cref="Actions"/> changes, with the tracker itself
         /// </summary>
         public event Action<PlayerStateTracker> Changed;
+
+        /// <summary>
+        /// Raised after <see cref="Mode"/> changes, with the new mode (also raises <see cref="Changed"/>)
+        /// </summary>
+        public event Action<PlayerMode> ModeChanged;
+
+        /// <summary>
+        /// Switches between controlling the avatar and being in the game. Setting the mode we're already in does nothing.
+        /// </summary>
+        public void SetMode(PlayerMode mode)
+        {
+            if (Mode == mode)
+            {
+                return;
+            }
+            Mode = mode;
+            ModeChanged?.Invoke(mode);
+            Changed?.Invoke(this);
+        }
 
         /// <summary>
         /// True if every one of the given actions is in progress

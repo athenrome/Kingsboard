@@ -7,11 +7,13 @@ namespace Kingsboard.Room
 {
     /// <summary>
     /// The local player's figure in the room. It walks the room's grid (<see cref="RoomController"/>) one cell at a time:
-    /// WASD or the arrow keys step north, west, south and east as seen from the camera, holding a key keeps walking,
-    /// and Shift walks faster. It can't step off the grid or onto cells a blocking object covers. Next to the table, E
-    /// sits down so the board and pawns can be used (<see cref="TableController.Sit"/>); E again stands up.
-    /// It's shown only to this client and takes no part in the game on the server. It wears the player's colour once
-    /// joined, and its figure is hidden while seated so the board can be seen. Keys are ignored while text is being typed (<see cref="PlayerStateTracker.IsEnteringText"/>).
+    /// W and S step forward and back along the grid direction nearest to where the first-person camera looks, A and D
+    /// step left and right of it (the arrow keys too), holding a key keeps walking, and Shift walks faster. It can't step
+    /// off the grid or onto cells a blocking object covers. Next to the table, E sits down so the board and pawns can be
+    /// used (<see cref="TableController.Sit"/>, which switches the player to <see cref="PlayerMode.InGame"/>); E again
+    /// stands up. The camera sees out of its eyes (<see cref="EyePoint"/>), so its own figure is hidden; the figure is
+    /// kept, in the player's colour, for when others can see it. It's shown only to this client and takes no part in the
+    /// game on the server. Keys are ignored while text is being typed (<see cref="PlayerStateTracker.IsEnteringText"/>).
     /// Lives on the RoomAvatar prefab (Assets/Prefabs/Room/RoomAvatar.prefab), placed in the scene where it should start.
     /// </summary>
     public class RoomAvatarController : MonoBehaviour
@@ -19,7 +21,7 @@ namespace Kingsboard.Room
         [Tooltip("The renderer tinted in the player's colour")]
         [SerializeField] private Renderer _body;
 
-        [Tooltip("The avatar's visible figure (the Model child). Hidden while seated, so it doesn't block the view of the board.")]
+        [Tooltip("The avatar's visible figure (the Model child). Hidden for the local player, who sees out of its eyes.")]
         [SerializeField] private GameObject _model;
 
         [Tooltip("The prompt that tells the player what they can do here (the nested RoomPrompt)")]
@@ -34,8 +36,8 @@ namespace Kingsboard.Room
         [Tooltip("How quickly the avatar turns to face where it's going. Higher is snappier.")]
         [SerializeField] private float _turnSmoothing = 18f;
 
-        [Tooltip("How high the camera looks at, above the avatar's feet, in room units")]
-        [SerializeField] private float _focusHeight = 16f;
+        [Tooltip("How high the avatar's eyes (the first-person camera) are above its feet, in room units")]
+        [SerializeField] private float _eyeHeight = 24f;
 
         private RoomController _room;
         private TableController _table;
@@ -65,9 +67,9 @@ namespace Kingsboard.Room
         public bool IsStepping => _isStepping;
 
         /// <summary>
-        /// The world point the room camera should look at: just above the avatar
+        /// The avatar's eyes in the world, where the first-person camera sits
         /// </summary>
-        public Vector3 FocusPoint => transform.position + Vector3.up * _focusHeight;
+        public Vector3 EyePoint => transform.position + Vector3.up * _eyeHeight;
 
         /// <summary>
         /// True if the avatar is close enough to the table to sit at it
@@ -131,6 +133,12 @@ namespace Kingsboard.Room
             _targetRotation = transform.rotation;
             Facing = RoomGridService.NearestDirection(_room.transform.InverseTransformDirection(transform.forward));
             Teleport(_room.WorldToCell(transform.position));
+
+            // The local player sees out of the avatar's eyes, so its own figure would only get in the way
+            if (_model != null)
+            {
+                _model.SetActive(false);
+            }
         }
 
         private void OnDestroy()
@@ -172,8 +180,13 @@ namespace Kingsboard.Room
                 }
             }
 
-            ReadHeldDirections(keyboard, enteringText || seated);
+            bool blocked = _player != null ? _player.State.BlocksRoomMovement : seated;
+            ReadHeldDirections(keyboard, blocked);
             bool fast = keyboard != null && keyboard.shiftKey.isPressed;
+            if (!seated)
+            {
+                FaceLookDirection();
+            }
 
             if (_isStepping)
             {
@@ -193,10 +206,6 @@ namespace Kingsboard.Room
             }
 
             transform.rotation = Quaternion.Slerp(transform.rotation, _targetRotation, 1f - Mathf.Exp(-_turnSmoothing * dt));
-            if (_model != null && _model.activeSelf == seated)
-            {
-                _model.SetActive(!seated);
-            }
             RefreshPrompt(seated);
         }
 
@@ -233,8 +242,8 @@ namespace Kingsboard.Room
         }
 
         /// <summary>
-        /// Starts a step in the direction of the latest held key, turned to match where the camera faces. Turns to face a
-        /// blocked direction without moving.
+        /// Starts a step in the direction of the latest held key, turned to match where the camera looks. Does nothing if
+        /// that cell is blocked.
         /// </summary>
         private void TryStartStep(bool fast, float headStart)
         {
@@ -244,8 +253,6 @@ namespace Kingsboard.Room
             }
 
             Vector2Int direction = ToRoomDirection(_heldDirections[_heldDirections.Count - 1]);
-            Face(direction);
-
             Vector2Int target = Cell + direction;
             if (!_room.IsWalkable(target))
             {
@@ -283,6 +290,28 @@ namespace Kingsboard.Room
             return up * screenDirection.y + right * screenDirection.x;
         }
 
+        /// <summary>
+        /// Turns the avatar to face where the first-person camera looks (level, ignoring its tilt), and records the
+        /// nearest grid direction as <see cref="Facing"/>
+        /// </summary>
+        private void FaceLookDirection()
+        {
+            Camera camera = Camera.main;
+            if (camera == null)
+            {
+                return;
+            }
+
+            Vector3 look = camera.transform.forward;
+            look.y = 0f;
+            if (look.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+            _targetRotation = Quaternion.LookRotation(look, Vector3.up);
+            Facing = RoomGridService.NearestDirection(_room.transform.InverseTransformDirection(look));
+        }
+
         private void Face(Vector2Int direction)
         {
             Facing = direction;
@@ -302,6 +331,7 @@ namespace Kingsboard.Room
                 return;
             }
 
+            _prompt.ShowCrosshair(!seated);
             if (seated)
             {
                 _prompt.Show("E", "Leave the table");

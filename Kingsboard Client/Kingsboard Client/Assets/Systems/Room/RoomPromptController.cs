@@ -5,7 +5,8 @@ namespace Kingsboard.Room
 {
     /// <summary>
     /// Shows a short hint at the bottom of the screen about what the local player can do where they stand, such as
-    /// "[E] Sit at the table" (built with UI Toolkit). Hidden when there's nothing to say.
+    /// "[E] Sit at the table" (built with UI Toolkit), hidden when there's nothing to say, and a crosshair dot in the middle
+    /// of the screen while in first person.
     /// Lives on the RoomPrompt prefab (Assets/Prefabs/Room/RoomPrompt.prefab), nested in the RoomAvatar prefab, which
     /// decides what it says.
     /// </summary>
@@ -15,6 +16,7 @@ namespace Kingsboard.Room
         [SerializeField] private UIDocument _document;
 
         private VisualElement _window;
+        private VisualElement _crosshair;
         private Label _keyLabel;
         private Label _textLabel;
         private string _key;
@@ -35,6 +37,22 @@ namespace Kingsboard.Room
             _keyLabel.text = key;
             _textLabel.text = text;
             _window.style.display = DisplayStyle.Flex;
+        }
+
+        /// <summary>
+        /// Shows or hides the small dot in the middle of the screen that marks where the first-person view is looking
+        /// </summary>
+        public void ShowCrosshair(bool visible)
+        {
+            if (_crosshair == null)
+            {
+                return;
+            }
+            DisplayStyle display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_crosshair.style.display != display)
+            {
+                _crosshair.style.display = display;
+            }
         }
 
         /// <summary>
@@ -70,6 +88,22 @@ namespace Kingsboard.Room
         {
             // Clicks pass through to the game; the prompt only shows text
             root.pickingMode = PickingMode.Ignore;
+
+            _crosshair = new VisualElement();
+            _crosshair.pickingMode = PickingMode.Ignore;
+            _crosshair.style.position = Position.Absolute;
+            _crosshair.style.left = Length.Percent(50);
+            _crosshair.style.top = Length.Percent(50);
+            _crosshair.style.width = 6;
+            _crosshair.style.height = 6;
+            _crosshair.style.translate = new Translate(Length.Percent(-50), Length.Percent(-50));
+            _crosshair.style.backgroundColor = new Color(1f, 1f, 1f, 0.8f);
+            _crosshair.style.borderTopLeftRadius = 3;
+            _crosshair.style.borderTopRightRadius = 3;
+            _crosshair.style.borderBottomLeftRadius = 3;
+            _crosshair.style.borderBottomRightRadius = 3;
+            _crosshair.style.display = DisplayStyle.None;
+            root.Add(_crosshair);
 
             _window = new VisualElement();
             _window.pickingMode = PickingMode.Ignore;
