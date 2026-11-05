@@ -36,6 +36,17 @@ namespace Kingsboard.Players
         public bool BlocksCameraMovement => IsEnteringText;
 
         /// <summary>
+        /// True while we're seated at the table (<see cref="PlayerAction.AtTable"/>), the only time the board and our
+        /// pawns can be used
+        /// </summary>
+        public bool IsAtTable => IsDoing(PlayerAction.AtTable);
+
+        /// <summary>
+        /// True while the avatar mustn't walk around the room: the keys are going to text entry, or we're seated at the table
+        /// </summary>
+        public bool BlocksRoomMovement => IsEnteringText || IsAtTable;
+
+        /// <summary>
         /// Raised after <see cref="Connection"/> or <see cref="Actions"/> changes, with the tracker itself
         /// </summary>
         public event Action<PlayerStateTracker> Changed;

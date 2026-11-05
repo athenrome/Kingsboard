@@ -22,5 +22,11 @@ namespace Kingsboard.Players
         /// Aiming a card that needs a tile; the next click on the board picks the target
         /// </summary>
         TargetingCard = 1 << 1,
+
+        /// <summary>
+        /// Seated at the table, using the board and our pawns. The avatar stays put and the camera looks at the board
+        /// until we stand up; the board and pawns can only be used while this is going on.
+        /// </summary>
+        AtTable = 1 << 2,
     }
 }
